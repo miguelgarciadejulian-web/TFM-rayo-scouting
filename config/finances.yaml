@@ -1,0 +1,83 @@
+# ── Finanzas Rayo Vallecano 2025/26 ──────────────────────────────────────────
+# Fuentes: SalaryLeaks (actualizado mar-2026), Capology, Unión Rayo, LaLiga
+
+meta:
+  season: "2025/2026"
+  sources:
+    - "SalaryLeaks (mar-2026) — salarios confirmados por medios tier-1"
+    - "Capology — masa salarial estimada €33.53M bruto"
+    - "LaLiga — límite coste de plantilla publicado oficialmente"
+    - "Unión Rayo / EFE — ingresos Conference League"
+    - "OneFootball — cláusula Rațiu €25M confirmada"
+    - "UnionRayo / Dorsal16 — interés Barça por Rațiu, Premier por Chavarría y De Frutos"
+    - "Dorsal16 — cláusula De Frutos €50M confirmada"
+
+# ── Noticias de interés de mercado (verano 2026) ─────────────────────────────
+transfer_news:
+  - {player: "Andrei Rațiu",    interest_level: "confirmed", clubs: ["FC Barcelona"], source: "Dorsal16/Sport.ro jun-2026", note: "Barça irrumpe por Rațiu; Rayo se aferra a la cláusula de €25M"}
+  - {player: "Jorge de Frutos", interest_level: "sounded",   clubs: ["Bournemouth","Crystal Palace","Nottingham Forest"], source: "UnionRayo jun-2026", note: "Tres clubes Premier League han sondeado a De Frutos sin oferta formal."}
+  - {player: "Pep Chavarría",   interest_level: "sounded",   clubs: ["Premier League (varios)"], source: "UnionRayo jun-2026", note: "Varios clubes de la Premier en la agenda; renovó hasta 2030"}
+  - {player: "Ilias Akhomach",  interest_level: "departure",  clubs: [], source: "Jun-2026", note: "Ya se ha despedido de la afición. Salida prácticamente confirmada (contrato fin 2026)"}
+  - {player: "Nobel Mendy",     interest_level: "free",       clubs: [], source: "Jun-2026", note: "Contrato finaliza jun-2026; libre si no renueva"}
+  - {player: "Abdul Mumin",     interest_level: "free",       clubs: [], source: "Jun-2026", note: "Contrato finaliza jun-2026; libre si no renueva"}
+  - {player: "Luiz Felipe",     interest_level: "free",       clubs: [], source: "Jun-2026", note: "Contrato finaliza jun-2026; libre si no renueva"}
+  - {player: "Jozhua Vertrouwd","interest_level": "free",     clubs: [], source: "Jun-2026", note: "Contrato finaliza jun-2026; libre si no renueva"}
+
+# ── Límite salarial LaLiga ────────────────────────────────────────────────────
+squad_cost_limit:
+  limit_eur: 47000000         # Límite oficial LaLiga 2025-26
+  current_wage_bill_eur: 33530000  # Masa salarial base actual (sin bonos)
+  current_total_with_bonus: 39730000  # Base + bonos conocidos
+  headroom_eur: 13470000      # Margen disponible
+  laliga_ranking: 16          # Posición por límite salarial en LaLiga
+
+# ── Ingresos estimados 2025/26 ────────────────────────────────────────────────
+revenues:
+  tv_laliga_eur: 46000000       # Estimado 2025-26 (42.7M en 24-25 + mejora clasificación)
+  conference_league_eur: 18900000  # Ingresado 2024-25 (final, derrota 1-0 vs Crystal Palace)
+  matchday_eur: 8000000         # Taquilla — estadio Vallecas (aforo ~14.700)
+  commercial_sponsorship_eur: 12000000  # Patrocinadores + merchandising
+  player_sales_estimated_eur: 0  # A determinar en mercado de verano
+  other_eur: 2000000
+
+# ── Gastos estimados 2025/26 ─────────────────────────────────────────────────
+expenses:
+  wage_bill_gross_eur: 33530000
+  bonus_bill_eur: 6200000
+  amortizations_eur: 7000000     # Amortización traspasos
+  operating_costs_eur: 18000000  # Estructura, staff, instalaciones
+  transfers_net_eur: 4500000     # Alemão €4.5M + otros (neto)
+
+# ── Salarios individuales ─────────────────────────────────────────────────────
+# confirmed: true = verificado por medios tier-1 (SalaryLeaks)
+# release_clause: null = no publicada / estimada
+player_salaries:
+  # age = edad real (fuente: Transfermarkt may-2026)
+  # release_clause en €  |  clause_confirmed: true = fuente verificada
+  - {name: "Álvaro García",    age: 33, position: "LW", salary_weekly: 40000, salary_annual: 2100000, bonus_annual: 624000,  contract_end: "2028-06-30", release_clause: 10000000,  clause_confirmed: false}
+  - {name: "Luiz Felipe",      age: 29, position: "CB", salary_weekly: 38500, salary_annual: 2000000, bonus_annual: 601000,  contract_end: "2026-06-30", release_clause: 8000000,   clause_confirmed: false}
+  - {name: "Florian Lejeune",  age: 35, position: "CB", salary_weekly: 34600, salary_annual: 1800000, bonus_annual: 540000,  contract_end: "2027-06-30", release_clause: 6000000,   clause_confirmed: false}
+  - {name: "Isi Palazón",      age: 31, position: "AM", salary_weekly: 30000, salary_annual: 1600000, bonus_annual: 468000,  contract_end: "2028-06-30", release_clause: 50000000,  clause_confirmed: true}
+  - {name: "Augusto Batalla",  age: 30, position: "GK", salary_weekly: 30000, salary_annual: 1600000, bonus_annual: 468000,  contract_end: "2030-06-30", release_clause: 12000000,  clause_confirmed: false}
+  - {name: "Pep Chavarría",    age: 28, position: "LB", salary_weekly: 30000, salary_annual: 1600000, bonus_annual: 390000,  contract_end: "2030-06-30", release_clause: 20000000,  clause_confirmed: false}
+  - {name: "Óscar Valentín",   age: 31, position: "CM", salary_weekly: 27000, salary_annual: 1400000, bonus_annual: 351000,  contract_end: "2027-06-30", release_clause: 6000000,   clause_confirmed: false}
+  - {name: "Jorge de Frutos",  age: 29, position: "RW", salary_weekly: 27000, salary_annual: 1400000, bonus_annual: 351000,  contract_end: "2028-06-30", release_clause: 24000000,  clause_confirmed: false}
+  - {name: "Unai López",       age: 30, position: "CM", salary_weekly: 27000, salary_annual: 1400000, bonus_annual: 281000,  contract_end: "2026-06-30", release_clause: 6000000,   clause_confirmed: false}
+  - {name: "Fran Pérez",       age: 23, position: "RW", salary_weekly: 23000, salary_annual: 1200000, bonus_annual: 299000,  contract_end: "2029-06-30", release_clause: 9000000,   clause_confirmed: false}
+  - {name: "Alemão",           age: 28, position: "ST", salary_weekly: 23000, salary_annual: 1200000, bonus_annual: 144000,  contract_end: "2030-06-30", release_clause: 9000000,   clause_confirmed: false}
+  - {name: "Pedro Díaz",       age: 27, position: "CM", salary_weekly: 20000, salary_annual: 1000000, bonus_annual: 260000,  contract_end: "2028-06-30", release_clause: 9000000,   clause_confirmed: false}
+  - {name: "Randy Nteka",      age: 28, position: "AM", salary_weekly: 20000, salary_annual: 1000000, bonus_annual: 208000,  contract_end: "2028-06-30", release_clause: 4000000,   clause_confirmed: false}
+  - {name: "Andrei Rațiu",     age: 27, position: "RB", salary_weekly: 20000, salary_annual: 1000000, bonus_annual: 156000,  contract_end: "2030-06-30", release_clause: 25000000,  clause_confirmed: true}
+  - {name: "Pathé Ciss",       age: 32, position: "DM", salary_weekly: 20000, salary_annual: 1000000, bonus_annual: 125000,  contract_end: "2027-06-30", release_clause: 5000000,   clause_confirmed: false}
+  - {name: "Sergio Camello",   age: 25, position: "ST", salary_weekly: 13500, salary_annual: 700000,  bonus_annual: 140000,  contract_end: "2027-06-30", release_clause: 8000000,   clause_confirmed: false}
+  - {name: "Gerard Gumbau",    age: 31, position: "DM", salary_weekly: 13500, salary_annual: 700000,  bonus_annual: 84000,   contract_end: "2026-06-30", release_clause: 3000000,   clause_confirmed: false}
+  - {name: "Iván Balliu",      age: 34, position: "RB", salary_weekly: 12500, salary_annual: 650000,  bonus_annual: 130000,  contract_end: "2027-06-30", release_clause: 2000000,   clause_confirmed: false}
+  - {name: "Alfonso Espino",   age: 34, position: "LB", salary_weekly: 12500, salary_annual: 650000,  bonus_annual: 130000,  contract_end: "2026-06-30", release_clause: 2000000,   clause_confirmed: false}
+  - {name: "Óscar Trejo",      age: 38, position: "AM", salary_weekly: 12500, salary_annual: 650000,  bonus_annual: 98000,   contract_end: "2026-06-30", release_clause: 1000000,   clause_confirmed: false}
+  - {name: "Ilias Akhomach",   age: 22, position: "RW", salary_weekly: 11500, salary_annual: 600000,  bonus_annual: 72000,   contract_end: "2026-06-30", release_clause: 20000000,  clause_confirmed: false}
+  - {name: "Abdul Mumin",      age: 27, position: "CB", salary_weekly: 9600,  salary_annual: 500000,  bonus_annual: 60000,   contract_end: "2026-06-30", release_clause: 8000000,   clause_confirmed: false}
+  - {name: "Carlos Martín",    age: 24, position: "LW", salary_weekly: 7700,  salary_annual: 400000,  bonus_annual: 48000,   contract_end: "2026-06-30", release_clause: 4000000,   clause_confirmed: false}
+  - {name: "Dani Cárdenas",    age: 29, position: "GK", salary_weekly: 7700,  salary_annual: 400000,  bonus_annual: 60000,   contract_end: "2027-06-30", release_clause: 3000000,   clause_confirmed: false}
+  - {name: "Jozhua Vertrouwd", age: 21, position: "CB", salary_weekly: 4800,  salary_annual: 250000,  bonus_annual: 38000,   contract_end: "2026-06-30", release_clause: 5000000,   clause_confirmed: false}
+  - {name: "Nobel Mendy",      age: 21, position: "CB", salary_weekly: 4800,  salary_annual: 250000,  bonus_annual: 38000,   contract_end: "2026-06-30", release_clause: 5000000,   clause_confirmed: false}
+  - {name: "Samu Becerra",     age: 19, position: "CM", salary_weekly: 3750,  salary_annual: 195000,  bonus_annual: 23000,   contract_end: "2027-06-30", release_clause: 1500000,   clause_confirmed: false}

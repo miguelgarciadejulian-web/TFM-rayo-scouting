@@ -1,0 +1,39 @@
+season,type,player,from_club,from_league,from_country,to_club,to_league,to_country,fee_eur,zip_league_name,source
+2021-22,in,Radamel Falcao,Galatasaray,Süper Lig,Turkey,Rayo Vallecano,LaLiga,Spain,0,Türkiye_Süper_Lig,FotMob/conocimiento
+2021-22,in,Bébé,Vitória de Guimarães,Primeira Liga,Portugal,Rayo Vallecano,LaLiga,Spain,0,Portugal_Primeira_Liga,conocimiento
+2021-22,in,Pathé Ciss,Valladolid,LaLiga 2,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Segunda_Division,conocimiento
+2021-22,in,Catena,Valladolid,LaLiga 2,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Segunda_Division,conocimiento
+2021-22,in,Unai López,Athletic Club,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,3500000,Spain_Primera_Division,conocimiento
+2021-22,in,Randy Nteka,Reims,Ligue 1,France,Rayo Vallecano,LaLiga,Spain,1000000,France_Ligue_1,conocimiento
+2021-22,in,Pep Chavarría,Osasuna,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,2000000,Spain_Primera_Division,conocimiento
+2021-22,loan_in,Sergio Camello,Atletico de Madrid,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2021-22,loan_in,Fran García,Real Madrid,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2021-22,loan_in,Pozo,Sevilla,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2021-22,out,Óscar Trejo,Rayo Vallecano,LaLiga,Spain,free,,,,0,,conocimiento
+2021-22,out,Luis Advíncula,Rayo Vallecano,LaLiga,Spain,Boca Juniors,Argentina Liga Profesional,Argentina,0,Argentina_Liga_Profesional,conocimiento
+2022-23,in,Jorge de Frutos,Levante,LaLiga 2,Spain,Rayo Vallecano,LaLiga,Spain,2000000,Spain_Segunda_Division,conocimiento
+2022-23,in,Óscar Trejo,free,,,Rayo Vallecano,LaLiga,Spain,0,,conocimiento
+2022-23,loan_in,Álvaro Valles,Deportivo La Coruña,1ª RFEF,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Segunda_Division,conocimiento
+2022-23,out,Radamel Falcao,Rayo Vallecano,LaLiga,Spain,Rayo Vallecano B,,,0,,conocimiento
+2022-23,out,Bébé,Rayo Vallecano,LaLiga,Spain,free,,,,0,,conocimiento
+2022-23,loan_out,Sergio Camello,Rayo Vallecano,LaLiga,Spain,Atletico de Madrid,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2023-24,loan_in,Andrei Rațiu,Villarreal,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2023-24,in,Abdul Mumin,Randers FC,Superliga,Denmark,Rayo Vallecano,LaLiga,Spain,2000000,Denmark_Superliga,conocimiento
+2023-24,in,Florian Lejeune,Villarreal,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2023-24,in,Óscar Valentín,Rayo Vallecano B,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,,conocimiento
+2023-24,out,Randy Nteka,Rayo Vallecano,LaLiga,Spain,Metz,Ligue 2,France,0,France_Ligue_2,conocimiento
+2023-24,out,Fran García,Rayo Vallecano,LaLiga,Spain,Real Madrid,LaLiga,Spain,4000000,Spain_Primera_Division,conocimiento
+2024-25,loan_in,Ilias Akhomach,Villarreal,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2024-25,in,Samu Becerra,Rayo Vallecano B,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,,conocimiento
+2024-25,loan_out,Abdul Mumin,Rayo Vallecano,LaLiga,Spain,Getafe,LaLiga,Spain,0,Spain_Primera_Division,conocimiento
+2024-25,out,Óscar Trejo,Rayo Vallecano,LaLiga,Spain,free,,,,0,,conocimiento
+2025-26,in,Alemão,Pachuca,Liga MX,Mexico,Rayo Vallecano,LaLiga,Spain,4500000,Mexico_Liga_MX,FotMob/LaLiga
+2025-26,in,Augusto Batalla,River Plate,Liga Profesional,Argentina,Rayo Vallecano,LaLiga,Spain,1600000,Argentina_Liga_Profesional,FotMob/LaLiga
+2025-26,in,Fran Pérez,Valencia,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,1000000,Spain_Primera_Division,FotMob/LaLiga
+2025-26,in,Jozhua Vertrouwd,Castellón,LaLiga 2,Spain,Rayo Vallecano,LaLiga,Spain,1500000,Spain_Segunda_Division,FotMob/LaLiga
+2025-26,in,Luiz Felipe,Marseille,Ligue 1,France,Rayo Vallecano,LaLiga,Spain,0,France_Ligue_1,FotMob/LaLiga
+2025-26,loan_in,Gerard Gumbau,Granada,LaLiga 2,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Segunda_Division,FotMob/LaLiga
+2025-26,loan_in,Nobel Mendy,Real Betis,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,FotMob/LaLiga
+2025-26,loan_in,Ilias Akhomach,Villarreal,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,FotMob/LaLiga
+2025-26,loan_in,Carlos Martín,Atletico de Madrid,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,FotMob/LaLiga
+2025-26,in,Ramon Martínez,Sevilla,LaLiga,Spain,Rayo Vallecano,LaLiga,Spain,0,Spain_Primera_Division,FotMob/LaLiga

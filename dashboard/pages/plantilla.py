@@ -1,0 +1,524 @@
+"""Página de plantilla actual del Rayo — diseño moderno con visualizaciones."""
+import urllib.parse
+import yaml
+from datetime import date
+from pathlib import Path
+import sys
+
+import dash
+import dash_bootstrap_components as dbc
+from dash import Input, Output, State, callback, dcc, html, no_update
+from dash import dash_table
+import plotly.graph_objects as go
+from dashboard.components.chart_theme import apply_theme, RAYO_RED, RAYO_DARK, C_POSITIVE, C_WARNING, GRAPH_CONFIG_SIMPLE, sequential_reds
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from dashboard.components.criteria_block import criteria_accordion  # noqa: E402
+from src.utils.config import club_profile, settings
+
+dash.register_page(__name__, path="/plantilla", name="Plantilla")
+
+ROOT   = Path(__file__).resolve().parents[2]
+CONFIG = ROOT / "config" / "club_profile.yaml"
+
+POS_COLOR = {
+    "GK": ("#EFF6FF", "#1D4ED8"),
+    "CB": ("#F0FDF4", "#166634"), "RB": ("#F0FDF4", "#166534"), "LB": ("#F0FDF4", "#166534"),
+    "DM": ("#FFFBEB", "#92400E"), "CM": ("#FFFBEB", "#92400E"), "AM": ("#FFFBEB", "#92400E"),
+    "RW": ("#FFF1F2", "#9F1239"), "LW": ("#FFF1F2", "#9F1239"), "ST": ("#FFF1F2", "#9F1239"),
+}
+URGENCY_COLOR = {"alta": ("#FFF1F2", "#9F1239", "Alta"), "media": ("#FFFBEB", "#92400E", "Media")}
+GROUP_LABELS = {
+    "goalkeepers": ("Porteros",       "ti-shield"),
+    "defenders":   ("Defensas",       "ti-shield-half"),
+    "midfielders": ("Centrocampistas","ti-adjustments-horizontal"),
+    "forwards":    ("Delanteros",     "ti-bolt"),
+}
+_ROJO = "#E30613"
+_AZUL = "#1A1A2E"
+_POS_GROUP = {
+    "GK": "Porteros", "CB": "Defensas", "RB": "Defensas", "LB": "Defensas",
+    "DM": "Centrocampistas", "CM": "Centrocampistas", "AM": "Centrocampistas",
+    "RW": "Delanteros", "LW": "Delanteros", "ST": "Delanteros",
+}
+_GROUP_COLOR = {
+    "Porteros": "#1D4ED8", "Defensas": "#166534",
+    "Centrocampistas": "#92400E", "Delanteros": "#9F1239",
+}
+th = {
+    "fontSize": "10px", "fontWeight": "600", "color": "#9CA3AF",
+    "textTransform": "uppercase", "letterSpacing": ".06em",
+    "padding": "0 10px 8px", "textAlign": "left", "borderBottom": "none",
+}
+
+
+def pos_badge(pos):
+    bg, fg = POS_COLOR.get(pos, ("#F3F4F6", "#374151"))
+    return html.Span(pos, style={
+        "background": bg, "color": fg, "padding": "2px 8px",
+        "borderRadius": "99px", "fontSize": "10px", "fontWeight": "700",
+    })
+
+
+def contract_bar(end_date):
+    year = int(str(end_date)[:4]) if end_date else 9999
+    if year <= 2026:
+        color, label = "#E30613", "2026"
+    elif year <= 2027:
+        color, label = "#F59E0B", str(year)
+    else:
+        color, label = "#10B981", str(year)
+    full_date = str(end_date)[:10] if end_date else "?"
+    return html.Div([
+        html.Div(style={"width": "8px", "height": "8px", "borderRadius": "50%",
+                        "background": color, "display": "inline-block", "marginRight": "6px"}),
+        html.Span(label, title=f"Vence: {full_date}",
+                  style={"fontSize": "12px", "color": "#374151", "fontWeight": "500",
+                         "cursor": "help", "borderBottom": "1px dashed #D1D5DB"}),
+    ], style={"display": "flex", "alignItems": "center"})
+
+
+def market_val(v):
+    if not v: return "—"
+    return f"{v/1e6:.1f}M€" if v >= 1e6 else f"{v/1e3:.0f}K€"
+
+
+def player_row(p, i):
+    name = p.get("name", "")
+    pos  = p.get("position", "")
+    age  = p.get("age", "")
+    nat  = p.get("nationality", "")
+    end  = p.get("contract_end", "")
+    mv   = p.get("market_value", 0)
+    loan = p.get("loan_from", "")
+    initials = "".join(w[0].upper() for w in name.split()[:2] if w)
+    year = int(str(end)[:4]) if end else 9999
+    row_bg = "#FFF5F5" if year <= 2026 else ("#FFFFFF" if i % 2 == 0 else "#FAFAFA")
+    return html.Tr([
+        html.Td(html.Div([
+            html.Div(initials, style={
+                "width": "32px", "height": "32px", "borderRadius": "50%",
+                "background": _AZUL, "color": "#fff",
+                "display": "flex", "alignItems": "center", "justifyContent": "center",
+                "fontSize": "11px", "fontWeight": "600", "flexShrink": "0",
+            }),
+            html.Div([
+                html.Span(name, style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL}),
+                (html.Span(f" cedido de {loan}", style={
+                    "fontSize": "10px", "color": "#1D4ED8", "marginLeft": "6px",
+                    "background": "#EFF6FF", "borderRadius": "6px", "padding": "1px 6px",
+                }) if loan else html.Span()),
+            ]),
+        ], style={"display": "flex", "alignItems": "center", "gap": "10px"})),
+        html.Td(pos_badge(pos)),
+        html.Td(str(age), style={"fontSize": "13px", "color": "#374151", "textAlign": "center"}),
+        html.Td(nat, style={"fontSize": "12px", "color": "#6B7280"}),
+        html.Td(contract_bar(end)),
+        html.Td(html.Span(market_val(mv), style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL})),
+    ], id={"type": "plantilla-row", "name": name}, n_clicks=0,
+       style={"background": row_bg, "transition": "background .1s", "cursor": "pointer"})
+
+
+def group_table(group_key, players):
+    label, icon = GROUP_LABELS[group_key]
+    return html.Div([
+        html.Div([
+            html.I(className=f"ti {icon}", style={"fontSize": "16px", "color": _ROJO, "marginRight": "8px"}),
+            html.Span(label, style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL}),
+            html.Span(f" — {len(players)}", style={"fontSize": "12px", "color": "#9CA3AF", "marginLeft": "4px"}),
+        ], style={"display": "flex", "alignItems": "center", "marginBottom": "10px"}),
+        html.Div([
+            html.Table([
+                html.Thead(html.Tr([
+                    html.Th("Jugador", style=th),
+                    html.Th("Pos.", style={**th, "width": "60px"}),
+                    html.Th("Edad", style={**th, "width": "55px", "textAlign": "center"}),
+                    html.Th("Nacionalidad", style=th),
+                    html.Th("Contrato", style={**th, "width": "90px"}),
+                    html.Th("Valor TM", style={**th, "width": "90px"}),
+                ], style={"borderBottom": f"2px solid {_ROJO}"})),
+                html.Tbody([player_row(p, i) for i, p in enumerate(players)]),
+            ], style={"width": "100%", "borderCollapse": "collapse"}),
+        ], style={"overflowX": "auto"}),
+    ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
+              "padding": "16px 18px", "marginBottom": "12px",
+              "boxShadow": "0 1px 3px rgba(0,0,0,.06)"})
+
+
+# ---------------------------------------------------------------------------
+# Gráficos — versiones corregidas
+# ---------------------------------------------------------------------------
+
+def _chart_age_scatter(players_all):
+    """Strip chart: cada jugador como punto en su edad, separado por línea."""
+    groups = ["Porteros", "Defensas", "Centrocampistas", "Delanteros"]
+    fig = go.Figure()
+    avg_age = None
+    ages_all = [p["age"] for p in players_all if p.get("age")]
+    if ages_all:
+        avg_age = sum(ages_all) / len(ages_all)
+    for i, grp in enumerate(groups):
+        ps = [p for p in players_all
+              if _POS_GROUP.get(p.get("position", ""), "Centrocampistas") == grp
+              and p.get("age")]
+        if not ps:
+            continue
+        fig.add_trace(go.Scatter(
+            x=[p["age"] for p in ps],
+            y=[grp] * len(ps),
+            mode="markers",
+            name=grp,
+            marker=dict(color=_GROUP_COLOR[grp], size=14, opacity=0.85,
+                        line=dict(color="#fff", width=2)),
+            hovertemplate="%{customdata}<br>Edad: %{x}<extra></extra>",
+            customdata=[p["name"] for p in ps],
+        ))
+    if avg_age:
+        fig.add_vline(x=avg_age, line_dash="dot", line_color="#6B7280", line_width=1.5,
+                      annotation_text=f"Media {avg_age:.1f}",
+                      annotation_font_size=9, annotation_position="top right")
+    apply_theme(fig, height=240, title="Edades por línea", compact=True)
+    fig.update_layout(
+        showlegend=False,
+        xaxis=dict(title="Edad", range=[17, 40]),
+        yaxis=dict(title=""),
+        margin=dict(l=120, r=16, t=40, b=24),
+    )
+    return fig
+
+
+def _chart_position_donut(players_all):
+    counts = {"Porteros": 0, "Defensas": 0, "Centrocampistas": 0, "Delanteros": 0}
+    for p in players_all:
+        g = _POS_GROUP.get(p.get("position", ""), "Centrocampistas")
+        counts[g] += 1
+    labels = [k for k, v in counts.items() if v > 0]
+    values = [counts[k] for k in labels]
+    colors = [_GROUP_COLOR[k] for k in labels]
+    fig = go.Figure(go.Pie(
+        labels=labels, values=values, hole=0.55,
+        marker_colors=colors, textinfo="label+value", textfont_size=10,
+        hovertemplate="%{label}: %{value}<extra></extra>",
+    ))
+    apply_theme(fig, height=240, title="Por línea", compact=True)
+    fig.update_layout(showlegend=False, margin=dict(l=8, r=8, t=40, b=8))
+    return fig
+
+
+def _chart_contract_status(players_all):
+    today = date.today()
+    year_data: dict[int, list[str]] = {}
+    for p in players_all:
+        try:
+            yr = int(str(p.get("contract_end", "9999"))[:4])
+            year_data.setdefault(yr, []).append(p.get("name", "?").split()[-1])
+        except (ValueError, TypeError):
+            pass
+    years = sorted(year_data.keys())
+    counts = [len(year_data[y]) for y in years]
+    colors = [_ROJO if y <= today.year + 1 else ("#F59E0B" if y <= today.year + 2 else "#10B981")
+              for y in years]
+    names_txt = ["<br>".join(year_data[y]) for y in years]
+    fig = go.Figure(go.Bar(
+        x=[str(y) for y in years], y=counts, marker_color=colors,
+        text=counts, textposition="outside",
+        hovertext=names_txt,
+        hovertemplate="<b>%{x}</b>: %{y}<br>%{hovertext}<extra></extra>",
+    ))
+    apply_theme(fig, height=240, title="Vencimientos de contrato", compact=True)
+    fig.update_layout(showlegend=False, yaxis_title="Jugadores")
+    return fig
+
+
+def _chart_mv_bars(players_all):
+    top = sorted(
+        [p for p in players_all if (p.get("market_value") or 0) > 0],
+        key=lambda p: p.get("market_value", 0), reverse=True
+    )[:12]
+    if not top:
+        return go.Figure()
+    labels = [p["name"].split()[-1] for p in top]
+    values = [p["market_value"] / 1e6 for p in top]
+    colors = [_ROJO if i == 0 else _AZUL for i in range(len(top))]
+    fig = go.Figure(go.Bar(
+        y=labels, x=values, orientation="h", marker_color=colors, opacity=0.85,
+        text=[f"{v:.1f}M" for v in values], textposition="auto",
+        hovertemplate="%{y}: %{x:.1f}M€<extra></extra>",
+    ))
+    apply_theme(fig, height=290, title="Valor de mercado (top 12)", compact=True)
+    fig.update_layout(
+        showlegend=False,
+        yaxis=dict(autorange="reversed"),
+        margin=dict(l=80, r=16, t=40, b=16),
+        xaxis_title="M€",
+    )
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Layout
+# ---------------------------------------------------------------------------
+
+def layout(**_params):
+    cp = club_profile()
+    sq = cp.get("squad_2025_26", {})
+    needs = cp.get("squad_needs_priority", [])
+    fin = cp.get("finances_eur", {})
+    budget = fin.get("transfer_budget_net_eur", 0)
+
+    players_all = []
+    for grp in sq.values():
+        if isinstance(grp, list):
+            players_all.extend(p for p in grp if isinstance(p, dict))
+
+    total_mv   = sum(p.get("market_value", 0) for p in players_all)
+    today = date.today()
+    expiring   = sum(1 for p in players_all
+                     if int(str(p.get("contract_end", "9999"))[:4]) <= today.year + 1)
+    total_players = len(players_all)
+    n_cedidos  = sum(1 for p in players_all if p.get("loan_from"))
+
+    # Tabla editable de contratos
+    edit_data = [
+        {"Jugador": p.get("name", ""), "Posición": p.get("position", ""),
+         "Fin contrato": str(p.get("contract_end", ""))[:10],
+         "Valor TM (€)": p.get("market_value", 0) or 0}
+        for p in players_all
+    ]
+
+    return html.Div([
+        dcc.Location(id="plantilla-nav", refresh=True),
+        html.Div([
+            html.P("PLANTILLA ACTUAL", style={"fontSize": "10px", "fontWeight": "600",
+                   "color": "#6B7280", "letterSpacing": ".08em", "margin": "0 0 3px"}),
+            html.H1("Rayo Vallecano 2025/26", className="page-title"),
+            html.P("Base para la planificación deportiva 2026/27. Clic en jugador para ver perfil.",
+                   className="page-subtitle"),
+        ], className="page-header"),
+
+        dbc.Row([
+            dbc.Col(html.Div([html.P("Jugadores", className="kpi-label"),
+                html.P(str(total_players), className="kpi-value"),
+                html.P("en plantilla", className="kpi-sub")], className="kpi-modern"), md=2),
+            dbc.Col(html.Div([html.P("Valor total", className="kpi-label"),
+                html.P(f"{total_mv/1e6:.0f} M€", className="kpi-value"),
+                html.P("Transfermarkt may-26", className="kpi-sub")], className="kpi-modern"), md=2),
+            dbc.Col(html.Div([html.P("Presupuesto fichajes", className="kpi-label"),
+                html.P(f"{budget/1e6:.0f} M€", className="kpi-value"),
+                html.P("neto estimado 2026/27", className="kpi-sub")], className="kpi-modern"), md=2),
+            dbc.Col(html.Div([html.P("Contratos urgentes", className="kpi-label"),
+                html.P(str(expiring), className="kpi-value"),
+                html.P(f"vencen ≤{today.year + 1}", className="kpi-sub")],
+                className="kpi-modern danger"), md=2),
+            dbc.Col(html.Div([html.P("Cedidos en plantilla", className="kpi-label"),
+                html.P(str(n_cedidos), className="kpi-value"),
+                html.P("cesiones de otros clubes", className="kpi-sub")], className="kpi-modern"), md=2),
+            dbc.Col(html.Div([html.P("Líneas", className="kpi-label"),
+                html.P("4", className="kpi-value"),
+                html.P("GK / DEF / MED / DEL", className="kpi-sub")], className="kpi-modern"), md=2),
+        ], className="g-3 mb-3"),
+
+        html.P("ANÁLISIS VISUAL", style={"fontSize": "10px", "fontWeight": "700",
+               "color": "#9CA3AF", "letterSpacing": ".07em", "marginBottom": "8px"}),
+        dbc.Row([
+            dbc.Col(html.Div([dcc.Graph(figure=_chart_age_scatter(players_all),
+                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
+            dbc.Col(html.Div([dcc.Graph(figure=_chart_position_donut(players_all),
+                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
+            dbc.Col(html.Div([dcc.Graph(figure=_chart_contract_status(players_all),
+                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
+            dbc.Col(html.Div([dcc.Graph(figure=_chart_mv_bars(players_all),
+                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
+        ], className="g-3 mb-4"),
+
+        dbc.Row([
+            dbc.Col([
+                group_table("goalkeepers", sq.get("goalkeepers", [])),
+                group_table("defenders",   sq.get("defenders", [])),
+                group_table("midfielders", sq.get("midfielders", [])),
+                group_table("forwards",    sq.get("forwards", [])),
+            ], md=8),
+
+            dbc.Col([
+                html.Div([
+                    html.P("Leyenda contratos", style={"fontSize": "10px", "fontWeight": "600",
+                        "color": "#9CA3AF", "textTransform": "uppercase",
+                        "letterSpacing": ".06em", "marginBottom": "10px"}),
+                    *[html.Div([
+                        html.Div(style={"width": "8px", "height": "8px", "borderRadius": "50%",
+                                        "background": c, "flexShrink": "0"}),
+                        html.Span(t, style={"fontSize": "12px", "color": "#374151"}),
+                    ], style={"display": "flex", "alignItems": "center",
+                              "gap": "8px", "marginBottom": "6px"})
+                    for c, t in [
+                        ("#E30613", f"Finaliza ≤{today.year + 1} — acción urgente"),
+                        ("#F59E0B", f"Finaliza en {today.year + 2} — vigilar"),
+                        ("#10B981", "Contrato largo — seguro"),
+                    ]],
+                    html.P("Pasa el ratón sobre el año del contrato para ver la fecha exacta.",
+                           style={"fontSize": "10px", "color": "#9CA3AF",
+                                  "marginTop": "8px", "fontStyle": "italic"}),
+                ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
+                          "padding": "14px 16px", "marginBottom": "12px",
+                          "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
+
+                html.Div([
+                    html.P("Necesidades 2026/27", style={"fontSize": "10px", "fontWeight": "600",
+                        "color": "#9CA3AF", "textTransform": "uppercase",
+                        "letterSpacing": ".06em", "marginBottom": "10px"}),
+                    *[html.Div([
+                        html.Div([
+                            html.Span(n.get("position", ""), style={
+                                "fontWeight": "700", "fontSize": "13px",
+                                "color": _AZUL, "minWidth": "34px"}),
+                            html.Span(
+                                URGENCY_COLOR.get(n.get("urgency", ""), ("#F3F4F6", "#374151", "?"))[2],
+                                style={"fontSize": "10px", "fontWeight": "600",
+                                       "padding": "1px 7px", "borderRadius": "99px",
+                                       "background": URGENCY_COLOR.get(n.get("urgency", ""), ("#F3F4F6", "#374151", "?"))[0],
+                                       "color": URGENCY_COLOR.get(n.get("urgency", ""), ("#F3F4F6", "#374151", "?"))[1]}),
+                        ], style={"display": "flex", "alignItems": "center",
+                                  "gap": "6px", "marginBottom": "4px"}),
+                        html.P(n.get("reason", ""), style={"fontSize": "11px", "color": "#6B7280",
+                            "margin": "0 0 10px", "lineHeight": "1.5",
+                            "paddingBottom": "10px", "borderBottom": "1px solid #F3F4F6"}),
+                    ]) for n in needs],
+                ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
+                          "padding": "14px 16px", "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
+            ], md=4),
+        ], className="g-3 mb-3"),
+
+        # ── Edición de contratos ──
+        html.Div([
+            dbc.Button([
+                html.I(className="ti ti-edit", style={"marginRight": "6px"}),
+                "Editar datos de contrato y valor",
+            ], id="btn-edit-contracts", color="light", size="sm",
+               style={"fontSize": "12px", "border": "1px solid #D1D5DB"}),
+            html.Span("Los cambios se guardan en club_profile.yaml",
+                      style={"fontSize": "10px", "color": "#9CA3AF", "marginLeft": "10px"}),
+        ], style={"marginBottom": "8px"}),
+        dbc.Collapse([
+            html.Div([
+                html.P("Editar contratos y valores de mercado",
+                       style={"fontSize": "12px", "fontWeight": "600",
+                              "color": "#374151", "marginBottom": "8px"}),
+                html.P(
+                    "Modifica directamente las celdas. Fin contrato en formato AAAA-MM-DD. "
+                    "Valor TM en euros (ej: 5000000 = 5M€).",
+                    style={"fontSize": "11px", "color": "#6B7280", "marginBottom": "12px"}),
+                dash_table.DataTable(
+                    id="edit-contracts-table",
+                    data=edit_data,
+                    columns=[
+                        {"name": "Jugador", "id": "Jugador", "editable": False},
+                        {"name": "Pos.", "id": "Posición", "editable": False},
+                        {"name": "Fin contrato", "id": "Fin contrato", "editable": True},
+                        {"name": "Valor TM (€)", "id": "Valor TM (€)", "editable": True,
+                         "type": "numeric"},
+                    ],
+                    style_cell={"fontSize": "12px", "fontFamily": "Inter, sans-serif",
+                                "padding": "6px 10px", "textAlign": "left"},
+                    style_header={"fontWeight": "700", "fontSize": "11px",
+                                  "color": "#6B7280", "textTransform": "uppercase",
+                                  "letterSpacing": ".05em", "background": "#F9FAFB"},
+                    style_data_conditional=[
+                        {"if": {"column_editable": True},
+                         "background": "#FFFBEB", "borderLeft": "2px solid #F59E0B"},
+                    ],
+                    page_size=30,
+                    style_table={"overflowX": "auto"},
+                ),
+                html.Div([
+                    dbc.Button("Guardar cambios", id="btn-save-contracts",
+                               color="danger", size="sm",
+                               style={"marginTop": "10px", "marginRight": "8px"}),
+                    html.Span(id="save-contracts-feedback",
+                              style={"fontSize": "11px", "color": "#166534"}),
+                ]),
+            ], style={"background": "#fff", "border": "1px solid #E5E7EB",
+                      "borderRadius": "10px", "padding": "16px 18px",
+                      "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
+        ], id="collapse-edit-contracts", is_open=False),
+
+        criteria_accordion("plantilla"),
+    ])
+
+
+# ---------------------------------------------------------------------------
+# Callbacks
+# ---------------------------------------------------------------------------
+
+@callback(
+    Output("collapse-edit-contracts", "is_open"),
+    Input("btn-edit-contracts", "n_clicks"),
+    State("collapse-edit-contracts", "is_open"),
+    prevent_initial_call=True,
+)
+def _toggle_edit(n, is_open):
+    return not is_open
+
+
+@callback(
+    Output("save-contracts-feedback", "children"),
+    Input("btn-save-contracts", "n_clicks"),
+    State("edit-contracts-table", "data"),
+    prevent_initial_call=True,
+)
+def _save_contracts(n, rows):
+    if not n or not rows:
+        return no_update
+    try:
+        data = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
+        sq = data.get("squad_2025_26", {})
+        name_to_row = {r["Jugador"]: r for r in rows}
+        for grp_key, grp_players in sq.items():
+            if not isinstance(grp_players, list):
+                continue
+            for p in grp_players:
+                if not isinstance(p, dict):
+                    continue
+                row = name_to_row.get(p.get("name", ""))
+                if row:
+                    p["contract_end"] = row.get("Fin contrato") or p.get("contract_end")
+                    try:
+                        mv = int(float(row.get("Valor TM (€)", 0) or 0))
+                        if mv >= 0:
+                            p["market_value"] = mv
+                    except (ValueError, TypeError):
+                        pass
+        CONFIG.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
+                          encoding="utf-8")
+        return "✓ Guardado correctamente"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@callback(
+    Output("plantilla-nav", "href"),
+    Input({"type": "plantilla-row", "name": dash.ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def _go_to_player(n_clicks_list):
+    if not any(n_clicks_list):
+        return no_update
+    ctx_cb = dash.callback_context
+    if not ctx_cb.triggered:
+        return no_update
+    triggered_id = ctx_cb.triggered[0]["prop_id"]
+    import re
+    m = re.search(r'"name":"([^"]+)"', triggered_id)
+    if not m:
+        return no_update
+    name = m.group(1)
+    nombre = urllib.parse.quote(name)
+    cp = club_profile()
+    sq = cp.get("squad_2025_26", {})
+    team = "Rayo Vallecano de Madrid"
+    for grp in sq.values():
+        for p in grp if isinstance(grp, list) else []:
+            if p.get("name") == name:
+                team = p.get("team", team)
+                break
+    equipo = urllib.parse.quote(team)
+    return f"/jugador?name={nombre}&team={equipo}"

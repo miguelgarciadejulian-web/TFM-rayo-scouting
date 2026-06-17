@@ -1,0 +1,79 @@
+# ── Historial de entrenadores (SOLO HECHOS) ──────────────────────────────────
+# Equipo + temporadas que cada tecnico dirigio, mapeado a los nombres reales de
+# los equipos en team_seasons.parquet. NO contiene ninguna descripcion de estilo:
+# el estilo se calcula 100% por codigo en src/profiling/coach_style.py agregando
+# las metricas Opta de estos equipos-temporada.
+#
+# 'team_match' = subcadena que identifica al equipo en los datos (case-insensitive).
+# Cobertura del dataset: temporadas 2021-2022 .. 2025-2026 (2025-2026 parcial).
+# Fuentes del historial: Transfermarkt / BeSoccer / prensa deportiva (jun-2026).
+
+meta:
+  dataset_seasons: ["2021-2022", "2022-2023", "2023-2024", "2024-2025", "2025-2026"]
+  note: >
+    Solo se incluyen etapas cubiertas por las ligas del scope (LaLiga, Segunda,
+    Ligue 1, Premier, Championship...). Etapas en ligas fuera del scope quedan
+    sin datos y el perfil se marca como cobertura parcial.
+
+coaches:
+
+  - name: "Jagoba Arrasate"
+    stints:
+      - {team_match: "CA Osasuna", seasons: ["2021-2022", "2022-2023", "2023-2024"]}
+      - {team_match: "Real Club Deportivo Mallorca", seasons: ["2024-2025", "2025-2026"]}
+
+  - name: "Carles Martínez Novell"
+    stints:
+      - {team_match: "Toulouse", seasons: ["2022-2023", "2023-2024", "2024-2025", "2025-2026"]}
+
+  - name: "Imanol Alguacil"
+    stints:
+      - {team_match: "Real Sociedad", seasons: ["2021-2022", "2022-2023", "2023-2024", "2024-2025"]}
+
+  - name: "Míchel Sánchez"
+    stints:
+      - {team_match: "Girona FC", seasons: ["2021-2022", "2022-2023", "2023-2024", "2024-2025", "2025-2026"]}
+
+  - name: "Ernesto Valverde"
+    stints:
+      - {team_match: "Athletic Club", seasons: ["2022-2023", "2023-2024", "2024-2025", "2025-2026"]}
+
+  - name: "Diego Martínez"
+    stints:
+      - {team_match: "Leeds United", seasons: ["2023-2024"]}
+
+  - name: "Andoni Iraola"
+    stints:
+      - {team_match: "Rayo Vallecano", seasons: ["2021-2022", "2022-2023"]}
+      - {team_match: "AFC Bournemouth", seasons: ["2023-2024", "2024-2025", "2025-2026"]}
+
+  - name: "Rubén Baraja"
+    stints:
+      - {team_match: "Valencia CF", seasons: ["2022-2023", "2023-2024", "2024-2025"]}
+
+  - name: "García Pimienta"
+    stints:
+      - {team_match: "UD Las Palmas", seasons: ["2023-2024"]}
+      - {team_match: "Sevilla FC", seasons: ["2024-2025"]}
+
+  - name: "Eduardo Coudet"
+    stints:
+      - {team_match: "Celta de Vigo", seasons: ["2021-2022", "2022-2023", "2023-2024"]}
+      - {team_match: "Deportivo Alavés", seasons: ["2024-2025", "2025-2026"]}
+
+  - name: "Vicente Moreno"
+    stints:
+      - {team_match: "CA Osasuna", seasons: ["2024-2025", "2025-2026"]}
+
+  - name: "Pepe Bordalás"
+    stints:
+      - {team_match: "Getafe CF", seasons: ["2022-2023", "2023-2024", "2024-2025", "2025-2026"]}
+
+  - name: "Jorge Sampaoli"
+    stints:
+      - {team_match: "Olympique de Marseille", seasons: ["2021-2022"]}
+      - {team_match: "Sevilla FC", seasons: ["2022-2023"]}
+
+  - name: "Gaizka Garitano"
+    stints:
+      - {team_match: "Deportivo Alavés", seasons: ["2021-2022"]}

@@ -1,0 +1,26 @@
+# ── ADN deportivo objetivo del Rayo Vallecano 2026/27 ────────────────────────
+# Perfil de estilo que la direccion deportiva busca en el banquillo y de
+# referencia para el encaje de jugadores. Editable.
+#
+# Ejes en escala 0-100 (mismo marco que src/profiling/coach_style.py).
+# El "peso" indica cuanto pondera cada eje en el score de encaje del entrenador.
+
+target_style:
+  presion_alta:          {ideal: 62, weight: 0.18}   # bloque medio-alto, presion en zonas
+  posesion:              {ideal: 52, weight: 0.10}   # ni dominador puro ni reactivo puro
+  solidez_defensiva:     {ideal: 65, weight: 0.20}   # prioridad: orden defensivo
+  tendencia_ofensiva:    {ideal: 55, weight: 0.12}   # capacidad de hacer dano
+  verticalidad:          {ideal: 58, weight: 0.10}   # salidas rapidas, transiciones
+  intensidad_defensiva:  {ideal: 62, weight: 0.12}   # intensidad sin balon
+  uso_transiciones:      {ideal: 62, weight: 0.18}   # identidad Vallecas: transicion
+
+context_weights:
+  laliga_experience:     0.20   # experiencia en LaLiga (clave para adaptacion)
+  budget_fit:            0.15   # encaje con masa salarial reducida
+  squad_compatibility:   0.15   # compatibilidad con la plantilla actual
+
+# Referencias economicas para evaluar riesgo economico/clausula.
+economics:
+  target_salary_eur: 1500000        # salario de referencia para un tecnico Rayo
+  max_salary_eur: 2500000           # techo razonable
+  budget_salary_mass_eur: 53000000  # masa salarial objetivo (club_profile)

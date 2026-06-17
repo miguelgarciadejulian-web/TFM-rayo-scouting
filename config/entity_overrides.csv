@@ -1,0 +1,5 @@
+opta_id,tm_id,canonical_name,notes
+# Añade aquí los enlaces manuales cuando el matching automático no funcione.
+# Formato: opta_id (de master_players.parquet),tm_id (de transfermarkt.com),canonical_name,notas
+# Ejemplo:
+# abc123xyz,397676,dani cardenas,portero Rayo; nombre abreviado en OPTA

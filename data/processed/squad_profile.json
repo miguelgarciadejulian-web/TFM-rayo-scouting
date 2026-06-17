@@ -1,0 +1,806 @@
+{
+ "squad": [
+  {
+   "name": "Augusto Batalla",
+   "age": 30,
+   "position_cfg": "GK",
+   "contract_end": "2030-06-30",
+   "market_value": 6000000,
+   "matched": true,
+   "primary_role": "portero",
+   "primary_role_label": "Portero",
+   "secondary_roles": [],
+   "style_label": "Portero",
+   "strengths": [
+    "pase hacia delante (top 6%)",
+    "recuperaciones (top 30%)",
+    "juego en campo rival (top 34%)"
+   ],
+   "weaknesses": [],
+   "risk_level": "bajo",
+   "potential": "en meseta",
+   "confidence": "alta",
+   "minutes": 2970.0
+  },
+  {
+   "name": "Dani Cárdenas",
+   "age": 29,
+   "position_cfg": "GK",
+   "contract_end": "2027-06-30",
+   "market_value": 1800000,
+   "matched": true,
+   "primary_role": null,
+   "primary_role_label": "Sin datos suficientes",
+   "secondary_roles": [],
+   "style_label": "n/d",
+   "strengths": [],
+   "weaknesses": [],
+   "risk_level": "n/d",
+   "potential": "n/d",
+   "confidence": "insuficiente",
+   "minutes": 270.0
+  },
+  {
+   "name": "Andrei Rațiu",
+   "age": 27,
+   "position_cfg": "RB",
+   "contract_end": "2030-06-30",
+   "market_value": 18000000,
+   "matched": true,
+   "primary_role": "lateral_ofensivo",
+   "primary_role_label": "Lateral ofensivo",
+   "secondary_roles": [],
+   "style_label": "Carrilero ofensivo de banda",
+   "strengths": [
+    "regate (top 2%)",
+    "pases clave (top 5%)",
+    "duelos en suelo (top 9%)",
+    "presencia en area rival (top 9%)"
+   ],
+   "weaknesses": [
+    "bloqueos (percentil 17)",
+    "juego aereo (percentil 18)",
+    "pase hacia delante (percentil 30)",
+    "despejes (percentil 37)"
+   ],
+   "risk_level": "bajo",
+   "potential": "estable",
+   "confidence": "alta",
+   "minutes": 2712.0
+  },
+  {
+   "name": "Iván Balliu",
+   "age": 34,
+   "position_cfg": "RB",
+   "contract_end": "2027-06-30",
+   "market_value": 1200000,
+   "matched": true,
+   "primary_role": "lateral_defensivo",
+   "primary_role_label": "Lateral defensivo",
+   "secondary_roles": [
+    "central_dominador"
+   ],
+   "style_label": "Lateral solido y posicional",
+   "strengths": [
+    "regate (top 9%)",
+    "duelos en suelo (top 21%)",
+    "intercepciones (top 25%)",
+    "entradas ganadas (top 27%)"
+   ],
+   "weaknesses": [
+    "despejes (percentil 2)",
+    "juego aereo (percentil 18)",
+    "presencia en area rival (percentil 20)",
+    "centros (percentil 31)"
+   ],
+   "risk_level": "medio-alto",
+   "potential": "veterania",
+   "confidence": "baja",
+   "minutes": 490.0
+  },
+  {
+   "name": "Pep Chavarría",
+   "age": 28,
+   "position_cfg": "LB",
+   "contract_end": "2030-06-30",
+   "market_value": 10000000,
+   "matched": true,
+   "primary_role": "lateral_ofensivo",
+   "primary_role_label": "Lateral ofensivo",
+   "secondary_roles": [
+    "lateral_defensivo"
+   ],
+   "style_label": "Carrilero ofensivo de banda",
+   "strengths": [
+    "pases clave (top 19%)",
+    "duelos en suelo (top 30%)",
+    "juego en campo rival (top 32%)",
+    "centros (top 36%)"
+   ],
+   "weaknesses": [
+    "juego aereo (percentil 19)",
+    "pase hacia delante (percentil 36)"
+   ],
+   "risk_level": "bajo",
+   "potential": "estable",
+   "confidence": "alta",
+   "minutes": 2600.0
+  },
+  {
+   "name": "Alfonso Espino",
+   "age": 34,
+   "position_cfg": "LB",
+   "contract_end": "2026-06-30",
+   "market_value": 1000000,
+   "matched": true,
+   "primary_role": "lateral_ofensivo",
+   "primary_role_label": "Lateral ofensivo",
+   "secondary_roles": [
+    "lateral_defensivo"
+   ],
+   "style_label": "Carrilero ofensivo de banda",
+   "strengths": [
+    "duelos en suelo (top 3%)",
+    "entradas ganadas (top 5%)",
+    "presencia en area rival (top 5%)",
+    "pases clave (top 10%)"
+   ],
+   "weaknesses": [
+    "volumen de pase (percentil 15)",
+    "pase hacia delante (percentil 18)",
+    "despejes (percentil 18)",
+    "bloqueos (percentil 26)"
+   ],
+   "risk_level": "medio",
+   "potential": "veterania",
+   "confidence": "media",
+   "minutes": 1381.0
+  },
+  {
+   "name": "Nobel Mendy",
+   "age": 21,
+   "position_cfg": "CB",
+   "contract_end": "2026-06-30",
+   "market_value": 6000000,
+   "matched": true,
+   "primary_role": "central_corrector",
+   "primary_role_label": "Central corrector",
+   "secondary_roles": [],
+   "style_label": "Central de corte y juego aereo",
+   "strengths": [
+    "despejes (top 1%)",
+    "bloqueos (top 4%)",
+    "volumen de pase (top 34%)"
+   ],
+   "weaknesses": [
+    "entradas ganadas (percentil 7)",
+    "juego en campo rival (percentil 7)",
+    "recuperaciones (percentil 14)",
+    "pases clave (percentil 17)"
+   ],
+   "risk_level": "bajo",
+   "potential": "muy alto",
+   "confidence": "media",
+   "minutes": 1714.0
+  },
+  {
+   "name": "Abdul Mumin",
+   "age": 27,
+   "position_cfg": "CB",
+   "contract_end": "2026-06-30",
+   "market_value": 4000000,
+   "matched": true,
+   "primary_role": null,
+   "primary_role_label": "Sin datos suficientes",
+   "secondary_roles": [],
+   "style_label": "n/d",
+   "strengths": [],
+   "weaknesses": [],
+   "risk_level": "n/d",
+   "potential": "n/d",
+   "confidence": "insuficiente",
+   "minutes": 9.0
+  },
+  {
+   "name": "Luiz Felipe",
+   "age": 29,
+   "position_cfg": "CB",
+   "contract_end": "2026-06-30",
+   "market_value": 3000000,
+   "matched": true,
+   "primary_role": "central_corrector",
+   "primary_role_label": "Central corrector",
+   "secondary_roles": [
+    "lateral_defensivo"
+   ],
+   "style_label": "Central de corte y juego aereo",
+   "strengths": [
+    "intercepciones (top 11%)",
+    "entradas ganadas (top 14%)",
+    "despejes (top 24%)",
+    "volumen de pase (top 28%)"
+   ],
+   "weaknesses": [
+    "recuperaciones (percentil 2)",
+    "juego en campo rival (percentil 7)",
+    "pase hacia delante (percentil 16)",
+    "pases clave (percentil 25)"
+   ],
+   "risk_level": "medio",
+   "potential": "en meseta",
+   "confidence": "baja",
+   "minutes": 470.0
+  },
+  {
+   "name": "Jozhua Vertrouwd",
+   "age": 21,
+   "position_cfg": "CB",
+   "contract_end": "2026-06-30",
+   "market_value": 2500000,
+   "matched": true,
+   "primary_role": null,
+   "primary_role_label": "Sin datos suficientes",
+   "secondary_roles": [],
+   "style_label": "n/d",
+   "strengths": [],
+   "weaknesses": [],
+   "risk_level": "n/d",
+   "potential": "n/d",
+   "confidence": "insuficiente",
+   "minutes": 441.0
+  },
+  {
+   "name": "Florian Lejeune",
+   "age": 35,
+   "position_cfg": "CB",
+   "contract_end": "2028-06-30",
+   "market_value": 2000000,
+   "matched": true,
+   "primary_role": "central_corrector",
+   "primary_role_label": "Central corrector",
+   "secondary_roles": [
+    "central_dominador"
+   ],
+   "style_label": "Central de corte y juego aereo",
+   "strengths": [
+    "despejes (top 6%)",
+    "volumen de pase (top 14%)",
+    "juego aereo (top 16%)",
+    "pase hacia delante (top 18%)"
+   ],
+   "weaknesses": [
+    "centros (percentil 15)",
+    "regate (percentil 30)",
+    "duelos en suelo (percentil 36)"
+   ],
+   "risk_level": "bajo",
+   "potential": "veterania",
+   "confidence": "alta",
+   "minutes": 3141.0
+  },
+  {
+   "name": "Gerard Gumbau",
+   "age": 31,
+   "position_cfg": "DM",
+   "contract_end": "2026-06-30",
+   "market_value": 1400000,
+   "matched": true,
+   "primary_role": "interior_llegador",
+   "primary_role_label": "Interior llegador",
+   "secondary_roles": [],
+   "style_label": "Interior de llegada y gol",
+   "strengths": [
+    "pases clave (top 21%)",
+    "entradas ganadas (top 30%)"
+   ],
+   "weaknesses": [
+    "recuperaciones (percentil 11)",
+    "presencia en area rival (percentil 24)",
+    "duelos en suelo (percentil 24)",
+    "regate (percentil 25)"
+   ],
+   "risk_level": "bajo",
+   "potential": "en meseta",
+   "confidence": "media",
+   "minutes": 1081.0
+  },
+  {
+   "name": "Pedro Díaz",
+   "age": 27,
+   "position_cfg": "CM",
+   "contract_end": "2028-06-30",
+   "market_value": 3000000,
+   "matched": true,
+   "primary_role": "interior_llegador",
+   "primary_role_label": "Interior llegador",
+   "secondary_roles": [],
+   "style_label": "Interior de llegada y gol",
+   "strengths": [
+    "volumen de tiro (top 15%)",
+    "entradas ganadas (top 38%)"
+   ],
+   "weaknesses": [
+    "intercepciones (percentil 6)",
+    "duelos en suelo (percentil 16)",
+    "pase hacia delante (percentil 19)",
+    "juego aereo (percentil 37)"
+   ],
+   "risk_level": "bajo",
+   "potential": "estable",
+   "confidence": "media",
+   "minutes": 1755.0
+  },
+  {
+   "name": "Unai López",
+   "age": 30,
+   "position_cfg": "CM",
+   "contract_end": "2026-06-30",
+   "market_value": 2500000,
+   "matched": true,
+   "primary_role": "mediocentro_organizador",
+   "primary_role_label": "Mediocentro organizador",
+   "secondary_roles": [],
+   "style_label": "Cerebro / pausa y distribucion",
+   "strengths": [
+    "pases clave (top 14%)",
+    "volumen de pase (top 15%)",
+    "pase hacia delante (top 22%)",
+    "intercepciones (top 22%)"
+   ],
+   "weaknesses": [
+    "entradas ganadas (percentil 19)",
+    "duelos en suelo (percentil 19)",
+    "pase entre lineas (percentil 29)",
+    "volumen de tiro (percentil 32)"
+   ],
+   "risk_level": "bajo",
+   "potential": "en meseta",
+   "confidence": "media",
+   "minutes": 1536.0
+  },
+  {
+   "name": "Óscar Valentín",
+   "age": 31,
+   "position_cfg": "CM",
+   "contract_end": "2027-06-30",
+   "market_value": 2200000,
+   "matched": true,
+   "primary_role": "mediocentro_recuperador",
+   "primary_role_label": "Mediocentro recuperador",
+   "secondary_roles": [],
+   "style_label": "Pivote de recuperacion e intensidad",
+   "strengths": [
+    "entradas ganadas (top 12%)",
+    "intercepciones (top 22%)",
+    "juego aereo (top 37%)"
+   ],
+   "weaknesses": [
+    "regate (percentil 3)",
+    "pase entre lineas (percentil 5)",
+    "goles (percentil 10)",
+    "pases clave (percentil 16)"
+   ],
+   "risk_level": "bajo",
+   "potential": "en meseta",
+   "confidence": "alta",
+   "minutes": 1962.0
+  },
+  {
+   "name": "Pathé Ciss",
+   "age": 32,
+   "position_cfg": "CM",
+   "contract_end": "2027-06-30",
+   "market_value": 2000000,
+   "matched": true,
+   "primary_role": "mediocentro_recuperador",
+   "primary_role_label": "Mediocentro recuperador",
+   "secondary_roles": [],
+   "style_label": "Pivote de recuperacion e intensidad",
+   "strengths": [
+    "intercepciones (top 5%)",
+    "entradas ganadas (top 17%)",
+    "pase hacia delante (top 18%)",
+    "volumen de pase (top 19%)"
+   ],
+   "weaknesses": [
+    "regate (percentil 20)",
+    "pase entre lineas (percentil 21)",
+    "pases clave (percentil 22)",
+    "presencia en area rival (percentil 22)"
+   ],
+   "risk_level": "bajo",
+   "potential": "veterania",
+   "confidence": "alta",
+   "minutes": 1876.0
+  },
+  {
+   "name": "Samu Becerra",
+   "age": 19,
+   "position_cfg": "CM",
+   "contract_end": "2027-06-30",
+   "market_value": 300000,
+   "matched": true,
+   "primary_role": null,
+   "primary_role_label": "Sin datos suficientes",
+   "secondary_roles": [],
+   "style_label": "n/d",
+   "strengths": [],
+   "weaknesses": [],
+   "risk_level": "n/d",
+   "potential": "n/d",
+   "confidence": "insuficiente",
+   "minutes": 11.0
+  },
+  {
+   "name": "Isi Palazón",
+   "age": 31,
+   "position_cfg": "AM",
+   "contract_end": "2028-06-30",
+   "market_value": 3000000,
+   "matched": true,
+   "primary_role": "interior_llegador",
+   "primary_role_label": "Interior llegador",
+   "secondary_roles": [],
+   "style_label": "Interior de llegada y gol",
+   "strengths": [
+    "volumen de tiro (top 15%)",
+    "pases clave (top 24%)",
+    "presencia en area rival (top 38%)",
+    "pase entre lineas (top 39%)"
+   ],
+   "weaknesses": [
+    "intercepciones (percentil 0)",
+    "entradas ganadas (percentil 7)",
+    "recuperaciones (percentil 11)",
+    "volumen de pase (percentil 28)"
+   ],
+   "risk_level": "bajo",
+   "potential": "en meseta",
+   "confidence": "alta",
+   "minutes": 2262.0
+  },
+  {
+   "name": "Randy Nteka",
+   "age": 28,
+   "position_cfg": "AM",
+   "contract_end": "2028-06-30",
+   "market_value": 1200000,
+   "matched": true,
+   "primary_role": null,
+   "primary_role_label": "Sin datos suficientes",
+   "secondary_roles": [],
+   "style_label": "n/d",
+   "strengths": [],
+   "weaknesses": [],
+   "risk_level": "n/d",
+   "potential": "n/d",
+   "confidence": "insuficiente",
+   "minutes": 277.0
+  },
+  {
+   "name": "Óscar Trejo",
+   "age": 38,
+   "position_cfg": "AM",
+   "contract_end": "2026-06-30",
+   "market_value": 400000,
+   "matched": true,
+   "primary_role": null,
+   "primary_role_label": "Sin datos suficientes",
+   "secondary_roles": [],
+   "style_label": "n/d",
+   "strengths": [],
+   "weaknesses": [],
+   "risk_level": "n/d",
+   "potential": "n/d",
+   "confidence": "insuficiente",
+   "minutes": 73.0
+  },
+  {
+   "name": "Álvaro García",
+   "age": 33,
+   "position_cfg": "LW",
+   "contract_end": "2028-06-30",
+   "market_value": 1800000,
+   "matched": true,
+   "primary_role": "delantero_rematador",
+   "primary_role_label": "Delantero rematador",
+   "secondary_roles": [],
+   "style_label": "Killer de area / referencia ofensiva",
+   "strengths": [
+    "tiros a puerta (top 1%)",
+    "volumen de tiro (top 5%)",
+    "presencia en area rival (top 5%)",
+    "goles (top 6%)"
+   ],
+   "weaknesses": [
+    "asistencias (percentil 29)",
+    "juego en campo rival (percentil 36)"
+   ],
+   "risk_level": "medio-alto",
+   "potential": "veterania",
+   "confidence": "baja",
+   "minutes": 891.0
+  },
+  {
+   "name": "Carlos Martín",
+   "age": 24,
+   "position_cfg": "LW",
+   "contract_end": "2026-06-30",
+   "market_value": 2000000,
+   "matched": true,
+   "primary_role": null,
+   "primary_role_label": "Sin datos suficientes",
+   "secondary_roles": [],
+   "style_label": "n/d",
+   "strengths": [],
+   "weaknesses": [],
+   "risk_level": "n/d",
+   "potential": "n/d",
+   "confidence": "insuficiente",
+   "minutes": 398.0
+  },
+  {
+   "name": "Jorge de Frutos",
+   "age": 29,
+   "position_cfg": "RW",
+   "contract_end": "2028-06-30",
+   "market_value": 12000000,
+   "matched": true,
+   "primary_role": "extremo_vertical",
+   "primary_role_label": "Extremo vertical",
+   "secondary_roles": [
+    "delantero_rematador"
+   ],
+   "style_label": "Extremo de desborde y profundidad",
+   "strengths": [
+    "centros (top 32%)",
+    "goles (top 33%)",
+    "presencia en area rival (top 37%)",
+    "tiros a puerta (top 38%)"
+   ],
+   "weaknesses": [
+    "asistencias (percentil 1)",
+    "juego en campo rival (percentil 13)",
+    "pase entre lineas (percentil 19)",
+    "juego aereo (percentil 33)"
+   ],
+   "risk_level": "bajo",
+   "potential": "en meseta",
+   "confidence": "alta",
+   "minutes": 2348.0
+  },
+  {
+   "name": "Ilias Akhomach",
+   "age": 22,
+   "position_cfg": "RW",
+   "contract_end": "2026-06-30",
+   "market_value": 12000000,
+   "matched": true,
+   "primary_role": "delantero_movil",
+   "primary_role_label": "Delantero movil",
+   "secondary_roles": [
+    "extremo_asociativo",
+    "extremo_vertical"
+   ],
+   "style_label": "Delantero asociativo y movil",
+   "strengths": [
+    "juego en campo rival (top 28%)",
+    "pases clave (top 30%)",
+    "centros (top 31%)",
+    "regate (top 33%)"
+   ],
+   "weaknesses": [
+    "juego aereo (percentil 2)",
+    "asistencias (percentil 29)"
+   ],
+   "risk_level": "medio",
+   "potential": "alto",
+   "confidence": "baja",
+   "minutes": 893.0
+  },
+  {
+   "name": "Fran Pérez",
+   "age": 23,
+   "position_cfg": "RW",
+   "contract_end": "2029-06-30",
+   "market_value": 3000000,
+   "matched": true,
+   "primary_role": "extremo_asociativo",
+   "primary_role_label": "Extremo asociativo",
+   "secondary_roles": [],
+   "style_label": "Extremo de juego interior y ultimo pase",
+   "strengths": [
+    "asistencias (top 12%)",
+    "pases clave (top 40%)"
+   ],
+   "weaknesses": [
+    "centros (percentil 15)",
+    "volumen de tiro (percentil 29)",
+    "presencia en area rival (percentil 37)",
+    "juego en campo rival (percentil 37)"
+   ],
+   "risk_level": "bajo",
+   "potential": "alto",
+   "confidence": "media",
+   "minutes": 957.0
+  },
+  {
+   "name": "Sergio Camello",
+   "age": 25,
+   "position_cfg": "ST",
+   "contract_end": "2027-06-30",
+   "market_value": 2000000,
+   "matched": true,
+   "primary_role": "extremo_asociativo",
+   "primary_role_label": "Extremo asociativo",
+   "secondary_roles": [
+    "delantero_movil"
+   ],
+   "style_label": "Extremo de juego interior y ultimo pase",
+   "strengths": [
+    "pases clave (top 8%)",
+    "pase entre lineas (top 12%)",
+    "tiros a puerta (top 18%)",
+    "regate (top 18%)"
+   ],
+   "weaknesses": [
+    "presencia en area rival (percentil 20)",
+    "juego aereo (percentil 24)",
+    "centros (percentil 26)"
+   ],
+   "risk_level": "medio",
+   "potential": "estable",
+   "confidence": "baja",
+   "minutes": 693.0
+  },
+  {
+   "name": "Alemão",
+   "age": 28,
+   "position_cfg": "ST",
+   "contract_end": "2030-06-30",
+   "market_value": 3000000,
+   "matched": true,
+   "primary_role": "delantero_rematador",
+   "primary_role_label": "Delantero rematador",
+   "secondary_roles": [],
+   "style_label": "Killer de area / referencia ofensiva",
+   "strengths": [
+    "juego aereo (top 37%)"
+   ],
+   "weaknesses": [
+    "juego en campo rival (percentil 9)",
+    "regate (percentil 19)",
+    "pases clave (percentil 20)",
+    "pase entre lineas (percentil 24)"
+   ],
+   "risk_level": "medio",
+   "potential": "estable",
+   "confidence": "media",
+   "minutes": 1029.0
+  }
+ ],
+ "needs": {
+  "role_counts": {
+   "Central corrector": 3,
+   "Delantero movil": 1,
+   "Delantero rematador": 2,
+   "Extremo asociativo": 2,
+   "Extremo vertical": 1,
+   "Interior llegador": 3,
+   "Lateral defensivo": 1,
+   "Lateral ofensivo": 3,
+   "Mediocentro organizador": 1,
+   "Mediocentro recuperador": 2,
+   "Portero": 1
+  },
+  "present": {
+   "portero": 1,
+   "central_dominador": 0,
+   "central_corrector": 3,
+   "lateral_ofensivo": 3,
+   "lateral_defensivo": 1,
+   "mediocentro_organizador": 1,
+   "mediocentro_recuperador": 2,
+   "interior_llegador": 3,
+   "extremo_vertical": 1,
+   "extremo_asociativo": 2,
+   "delantero_rematador": 2,
+   "delantero_movil": 1
+  },
+  "over_represented": [
+   "Interior llegador"
+  ],
+  "missing": [
+   "Central dominador"
+  ],
+  "reinforce": [
+   "Portero"
+  ],
+  "aging_or_expiring": [
+   {
+    "name": "Iván Balliu",
+    "role": "lateral_defensivo",
+    "role_label": "Lateral defensivo",
+    "age": 34,
+    "contract_end": "2027-06-30"
+   },
+   {
+    "name": "Alfonso Espino",
+    "role": "lateral_ofensivo",
+    "role_label": "Lateral ofensivo",
+    "age": 34,
+    "contract_end": "2026-06-30"
+   },
+   {
+    "name": "Nobel Mendy",
+    "role": "central_corrector",
+    "role_label": "Central corrector",
+    "age": 21,
+    "contract_end": "2026-06-30"
+   },
+   {
+    "name": "Luiz Felipe",
+    "role": "central_corrector",
+    "role_label": "Central corrector",
+    "age": 29,
+    "contract_end": "2026-06-30"
+   },
+   {
+    "name": "Florian Lejeune",
+    "role": "central_corrector",
+    "role_label": "Central corrector",
+    "age": 35,
+    "contract_end": "2028-06-30"
+   },
+   {
+    "name": "Gerard Gumbau",
+    "role": "interior_llegador",
+    "role_label": "Interior llegador",
+    "age": 31,
+    "contract_end": "2026-06-30"
+   },
+   {
+    "name": "Unai López",
+    "role": "mediocentro_organizador",
+    "role_label": "Mediocentro organizador",
+    "age": 30,
+    "contract_end": "2026-06-30"
+   },
+   {
+    "name": "Óscar Valentín",
+    "role": "mediocentro_recuperador",
+    "role_label": "Mediocentro recuperador",
+    "age": 31,
+    "contract_end": "2027-06-30"
+   },
+   {
+    "name": "Pathé Ciss",
+    "role": "mediocentro_recuperador",
+    "role_label": "Mediocentro recuperador",
+    "age": 32,
+    "contract_end": "2027-06-30"
+   },
+   {
+    "name": "Isi Palazón",
+    "role": "interior_llegador",
+    "role_label": "Interior llegador",
+    "age": 31,
+    "contract_end": "2028-06-30"
+   },
+   {
+    "name": "Álvaro García",
+    "role": "delantero_rematador",
+    "role_label": "Delantero rematador",
+    "age": 33,
+    "contract_end": "2028-06-30"
+   },
+   {
+    "name": "Ilias Akhomach",
+    "role": "delantero_movil",
+    "role_label": "Delantero movil",
+    "age": 22,
+    "contract_end": "2026-06-30"
+   }
+  ]
+ }
+}

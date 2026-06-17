@@ -1,0 +1,28 @@
+project:
+  name: rayo_scouting_tool
+  season_active: "2026/2027"
+  season_prev: "2025/2026"
+
+paths:
+  data_raw: "data/raw"
+  data_interim: "data/interim"
+  data_processed: "data/processed"
+  data_external: "data/external"
+  opta_json: "data/opta_json"
+  reports_out: "data/reports_out"
+  source_zips: "../Datos"          # ZIPs originales de /Datos
+  first_class: "../first class"     # Material reutilizable
+
+leagues_priority:
+  tier_1: [LaLiga, Premier League, Serie A, Bundesliga, Ligue 1]
+  tier_2: [LaLiga 2, Eredivisie, Primeira Liga, Belgian Pro League, Championship]
+  tier_3: [MLS, Liga MX, Brasileirao, Argentine Primera, J1 League]
+
+filters_defaults:
+  min_minutes: 900
+  max_age: 30
+  market_value_max_eur: 15000000
+
+output:
+  parquet_compression: snappy
+  pdf_dpi: 200

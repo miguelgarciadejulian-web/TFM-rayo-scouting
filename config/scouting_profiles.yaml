@@ -1,0 +1,69 @@
+# Perfiles tácticos para scoring de scouting.
+# Cada perfil pondera métricas estandarizadas (z-score por posición y liga).
+# Las claves de métricas deben existir en el master_players.parquet.
+
+profiles:
+  RB_offensive:
+    label: "Lateral derecho ofensivo (sistema Íñigo Pérez)"
+    position_filter: ["RB", "RWB"]
+    age_max: 27
+    weights:
+      crosses_completed_p90: 0.20
+      progressive_carries_p90: 0.20
+      xa_p90: 0.15
+      tackles_won_p90: 0.15
+      duels_won_pct: 0.10
+      sprints_p90: 0.10
+      passes_into_box_p90: 0.10
+
+  CB_ball_playing:
+    label: "Central con salida de balón"
+    position_filter: ["CB"]
+    age_max: 28
+    weights:
+      passes_completed_pct: 0.20
+      progressive_passes_p90: 0.20
+      aerial_duels_won_pct: 0.15
+      interceptions_p90: 0.15
+      tackles_won_p90: 0.10
+      long_passes_completed_pct: 0.10
+      errors_leading_to_shot_p90: -0.10
+
+  CM_box_to_box:
+    label: "Mediocentro box-to-box"
+    position_filter: ["CM", "DM"]
+    age_max: 27
+    weights:
+      progressive_passes_p90: 0.20
+      pressures_p90: 0.15
+      tackles_won_p90: 0.15
+      xg_p90: 0.10
+      xa_p90: 0.10
+      distance_covered_p90: 0.15
+      ball_recoveries_p90: 0.15
+
+  RW_inverted:
+    label: "Extremo derecho invertido (perfil Isi)"
+    position_filter: ["RW", "AM"]
+    age_max: 28
+    weights:
+      xg_p90: 0.20
+      xa_p90: 0.15
+      shots_on_target_p90: 0.10
+      dribbles_completed_p90: 0.15
+      progressive_carries_p90: 0.15
+      key_passes_p90: 0.15
+      defensive_actions_own_third_p90: 0.10
+
+  ST_pressing:
+    label: "Delantero presionador"
+    position_filter: ["ST", "CF"]
+    age_max: 28
+    weights:
+      xg_p90: 0.25
+      goals_p90: 0.15
+      pressures_att_third_p90: 0.20
+      shots_p90: 0.10
+      hold_up_play_score: 0.10
+      aerial_duels_won_pct: 0.10
+      counter_press_recoveries_p90: 0.10

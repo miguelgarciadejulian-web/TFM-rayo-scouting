@@ -1,0 +1,166 @@
+{
+ "Central dominador": [
+  {
+   "name": "Lisandro Martínez",
+   "team": "AFC Ajax",
+   "league": "Netherlands_Eredivisie",
+   "season": "2021-2022",
+   "minutes": 1910.0,
+   "role_score": 98.5,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  },
+  {
+   "name": "P. Díaz",
+   "team": "CA River Plate",
+   "league": "Argentina_Liga_Profesional",
+   "season": "2024",
+   "minutes": 1827.0,
+   "role_score": 96.2,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  },
+  {
+   "name": "O. Boscagli",
+   "team": "PSV Eindhoven",
+   "league": "Netherlands_Eredivisie",
+   "season": "2023-2024",
+   "minutes": 2838.0,
+   "role_score": 95.8,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  },
+  {
+   "name": "L. Villalba",
+   "team": "AA Argentinos Juniors",
+   "league": "Argentina_Liga_Profesional",
+   "season": "2021",
+   "minutes": 2016.0,
+   "role_score": 95.4,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  },
+  {
+   "name": "Gonçalo Inácio",
+   "team": "Sporting Clube de Portugal",
+   "league": "Portugal_Primeira_Liga",
+   "season": "2022-2023",
+   "minutes": 2365.0,
+   "role_score": 95.1,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  },
+  {
+   "name": "Fernando Calero",
+   "team": "Reial Club Deportiu Espanyol de Barcelona",
+   "league": "Spain_Segunda_Division",
+   "season": "2023-2024",
+   "minutes": 2155.0,
+   "role_score": 95.1,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  },
+  {
+   "name": "P. Bochniewicz",
+   "team": "SC Heerenveen",
+   "league": "Netherlands_Eredivisie",
+   "season": "2024-2025",
+   "minutes": 1112.0,
+   "role_score": 93.4,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  },
+  {
+   "name": "Unai Bilbao",
+   "team": "Club Tijuana Xoloitzcuintles de Caliente",
+   "league": "Mexico_Liga_MX",
+   "season": "2024-2025",
+   "minutes": 1453.0,
+   "role_score": 93.4,
+   "role": "central_dominador",
+   "role_label": "Central dominador"
+  }
+ ],
+ "Portero": [
+  {
+   "name": "I. Arce",
+   "team": "CD Riestra",
+   "league": "Argentina_Liga_Profesional",
+   "season": "2026",
+   "minutes": 1440.0,
+   "role_score": 99.8,
+   "role": "portero",
+   "role_label": "Portero"
+  },
+  {
+   "name": "S. Bossut",
+   "team": "SV Zulte Waregem",
+   "league": "Belgium_First_Division_A",
+   "season": "2021-2022",
+   "minutes": 2160.0,
+   "role_score": 99.7,
+   "role": "portero",
+   "role_label": "Portero"
+  },
+  {
+   "name": "M. Diaw",
+   "team": "Clermont Foot 63",
+   "league": "France_Ligue_1",
+   "season": "2023-2024",
+   "minutes": 2700.0,
+   "role_score": 99.2,
+   "role": "portero",
+   "role_label": "Portero"
+  },
+  {
+   "name": "José Antonio Caro",
+   "team": "Burgos CF",
+   "league": "Spain_Segunda_Division",
+   "season": "2021-2022",
+   "minutes": 1290.0,
+   "role_score": 98.9,
+   "role": "portero",
+   "role_label": "Portero"
+  },
+  {
+   "name": "M. Dituro",
+   "team": "Elche CF",
+   "league": "Spain_Primera_Division",
+   "season": "2025-2026",
+   "minutes": 1800.0,
+   "role_score": 98.2,
+   "role": "portero",
+   "role_label": "Portero"
+  },
+  {
+   "name": "I. Radu",
+   "team": "Association Jeunesse Auxerroise",
+   "league": "France_Ligue_1",
+   "season": "2022-2023",
+   "minutes": 1530.0,
+   "role_score": 96.7,
+   "role": "portero",
+   "role_label": "Portero"
+  },
+  {
+   "name": "D. Léon",
+   "team": "Association Jeunesse Auxerroise",
+   "league": "France_Ligue_1",
+   "season": "2024-2025",
+   "minutes": 2880.0,
+   "role_score": 96.7,
+   "role": "portero",
+   "role_label": "Portero"
+  },
+  {
+   "name": "M. Miño",
+   "team": "CA Barracas Central",
+   "league": "Argentina_Liga_Profesional",
+   "season": "2026",
+   "minutes": 980.0,
+   "role_score": 96.1,
+   "role": "portero",
+   "role_label": "Portero"
+  }
+ ]
+}

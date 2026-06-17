@@ -1,0 +1,391 @@
+# ── Casting de entrenadores — Rayo Vallecano 2026/27 ─────────────────────────
+# Fuentes: Transfermarkt, ElGolDigital, UnionRayo, SportAragón, Wikipedia (jun-2026)
+# Compatibilidad Rayo (1-10): presupuesto medio-bajo + estilo organizado + experiencia LaLiga
+
+meta:
+  season_target: "2026/2027"
+  context: >
+    Íñigo Pérez abandona el Rayo para fichar por el Villarreal (reemplaza a Marcelino).
+    El Rayo busca un perfil de entrenador que mantenga solidez defensiva,
+    pueda trabajar con presupuesto medio-bajo (~€35M masa salarial) y
+    tenga experiencia en LaLiga o nivel equivalente.
+    Perfil Íñigo Pérez: 4-2-3-1 / 4-4-2, bloque medio-alto, presión en zonas medias,
+    buen trabajo con jóvenes, perfil comunicador.
+
+coaches:
+
+  # ── CANDIDATOS DIRECTOS AL RAYO ──────────────────────────────────────────────
+  - name: "Jagoba Arrasate"
+    age: 48
+    nationality: "Española (Euskadi)"
+    current_club: null
+    available: true
+    last_club: "RCD Mallorca"
+    contract_status: "Libre"
+    salary_estimate_eur: 1200000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Bloque medio / Organizado"
+    style_tags: ["Solidez defensiva", "Presión media-alta", "Juego directo", "Trabajo en equipo", "Gestión vestuario"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 45
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Técnico vasco referente en LaLiga con presupuestos ajustados. Hizo historia en Osasuna
+      (8 años, clasificaciones europeas). Breve e irregular paso por Mallorca (13 partidos,
+      despedido). Muy solicitado: Rayo prácticamente cerrado según ElGolDigital (jun-2026).
+      Perfil ideal para Vallecas: conoce la categoría, gestiona grupos y trabaja con pocos
+      recursos. Equilibra organización defensiva con salidas rápidas en transición.
+    rayo_compatibility: 9
+    rayo_notes: "FAVORITO. Acuerdo casi cerrado. Estilo muy parecido a Íñigo Pérez. Experiencia LaLiga con presupuestos reducidos."
+    source: "ElGolDigital / Tribuna jun-2026"
+
+  - name: "Carles Martínez Novell"
+    age: 42
+    nationality: "Española (Cataluña)"
+    current_club: "Toulouse FC"
+    available: true
+    last_club: "Toulouse FC"
+    contract_status: "Acaba contrato jun-2026"
+    salary_estimate_eur: 900000
+    formation_preferred: "4-2-3-1 / 4-3-3"
+    style_main: "Presión alta / Posicional moderno"
+    style_tags: ["Presión alta", "Posesión", "Cantera", "Juego de posición", "Metodología moderna"]
+    pressing_intensity: "Alta"
+    possession_pct: 55
+    defensive_line: "Alta"
+    offensive_approach: "Ataque"
+    description: >
+      Formado en Espanyol y Barcelona. Tres temporadas consolidando al Toulouse en Ligue 1.
+      Perfil metodológico moderno, valorado por su trabajo con estructuras de cantera.
+      42 años, perfil emergente. También en agenda de Osasuna y Girona. Dirección deportiva
+      del Rayo le tiene como segunda opción según Fichajes.com.
+    rayo_compatibility: 7
+    rayo_notes: "Segunda opción de la dirección deportiva. Perfil ofensivo moderno pero sin experiencia en LaLiga."
+    source: "Fichajes.com / ElGolDigital jun-2026"
+
+  - name: "Beñat San José"
+    age: 47
+    nationality: "Española (Euskadi)"
+    current_club: "SD Eibar"
+    available: false
+    last_club: "SD Eibar"
+    contract_status: "Contrato vigente (1ª RFEF → ascenso play-offs)"
+    salary_estimate_eur: 600000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Bloque medio / Transiciones"
+    style_tags: ["Organización defensiva", "Transiciones rápidas", "Solidez", "Gestión de grupo"]
+    pressing_intensity: "Media"
+    possession_pct: 48
+    defensive_line: "Media-baja"
+    offensive_approach: "Equilibrado"
+    description: >
+      Favorito de la presidencia del Rayo según Fichajes.com. Buen trabajo en Eibar luchando
+      por el ascenso a LaLiga. Perfil organizador, sólido defensivamente. Menor renombre que
+      Arrasate pero con ideas claras. Experiencia en categorías inferiores; daría el salto
+      a LaLiga.
+    rayo_compatibility: 7
+    rayo_notes: "Preferido por la presidencia (Martín Presa). Más económico. Pendiente de situación en Eibar."
+    source: "Fichajes.com jun-2026"
+
+  # ── PERFIL ALTO / MERCADO LIBRE ──────────────────────────────────────────────
+  - name: "Imanol Alguacil"
+    age: 54
+    nationality: "Española (Euskadi)"
+    current_club: null
+    available: true
+    last_club: "Real Sociedad"
+    contract_status: "Libre"
+    salary_estimate_eur: 2500000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Posicional / Asociativo"
+    style_tags: ["Posesión alta", "Juego asociativo", "Presión alta", "Construcción desde atrás", "Europa"]
+    pressing_intensity: "Alta"
+    possession_pct: 58
+    defensive_line: "Media-alta"
+    offensive_approach: "Ataque"
+    description: >
+      Histórico en Real Sociedad: 5 clasificaciones europeas consecutivas, Copa del Rey (2020).
+      Libre tras 7 años en Donostia. Muy cotizado: Valencia, Girona, Osasuna y Rayo en su
+      agenda (SportAragón, mayo 2026). Salario fuera del alcance del Rayo. Problema fiscal
+      por período en Arabia Saudí. Fútbol asociativo de alta calidad.
+    rayo_compatibility: 5
+    rayo_notes: "Perfil ideal tácticamente pero fuera del presupuesto del Rayo (~€2.5M). Puede elegir proyectos mejores."
+    source: "SportAragón / ElGolDigital may-2026"
+
+  - name: "Míchel Sánchez"
+    age: 54
+    nationality: "Española (Madrid)"
+    current_club: null
+    available: true
+    last_club: "Girona FC"
+    contract_status: "Libre (acaba contrato Girona jun-2026)"
+    salary_estimate_eur: 2000000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Presión alta / Ataque total"
+    style_tags: ["Alta intensidad", "Pressing agresivo", "Juego vertical", "Creatividad ofensiva", "Riesgo táctico"]
+    pressing_intensity: "Muy alta"
+    possession_pct: 54
+    defensive_line: "Alta"
+    offensive_approach: "Ataque"
+    description: >
+      Revolucionó el Girona llevándolo a Champions League (2023-24). Histórico de La Masia.
+      Vinculado al Ajax para 2026-27. Su fútbol es espectacular pero requiere plantilla de
+      calidad y presupuesto elevado. El Rayo es un perfil diferente al que busca.
+    rayo_compatibility: 3
+    rayo_notes: "Estilo demasiado ofensivo para el presupuesto del Rayo. Salario fuera de rango. Camino al Ajax."
+    source: "Infobae / ElGolDigital jun-2026"
+
+  # ── OPCIONES CONTRASTADAS ────────────────────────────────────────────────────
+  - name: "Ernesto Valverde"
+    age: 61
+    nationality: "Española (Euskadi)"
+    current_club: null
+    available: true
+    last_club: "Athletic Club"
+    contract_status: "Libre (contrato finalizado jun-2026)"
+    salary_estimate_eur: 2000000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque medio / Pragmático"
+    style_tags: ["Pragmatismo", "Solidez defensiva", "Experiencia máxima", "Gestión de vestuarios top", "Transiciones"]
+    pressing_intensity: "Media"
+    possession_pct: 50
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Máxima experiencia: Barcelona (x2), Athletic, Espanyol, Villarreal, Valencia. Devolvió
+      al Athletic a Champions. Sólido, pragmático, gestiona bien grupos heterogéneos. Salario
+      elevado para el Rayo. Posiblemente opte por proyecto de más nivel o descanso.
+    rayo_compatibility: 4
+    rayo_notes: "Nivel muy superior al del Rayo. Salario fuera de rango. Posible si quiere proyecto tranquilo."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Diego Martínez"
+    age: 44
+    nationality: "Española (Galicia)"
+    current_club: null
+    available: true
+    last_club: "RCD Espanyol"
+    contract_status: "Libre"
+    salary_estimate_eur: 900000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Bloque medio / Organizado"
+    style_tags: ["Organización defensiva", "Transiciones", "Trabajo con jóvenes", "LaLiga experiencia"]
+    pressing_intensity: "Media"
+    possession_pct: 47
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Ascendió a Granada a LaLiga y lo mantuvo. Paso irregular en Espanyol. Perfil muy
+      similar al de Arrasate en concepto: organizado, sólido, trabaja con presupuestos
+      ajustados. Disponible y a precio razonable para el Rayo.
+    rayo_compatibility: 7
+    rayo_notes: "Perfil muy adecuado presupuestariamente y tácticamente. Disponible. Menos renombre que Arrasate."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Andoni Iraola"
+    age: 42
+    nationality: "Española (Euskadi)"
+    current_club: "Liverpool FC"
+    available: false
+    last_club: "Bournemouth AFC"
+    contract_status: "Firmado con Liverpool (4 jun-2026)"
+    salary_estimate_eur: 6000000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Presión alta / Intensidad máxima"
+    style_tags: ["Alta intensidad", "Pressing agresivo", "Vertical", "Físico", "Premier League"]
+    pressing_intensity: "Muy alta"
+    possession_pct: 50
+    defensive_line: "Alta"
+    offensive_approach: "Ataque"
+    description: >
+      Fichaje estrella del Liverpool (jun-2026) tras llevar al Bournemouth a Europa League.
+      Entrenador referente del fútbol de presión e intensidad en Europa. Exjugador del Athletic.
+      Completamente fuera del alcance del Rayo. Referencia táctica para comparar estilos.
+    rayo_compatibility: 1
+    rayo_notes: "No disponible — firmado por el Liverpool. Referencia táctica pero inaccesible."
+    source: "LibertadDigital / TheObjective 4-jun-2026"
+
+  - name: "Rubén Baraja"
+    age: 49
+    nationality: "Española (Castilla)"
+    current_club: null
+    available: true
+    last_club: "Valencia CF"
+    contract_status: "Libre"
+    salary_estimate_eur: 1200000
+    formation_preferred: "4-2-3-1 / 4-3-3"
+    style_main: "Bloque medio / Transiciones"
+    style_tags: ["Solidez defensiva", "Juego de transición", "Experiencia LaLiga", "Gestión de crisis"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 48
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Salvó al Valencia de la quema en temporadas difíciles con presupuesto muy limitado.
+      Exjugador de referencia. Perfil organizador, pragmático. Libre y con ganas de volver
+      tras el caos institucional valencianista.
+    rayo_compatibility: 7
+    rayo_notes: "Buena relación calidad/precio. Conoce LaLiga con presupuestos reducidos. Sin equipo y motivado."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "García Pimienta"
+    age: 52
+    nationality: "Española (Cataluña)"
+    current_club: "Sevilla FC"
+    available: false
+    last_club: "Sevilla FC"
+    contract_status: "Contrato vigente (en duda por malos resultados)"
+    salary_estimate_eur: 1500000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Posicional / Juego de posición"
+    style_tags: ["Posesión", "Juego de posición", "Cantera Barça", "Construcción desde atrás"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 56
+    defensive_line: "Media-alta"
+    offensive_approach: "Ataque"
+    description: >
+      Formado en La Masia, llevó al Barça B a 2ª y luego al Las Palmas a Primera. Temporada
+      difícil en Sevilla. Juego de posición de herencia barcelonista. Perfil más ofensivo
+      de lo que el Rayo necesita.
+    rayo_compatibility: 4
+    rayo_notes: "Estilo demasiado posesional para el perfil del Rayo. Con equipo actualmente."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Eduardo Coudet"
+    age: 49
+    nationality: "Argentina"
+    current_club: "Deportivo Alavés"
+    available: false
+    last_club: "Deportivo Alavés"
+    contract_status: "Contrato hasta 2026 (situación incierta por descenso)"
+    salary_estimate_eur: 1000000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Alta intensidad / Presión"
+    style_tags: ["Alta energía", "Pressing", "Transiciones verticales", "Físico", "Carácter"]
+    pressing_intensity: "Alta"
+    possession_pct: 49
+    defensive_line: "Media-alta"
+    offensive_approach: "Equilibrado"
+    description: >
+      Técnico argentino con paso por Celta (buen trabajo), Internacional Porto Alegre y ahora
+      Alavés. Equipo de alta energía e intensidad. Situación incierta por malos resultados.
+      Perfil compatible con el Rayo si quedara libre.
+    rayo_compatibility: 6
+    rayo_notes: "Perfil compatible si queda libre. Energético y adaptable. Salario razonable."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Vicente Moreno"
+    age: 46
+    nationality: "Española (Valencia)"
+    current_club: null
+    available: true
+    last_club: "RCD Mallorca"
+    contract_status: "Libre"
+    salary_estimate_eur: 700000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque bajo / Muy defensivo"
+    style_tags: ["Bloque bajo", "Muy defensivo", "Solidez", "Trabajo físico", "Ascensos"]
+    pressing_intensity: "Baja"
+    possession_pct: 40
+    defensive_line: "Baja"
+    offensive_approach: "Defensivo"
+    description: >
+      Especialista en salvaciones y ascensos con presupuestos mínimos. Mallorca (ascenso),
+      RCD Espanyol. Estilo muy conservador, bloque bajo, contraataque. Precio competitivo
+      pero estilo demasiado defensivo para la afición del Rayo.
+    rayo_compatibility: 5
+    rayo_notes: "Precio muy competitivo pero estilo muy conservador. La afición del Rayo no lo aceptaría bien."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Quique Setién"
+    age: 67
+    nationality: "Española (Cantabria)"
+    current_club: null
+    available: true
+    last_club: "FC Barcelona"
+    contract_status: "Libre"
+    salary_estimate_eur: 1500000
+    formation_preferred: "4-3-3"
+    style_main: "Posicional / Juego de posición puro"
+    style_tags: ["Posesión total", "Juego de posición", "Pases cortos", "Construcción lenta", "Identidad táctica fuerte"]
+    pressing_intensity: "Media"
+    possession_pct: 62
+    defensive_line: "Media-alta"
+    offensive_approach: "Ataque"
+    description: >
+      Referente del fútbol posicional en España. Betis (espectacular), Barcelona (fallido
+      por gestión de vestuario con Messi). Estilo muy definido, posesión dominante. Mayor
+      duda es la gestión de grupos conflictivos y el encaje en presupuestos limitados.
+    rayo_compatibility: 4
+    rayo_notes: "Estilo muy posesional, diferente al ADN del Rayo. Edad avanzada. Identidad táctica rígida."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Pepe Bordalás"
+    age: 61
+    nationality: "Española (Alicante)"
+    current_club: "Getafe CF"
+    available: false
+    last_club: "Getafe CF"
+    contract_status: "Acaba contrato jun-2026 (probable renovación)"
+    salary_estimate_eur: 1200000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque bajo / Muy defensivo"
+    style_tags: ["Bloque bajo", "Defensivo", "Intensidad física", "Fútbol directo", "Pragmatismo extremo"]
+    pressing_intensity: "Baja-media"
+    possession_pct: 39
+    defensive_line: "Baja"
+    offensive_approach: "Defensivo"
+    description: >
+      Maestro de la supervivencia con presupuestos mínimos. Getafe en Europa con fútbol
+      ultra-defensivo. Salida probable si Getafe desciende. No encaja con el ADN del Rayo
+      que quiere propuesta ofensiva.
+    rayo_compatibility: 3
+    rayo_notes: "Estilo opuesto al Rayo. Afición y club buscan propuesta más ofensiva."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Gaizka Garitano"
+    age: 52
+    nationality: "Española (Euskadi)"
+    current_club: null
+    available: true
+    last_club: "Athletic Club"
+    contract_status: "Libre"
+    salary_estimate_eur: 800000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Bloque medio / Organizado"
+    style_tags: ["Solidez", "Organización", "Perfil bajo", "Euskadi", "Presupuesto reducido"]
+    pressing_intensity: "Media"
+    possession_pct: 46
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Entrenador vasco con experiencia en Primera y Segunda. Paso irregular por Athletic,
+      Deportivo, Leganés. Sólido y ordenado. Precio competitivo. Perfil humilde que podría
+      encajar en Vallecas aunque sin el renombre de Arrasate.
+    rayo_compatibility: 6
+    rayo_notes: "Perfil adecuado y precio competitivo. Sin el renombre suficiente para el proyecto post-Conference."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Jorge Sampaoli"
+    age: 64
+    nationality: "Argentina / España"
+    current_club: "Stade Rennais"
+    available: false
+    last_club: "Stade Rennais"
+    contract_status: "Contrato vigente Rennes"
+    salary_estimate_eur: 2500000
+    formation_preferred: "3-1-4-2 / 4-3-3"
+    style_main: "Caos organizado / Alta intensidad"
+    style_tags: ["Ultra-pressing", "Alta intensidad", "Físico extremo", "Ataque total", "Impredecible"]
+    pressing_intensity: "Muy alta"
+    possession_pct: 52
+    defensive_line: "Alta"
+    offensive_approach: "Ataque"
+    description: >
+      Estilo caótico de alta energía. Chile (Mundial 2010, Copa América 2015), Sevilla,
+      Marsella, Atletico Mineiro, Rennes. Máxima intensidad física. Incompatible con el
+      perfil del Rayo por salario y estilo.
+    rayo_compatibility: 2
+    rayo_notes: "Salario y perfil incompatibles. Con equipo. Referencia táctica de intensidad extrema."
+    source: "Transfermarkt / conocimiento"
