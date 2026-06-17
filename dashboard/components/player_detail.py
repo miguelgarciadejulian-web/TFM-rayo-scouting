@@ -18,7 +18,7 @@ import dash_bootstrap_components as dbc
 from src.utils.config import settings
 from src.profiling.player_profile import (
     add_role_percentiles, profile_player_row, profile_single_player,
-    career_aggregate, most_recent_team, ROLE_DEFINITIONS, ROLE_LABELS,
+    career_aggregate, most_recent_team, ROLE_DEFINITIONS, ROLE_LABELS, METRIC_LABELS,
 )
 from src.fit.player_fit import evaluate_player_fit
 from src.utils.market import get_value
@@ -139,6 +139,105 @@ def _bar(label, pct, value=None):
         html.Span(f"{int(pct)}", style={"fontSize": "10px", "color": "#6B7280", "width": "44px",
                   "textAlign": "right", "marginLeft": "6px"}),
     ], style={"display": "flex", "alignItems": "center", "gap": "6px", "marginBottom": "5px"})
+
+
+def _style_transparency(prof: dict, pct_for_fn):
+    """Panel colapsable que explica el cálculo del estilo del jugador."""
+    if not prof or not prof.get("primary_role"):
+        return html.Div()
+
+    primary = prof["primary_role"]
+    role_scores = prof.get("role_scores", {})
+    role_def = ROLE_DEFINITIONS.get(primary, {})
+    weights = role_def.get("weights", {})
+    group = role_def.get("group", "")
+
+    # Roles del mismo grupo posicional, ordenados por score desc
+    group_roles = sorted(
+        [(r, s) for r, s in role_scores.items()
+         if ROLE_DEFINITIONS.get(r, {}).get("group") == group],
+        key=lambda x: x[1], reverse=True,
+    )
+    role_rows = []
+    for r, s in group_roles:
+        is_p = (r == primary)
+        role_rows.append(html.Tr([
+            html.Td(
+                f"{'★ ' if is_p else ''}{ROLE_LABELS.get(r, r)}",
+                style={"fontSize": "10px", "padding": "2px 5px",
+                       "fontWeight": "700" if is_p else "normal",
+                       "color": "#E30613" if is_p else "#374151"},
+            ),
+            html.Td(
+                f"{s:.0f}",
+                style={"fontSize": "10px", "padding": "2px 5px", "textAlign": "right",
+                       "fontWeight": "700" if is_p else "normal",
+                       "color": "#E30613" if is_p else "#374151"},
+            ),
+        ]))
+
+    # Breakdown de métricas del rol principal
+    metric_rows = []
+    w_used, score_sum = 0.0, 0.0
+    for metric, w in sorted(weights.items(), key=lambda x: x[1], reverse=True):
+        label = METRIC_LABELS.get(metric, metric)
+        pct_val = pct_for_fn(metric)
+        if pct_val is not None and not pd.isna(pct_val):
+            pf = float(pct_val)
+            w_used += w
+            score_sum += w * pf
+            color = "#15803D" if pf >= 70 else ("#B45309" if pf <= 30 else "#374151")
+            metric_rows.append(html.Tr([
+                html.Td(label, style={"fontSize": "10px", "padding": "2px 5px", "color": "#374151"}),
+                html.Td(f"{w:.0%}", style={"fontSize": "10px", "padding": "2px 5px",
+                         "textAlign": "center", "color": "#6B7280"}),
+                html.Td(f"{pf:.0f}", style={"fontSize": "10px", "padding": "2px 5px",
+                         "textAlign": "right", "fontWeight": "700", "color": color}),
+            ]))
+        else:
+            metric_rows.append(html.Tr([
+                html.Td(label, style={"fontSize": "10px", "padding": "2px 5px", "color": "#9CA3AF"}),
+                html.Td(f"{w:.0%}", style={"fontSize": "10px", "padding": "2px 5px",
+                         "textAlign": "center", "color": "#9CA3AF"}),
+                html.Td("—", style={"fontSize": "10px", "padding": "2px 5px",
+                         "textAlign": "right", "color": "#9CA3AF"}),
+            ]))
+
+    score_display = f"{score_sum / w_used:.1f}" if w_used > 0 else "n/d"
+    panel = html.Div([
+        html.P(f"Scores del grupo {group}:", style={
+            "fontSize": "10px", "fontWeight": "700", "color": "#9CA3AF", "margin": "0 0 3px"}),
+        html.Table([html.Tbody(role_rows)],
+            style={"width": "100%", "borderCollapse": "collapse", "marginBottom": "8px"}),
+        html.P(
+            f"Métricas del rol ★ {ROLE_LABELS.get(primary, primary)} "
+            f"(peso · percentil vs posición):",
+            style={"fontSize": "10px", "fontWeight": "700", "color": "#9CA3AF", "margin": "0 0 3px"}),
+        html.Table([
+            html.Thead(html.Tr([
+                html.Th("Métrica", style={"fontSize": "9px", "color": "#9CA3AF",
+                         "padding": "2px 5px", "textAlign": "left"}),
+                html.Th("Peso", style={"fontSize": "9px", "color": "#9CA3AF",
+                         "padding": "2px 5px", "textAlign": "center"}),
+                html.Th("Pct", style={"fontSize": "9px", "color": "#9CA3AF",
+                         "padding": "2px 5px", "textAlign": "right"}),
+            ])),
+            html.Tbody(metric_rows),
+        ], style={"width": "100%", "borderCollapse": "collapse"}),
+        html.P(
+            f"Score = Σ(peso × pct) / Σ(pesos) ≈ {score_display} / 100",
+            style={"fontSize": "9px", "color": "#9CA3AF",
+                   "fontStyle": "italic", "margin": "5px 0 0"}),
+    ], style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
+               "borderRadius": "6px", "padding": "8px 10px", "marginTop": "4px"})
+
+    return html.Details([
+        html.Summary("¿Cómo se calcula el estilo? ▸", style={
+            "fontSize": "10px", "color": "#6B7280", "cursor": "pointer",
+            "marginBottom": "0", "userSelect": "none",
+        }),
+        panel,
+    ], style={"marginTop": "4px", "marginBottom": "4px"})
 
 
 def _radar(role_scores: dict):
@@ -328,6 +427,7 @@ def build_detail(name, team=None, league=None, age=None,
                        style={"fontSize": "12px", "color": "#1D4ED8", "margin": "0 0 4px"}),
                 html.P(f"Roles secundarios: {', '.join(prof['secondary_roles_labels']) if prof and prof['secondary_roles_labels'] else '—'}",
                        style={"fontSize": "12px", "color": "#6B7280", "margin": "0 0 8px"}),
+                _style_transparency(prof, _pct_for) if prof else html.Div(),
                 html.Div([
                     html.Span(f"Confianza: {prof['confidence'] if prof else 'n/d'}", style={"fontSize": "10px",
                         "background": "#F3F4F6", "borderRadius": "99px", "padding": "2px 8px", "marginRight": "5px"}),

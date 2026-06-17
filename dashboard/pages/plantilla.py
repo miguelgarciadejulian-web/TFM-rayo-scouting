@@ -256,6 +256,124 @@ def _chart_mv_bars(players_all):
 
 
 # ---------------------------------------------------------------------------
+# Panel de transparencia de necesidades
+# ---------------------------------------------------------------------------
+
+_POS_LABEL = {
+    "GK": "Portero", "CB": "Central", "RB": "Lat. derecho", "LB": "Lat. izquierdo",
+    "DM": "Pivote", "CM": "Centrocampista", "AM": "Mediapunta",
+    "RW": "Extremo dcho.", "LW": "Extremo izdo.", "ST": "Delantero centro",
+}
+
+# Mínimo de jugadores por posición según formación
+_POS_TARGETS: dict[str, dict[str, int]] = {
+    "4-2-3-1": {"GK": 2, "CB": 2, "RB": 1, "LB": 1, "DM": 2, "CM": 0, "AM": 1, "RW": 1, "LW": 1, "ST": 1},
+    "4-3-3":   {"GK": 2, "CB": 2, "RB": 1, "LB": 1, "DM": 1, "CM": 2, "AM": 0, "RW": 1, "LW": 1, "ST": 1},
+    "4-4-2":   {"GK": 2, "CB": 2, "RB": 1, "LB": 1, "DM": 1, "CM": 1, "AM": 0, "RW": 1, "LW": 1, "ST": 2},
+    "3-5-2":   {"GK": 2, "CB": 3, "RB": 0, "LB": 0, "DM": 2, "CM": 1, "AM": 1, "RW": 1, "LW": 1, "ST": 2},
+}
+
+
+def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
+    """Panel de transparencia: formación → objetivo por posición → actual."""
+    formation = (cp.get("tactics", {}) or {}).get("base_formation", "4-2-3-1") or "4-2-3-1"
+    formation = str(formation).strip().replace(" ", "-")
+    target = _POS_TARGETS.get(formation, _POS_TARGETS["4-2-3-1"])
+
+    # Contar jugadores actuales por posición (solo propietarios, no cedidos de fuera)
+    counts: dict[str, int] = {}
+    for p in players_all:
+        pos = str(p.get("position", "")).upper()
+        if pos in target:
+            counts[pos] = counts.get(pos, 0) + 1
+
+    rows = []
+    for pos, needed in sorted(target.items(), key=lambda x: list(target.keys()).index(x[0])):
+        if needed == 0:
+            continue
+        have    = counts.get(pos, 0)
+        delta   = have - needed
+        if delta >= 0:
+            status_color = "#166534"
+            status_bg    = "#F0FDF4"
+            status_txt   = "✓ Cubierto"
+        elif delta == -1:
+            status_color = "#92400E"
+            status_bg    = "#FFFBEB"
+            status_txt   = "⚠ Reforzar"
+        else:
+            status_color = "#991B1B"
+            status_bg    = "#FFF1F2"
+            status_txt   = "✗ Falta"
+        rows.append(html.Tr([
+            html.Td(html.Span(pos, style={
+                "background": POS_COLOR.get(pos, ("#F3F4F6", "#374151"))[0],
+                "color": POS_COLOR.get(pos, ("#F3F4F6", "#374151"))[1],
+                "padding": "2px 8px", "borderRadius": "99px",
+                "fontSize": "10px", "fontWeight": "700",
+            })),
+            html.Td(_POS_LABEL.get(pos, pos), style={"fontSize": "11px", "color": "#374151", "padding": "5px 8px"}),
+            html.Td(str(needed), style={"fontSize": "11px", "textAlign": "center",
+                                        "color": "#6B7280", "padding": "5px 8px"}),
+            html.Td(str(have), style={"fontSize": "11px", "textAlign": "center",
+                                      "fontWeight": "700", "color": "#1A1A2E", "padding": "5px 8px"}),
+            html.Td(html.Span(status_txt, style={
+                "fontSize": "10px", "fontWeight": "600", "color": status_color,
+                "background": status_bg, "padding": "2px 8px", "borderRadius": "99px",
+            })),
+        ], style={"borderBottom": "1px solid #F3F4F6"}))
+
+    return html.Div([
+        html.Div([
+            html.I(className="ti ti-layout-list", style={"color": _ROJO, "marginRight": "6px"}),
+            html.Span("Necesidades 2026/27", style={
+                "fontSize": "10px", "fontWeight": "700", "color": "#9CA3AF",
+                "textTransform": "uppercase", "letterSpacing": ".06em",
+            }),
+        ], style={"marginBottom": "8px"}),
+        html.Div([
+            html.Span("Formación base: ", style={"fontSize": "10px", "color": "#9CA3AF"}),
+            html.Span(formation, style={"fontSize": "10px", "fontWeight": "700",
+                                        "color": _AZUL, "marginRight": "8px"}),
+            html.Span("(desde club_profile.yaml → tactics.base_formation)",
+                      style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic"}),
+        ], style={"marginBottom": "8px"}),
+        html.Table([
+            html.Thead(html.Tr([
+                html.Th("Pos.", style={"fontSize": "9px", "color": "#9CA3AF",
+                                       "textTransform": "uppercase", "padding": "4px 8px",
+                                       "borderBottom": f"2px solid {_ROJO}"}),
+                html.Th("Rol", style={"fontSize": "9px", "color": "#9CA3AF",
+                                      "textTransform": "uppercase", "padding": "4px 8px",
+                                      "borderBottom": f"2px solid {_ROJO}"}),
+                html.Th("Objetivo", style={"fontSize": "9px", "color": "#9CA3AF",
+                                           "textTransform": "uppercase", "padding": "4px 8px",
+                                           "textAlign": "center",
+                                           "borderBottom": f"2px solid {_ROJO}"}),
+                html.Th("Actual", style={"fontSize": "9px", "color": "#9CA3AF",
+                                         "textTransform": "uppercase", "padding": "4px 8px",
+                                         "textAlign": "center",
+                                         "borderBottom": f"2px solid {_ROJO}"}),
+                html.Th("Estado", style={"fontSize": "9px", "color": "#9CA3AF",
+                                          "textTransform": "uppercase", "padding": "4px 8px",
+                                          "borderBottom": f"2px solid {_ROJO}"}),
+            ])),
+            html.Tbody(rows),
+        ], style={"width": "100%", "borderCollapse": "collapse", "marginBottom": "10px"}),
+        html.Div([
+            html.Span("Metodología: ", style={"fontSize": "9px", "fontWeight": "700", "color": "#6B7280"}),
+            html.Span(
+                "Los objetivos por posición se calculan automáticamente desde la formación base. "
+                "El recuento actual usa las posiciones del YAML (name, position) — "
+                "no valores estáticos definidos a mano.",
+                style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic"},
+            ),
+        ]),
+    ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
+              "padding": "14px 16px", "boxShadow": "0 1px 3px rgba(0,0,0,.06)"})
+
+
+# ---------------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------------
 
@@ -362,29 +480,7 @@ def layout(**_params):
                           "padding": "14px 16px", "marginBottom": "12px",
                           "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
 
-                html.Div([
-                    html.P("Necesidades 2026/27", style={"fontSize": "10px", "fontWeight": "600",
-                        "color": "#9CA3AF", "textTransform": "uppercase",
-                        "letterSpacing": ".06em", "marginBottom": "10px"}),
-                    *[html.Div([
-                        html.Div([
-                            html.Span(n.get("position", ""), style={
-                                "fontWeight": "700", "fontSize": "13px",
-                                "color": _AZUL, "minWidth": "34px"}),
-                            html.Span(
-                                URGENCY_COLOR.get(n.get("urgency", ""), ("#F3F4F6", "#374151", "?"))[2],
-                                style={"fontSize": "10px", "fontWeight": "600",
-                                       "padding": "1px 7px", "borderRadius": "99px",
-                                       "background": URGENCY_COLOR.get(n.get("urgency", ""), ("#F3F4F6", "#374151", "?"))[0],
-                                       "color": URGENCY_COLOR.get(n.get("urgency", ""), ("#F3F4F6", "#374151", "?"))[1]}),
-                        ], style={"display": "flex", "alignItems": "center",
-                                  "gap": "6px", "marginBottom": "4px"}),
-                        html.P(n.get("reason", ""), style={"fontSize": "11px", "color": "#6B7280",
-                            "margin": "0 0 10px", "lineHeight": "1.5",
-                            "paddingBottom": "10px", "borderBottom": "1px solid #F3F4F6"}),
-                    ]) for n in needs],
-                ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
-                          "padding": "14px 16px", "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
+                _needs_panel(cp, players_all),
             ], md=4),
         ], className="g-3 mb-3"),
 
@@ -405,6 +501,7 @@ def layout(**_params):
                               "color": "#374151", "marginBottom": "8px"}),
                 html.P(
                     "Modifica directamente las celdas. Fin contrato en formato AAAA-MM-DD. "
+                    "Valor TM en euros (eAAA-MM-DD. "
                     "Valor TM en euros (ej: 5000000 = 5M€).",
                     style={"fontSize": "11px", "color": "#6B7280", "marginBottom": "12px"}),
                 dash_table.DataTable(
@@ -499,26 +596,21 @@ def _save_contracts(n, rows):
     Input({"type": "plantilla-row", "name": dash.ALL}, "n_clicks"),
     prevent_initial_call=True,
 )
-def _go_to_player(n_clicks_list):
-    if not any(n_clicks_list):
+def _nav_to_player(clicks):
+    import urllib.parse as _up
+    ctx = dash.callback_context
+    if not ctx.triggered:
         return no_update
-    ctx_cb = dash.callback_context
-    if not ctx_cb.triggered:
+    prop = ctx.triggered[0]["prop_id"]
+    if not prop or '"name":' not in prop:
         return no_update
-    triggered_id = ctx_cb.triggered[0]["prop_id"]
-    import re
-    m = re.search(r'"name":"([^"]+)"', triggered_id)
-    if not m:
-        return no_update
-    name = m.group(1)
-    nombre = urllib.parse.quote(name)
-    cp = club_profile()
-    sq = cp.get("squad_2025_26", {})
-    team = "Rayo Vallecano de Madrid"
-    for grp in sq.values():
-        for p in grp if isinstance(grp, list) else []:
-            if p.get("name") == name:
-                team = p.get("team", team)
-                break
-    equipo = urllib.parse.quote(team)
-    return f"/jugador?name={nombre}&team={equipo}"
+    import json as _json
+    try:
+        id_part = prop.split(".")[0]
+        id_dict = _json.loads(id_part)
+        name = id_dict.get("name", "")
+        if name:
+            return f"/jugador?name={_up.quote(name)}"
+    except Exception:
+        pass
+    return no_update

@@ -1,10 +1,8 @@
 """
 coach_dossier.py
 ================
-Informe PDF ejecutivo de un entrenador: portada profesional con recomendacion,
-foto, estilo de juego calculado (radar + ejes tácticos), comparativa vs ADN Rayo,
-evaluacion detallada (score, subscores con pesos, pros/contras, riesgos),
-equipos dirigidos y metodologia de calculo transparente.
+Informe PDF ejecutivo de un entrenador — diseno moderno v3.
+Dark hero card + KPI strip + pros/contras + radar + ADN comparison + fit eval + teams.
 """
 from __future__ import annotations
 import csv
@@ -29,40 +27,49 @@ from reportlab.platypus import (
 from src.utils.config import settings
 
 # ── Colores ───────────────────────────────────────────────────────────────────
-RAYO_RED  = colors.HexColor("#E30613")
-RAYO_DARK = colors.HexColor("#1A1A2E")
-C_GREEN   = colors.HexColor("#166534")
-C_AMBER   = colors.HexColor("#92400E")
-C_LIGHT   = colors.HexColor("#FFF8F8")
-C_BORDER  = colors.HexColor("#FECACA")
-C_GREY_BG = colors.HexColor("#FAFAFA")
-C_GREY_LN = colors.HexColor("#E5E7EB")
-C_BLUE_BG = colors.HexColor("#EFF6FF")
-C_BLUE    = colors.HexColor("#1D4ED8")
+C_RED      = colors.HexColor("#E30613")
+C_DARK     = colors.HexColor("#111827")
+C_DARK2    = colors.HexColor("#1F2937")
+C_MID      = colors.HexColor("#374151")
+C_GREY     = colors.HexColor("#9CA3AF")
+C_BG       = colors.HexColor("#F8FAFC")
+C_BORDER   = colors.HexColor("#E2E8F0")
+C_GREEN    = colors.HexColor("#166534")
+C_AMBER    = colors.HexColor("#92400E")
+C_RED_DARK = colors.HexColor("#9F1239")
+C_GREEN_BG = colors.HexColor("#F0FDF4")
+C_AMBER_BG = colors.HexColor("#FFFBEB")
+C_RED_BG   = colors.HexColor("#FFF1F2")
+C_WHITE    = colors.white
 
 ROOT = Path(__file__).resolve().parents[2]
 PROC = Path(settings()["paths"]["data_processed"])
 
+PAGE_W, PAGE_H = A4
+MARG      = 1.6 * cm
+CONTENT_W = PAGE_W - 2 * MARG
+
 AXES = [
-    ("tendencia_ofensiva",    "Ofensivo"),
-    ("solidez_defensiva",     "Defensivo"),
-    ("presion_alta",          "Presion"),
-    ("posesion",              "Posesion"),
-    ("verticalidad",          "Verticalidad"),
-    ("intensidad_defensiva",  "Intensidad def."),
-    ("uso_transiciones",      "Transiciones"),
-    ("flexibilidad_tactica",  "Flexibilidad"),
+    ("tendencia_ofensiva",      "Ofensivo"),
+    ("solidez_defensiva",       "Defensivo"),
+    ("presion_alta",            "Presion"),
+    ("posesion",                "Posesion"),
+    ("verticalidad",            "Verticalidad"),
+    ("intensidad_defensiva",    "Intensidad def."),
+    ("uso_transiciones",        "Transiciones"),
+    ("flexibilidad_tactica",    "Flexibilidad"),
 ]
 
 RISK_LABELS = {
-    "deportivo":                "Deportivo",
-    "economico":                "Economico",
-    "clausula":                 "Clausula",
-    "adaptacion_laliga":        "Adaptacion LaLiga",
+    "deportivo":                  "Deportivo",
+    "economico":                  "Economico",
+    "clausula":                   "Clausula",
+    "adaptacion_laliga":          "Adaptacion LaLiga",
     "incompatibilidad_plantilla": "Incompat. plantilla",
 }
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
 def _n(s):
     return unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower().strip()
 
@@ -77,13 +84,33 @@ def _coach_photo(name):
     return None
 
 
+def _load_photo_bytes(name):
+    url = _coach_photo(name)
+    if not url:
+        return None
+    if url.startswith("/assets/"):
+        fp = ROOT / "dashboard" / url.lstrip("/")
+        if fp.exists():
+            return fp.read_bytes()
+    elif url.startswith("http"):
+        try:
+            import requests
+            r = requests.get(url, timeout=10,
+                             headers={"User-Agent": "RayoScoutingTool/1.0"})
+            if r.status_code == 200 and r.content:
+                return r.content
+        except Exception:
+            pass
+    return None
+
+
 def _scaled_image(img_bytes, w_cm, h_cm):
     try:
         from PIL import Image as _PIL
         im = _PIL.open(io.BytesIO(img_bytes)).convert("RGB")
-        im.thumbnail((420, 520))
+        im.thumbnail((int(w_cm * 40), int(h_cm * 40)))
         out = io.BytesIO()
-        im.save(out, format="JPEG", quality=82)
+        im.save(out, format="JPEG", quality=85)
         out.seek(0)
         return Image(out, width=w_cm * cm, height=h_cm * cm)
     except Exception:
@@ -101,17 +128,12 @@ def _manual(name):
 
 
 def _load_dna_target():
-    """
-    Carga el ADN objetivo del Rayo desde datos reales (team_seasons.parquet
-    y club_profile.yaml), via dynamic_dna.build_dynamic_dna().
-    """
     try:
         from src.fit.dynamic_dna import build_dynamic_dna
         dna = build_dynamic_dna()
         return dna.get("target_style", {})
     except Exception:
         pass
-    # Fallback: leer el YAML estatico si el modulo dinamico no esta disponible
     try:
         import yaml
         f = ROOT / "config" / "rayo_dna.yaml"
@@ -129,77 +151,199 @@ def _fmt_salary(v):
     return f"{v / 1e6:.1f}M EUR/ano" if v >= 1e6 else f"{v / 1e3:.0f}K EUR/ano"
 
 
+# ── Estilos ───────────────────────────────────────────────────────────────────
+def _styles():
+    base = getSampleStyleSheet()
+
+    def S(name, **kw):
+        return ParagraphStyle(name, parent=base["BodyText"], **kw)
+
+    return {
+        "hero_name": S("hero_name", fontName="Helvetica-Bold", fontSize=20,
+                       textColor=C_WHITE, leading=24),
+        "hero_sub":  S("hero_sub",  fontName="Helvetica",      fontSize=10,
+                       textColor=C_RED, leading=14),
+        "hero_info": S("hero_info", fontName="Helvetica",      fontSize=9,
+                       textColor=colors.HexColor("#D1D5DB"), leading=13),
+        "kpi_label": S("kpi_label", fontName="Helvetica",      fontSize=7,
+                       textColor=C_GREY, leading=10),
+        "kpi_value": S("kpi_value", fontName="Helvetica-Bold", fontSize=13,
+                       textColor=C_DARK, leading=17),
+        "section":   S("section",   fontName="Helvetica-Bold", fontSize=10,
+                       textColor=C_WHITE, leading=13),
+        "body":      S("body",      fontName="Helvetica",      fontSize=9,
+                       textColor=C_MID, leading=13),
+        "small":     S("small",     fontName="Helvetica",      fontSize=7.5,
+                       textColor=C_GREY, leading=11),
+        "italic":    S("italic",    fontName="Helvetica-Oblique", fontSize=7.5,
+                       textColor=C_GREY, leading=11),
+        "tag_green": S("tag_green", fontName="Helvetica-Bold", fontSize=8,
+                       textColor=C_GREEN,    leading=12),
+        "tag_amber": S("tag_amber", fontName="Helvetica-Bold", fontSize=8,
+                       textColor=C_AMBER,    leading=12),
+        "tag_red":   S("tag_red",   fontName="Helvetica-Bold", fontSize=8,
+                       textColor=C_RED_DARK, leading=12),
+        "cell_hdr":  S("cell_hdr",  fontName="Helvetica-Bold", fontSize=9,
+                       textColor=C_DARK, leading=12),
+    }
+
+
+def _section_header(text, st):
+    """Header con borde rojo izquierdo — igual que player_dossier v3."""
+    accent = Table([[""]], colWidths=[4], rowHeights=[18])
+    accent.setStyle(TableStyle([
+        ("BACKGROUND",   (0, 0), (0, 0), C_RED),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING",   (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 0),
+    ]))
+    label = Paragraph(
+        f"<b>{text.upper()}</b>",
+        ParagraphStyle("sh_lbl", fontName="Helvetica-Bold",
+                       fontSize=9, textColor=C_DARK, leading=13))
+    hdr = Table([[accent, label]], colWidths=[10, CONTENT_W - 10])
+    hdr.setStyle(TableStyle([
+        ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING",   (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 0),
+        ("LEFTPADDING",  (1, 0), (1, -1), 8),
+    ]))
+    return hdr
+
+
+def _tbl(data, col_widths=None, fs=8, hdr_bg=None):
+    """Tabla con cabecera oscura y filas alternadas."""
+    if hdr_bg is None:
+        hdr_bg = C_DARK2
+    t = Table(data, repeatRows=1, colWidths=col_widths)
+    t.setStyle(TableStyle([
+        ("BACKGROUND",      (0, 0), (-1, 0), hdr_bg),
+        ("TEXTCOLOR",       (0, 0), (-1, 0), C_WHITE),
+        ("FONTNAME",        (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE",        (0, 0), (-1, -1), fs),
+        ("GRID",            (0, 0), (-1, -1), 0.3, C_BORDER),
+        ("ROWBACKGROUNDS",  (0, 1), (-1, -1), [colors.white, C_BG]),
+        ("VALIGN",          (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING",     (0, 0), (-1, -1), 6),
+        ("RIGHTPADDING",    (0, 0), (-1, -1), 6),
+        ("TOPPADDING",      (0, 0), (-1, -1), 3),
+        ("BOTTOMPADDING",   (0, 0), (-1, -1), 3),
+    ]))
+    return t
+
+
+def _kpi_card(label, value, bg=None, fg=None, w=3.5 * cm):
+    if bg is None:
+        bg = colors.white
+    if fg is None:
+        fg = C_DARK
+    val_style = ParagraphStyle("kv", fontName="Helvetica-Bold", fontSize=13,
+                                textColor=fg, leading=16)
+    lbl_style = ParagraphStyle("kl", fontName="Helvetica",      fontSize=7,
+                                textColor=C_GREY, leading=10)
+    inner = Table([
+        [Paragraph(label.upper(), lbl_style)],
+        [Paragraph(str(value),    val_style)],
+    ], colWidths=[w - 14])
+    inner.setStyle(TableStyle([
+        ("LEFTPADDING",  (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("TOPPADDING",   (0, 0), (-1, -1), 1),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 1),
+    ]))
+    card = Table([[inner]], colWidths=[w])
+    card.setStyle(TableStyle([
+        ("BACKGROUND",   (0, 0), (-1, -1), bg),
+        ("BOX",          (0, 0), (-1, -1), 0.5, C_BORDER),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 8),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ("TOPPADDING",   (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 8),
+    ]))
+    return card
+
+
 # ── Graficos ──────────────────────────────────────────────────────────────────
-def _fig(fig, w_cm=11):
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
-    plt.close(fig)
-    buf.seek(0)
-    return Image(buf, width=w_cm * cm, height=w_cm * cm)
-
-
-def _radar(axes):
+def _radar_chart(axes, w_cm=8.5):
     items = [(lab, axes.get(k)) for k, lab in AXES if axes.get(k) is not None]
     if len(items) < 3:
         return None
     labs = [i[0] for i in items]
     vals = [float(i[1]) for i in items]
-    ang = np.linspace(0, 2 * np.pi, len(labs), endpoint=False).tolist()
+    N    = len(labs)
+    ang  = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
     vals_c = vals + vals[:1]
-    ang_c  = ang + ang[:1]
-    fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-    ax.set_facecolor("#FFF8F8")
+    ang_c  = ang  + ang[:1]
+
+    fig, ax = plt.subplots(figsize=(5.5, 5.5), subplot_kw=dict(polar=True))
+    ax.set_facecolor("#F9FAFB")
     fig.patch.set_facecolor("white")
-    ax.plot(ang_c, vals_c, color="#E30613", linewidth=2.5)
-    ax.fill(ang_c, vals_c, color="#E30613", alpha=0.20)
+    for pct in [25, 50, 75]:
+        ax.plot(ang_c, [pct] * (N + 1), color="#E5E7EB", linewidth=0.8, zorder=1)
+    ax.fill(ang_c, vals_c, color="#E30613", alpha=0.18, zorder=2)
+    ax.plot(ang_c, vals_c, color="#E30613", linewidth=2.5, zorder=3)
+    ax.scatter(ang, vals, color="#E30613", s=30, zorder=4)
     ax.set_xticks(ang)
-    ax.set_xticklabels(labs, fontsize=8)
+    ax.set_xticklabels(labs, fontsize=8, color="#374151")
     ax.set_ylim(0, 100)
-    ax.set_yticks([25, 50, 75])
-    ax.set_yticklabels(["25", "50", "75"], fontsize=6, color="#9CA3AF")
-    ax.grid(color="#E5E7EB", linewidth=0.7)
-    return _fig(fig, 10)
+    ax.set_yticks([])
+    ax.yaxis.set_visible(False)
+    ax.spines["polar"].set_color("#E5E7EB")
+    ax.grid(False)
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=160, bbox_inches="tight",
+                facecolor="white", edgecolor="none")
+    plt.close(fig)
+    buf.seek(0)
+    return Image(buf, width=w_cm * cm, height=w_cm * cm)
 
 
-def _adn_comparison_chart(axes, dna_target):
-    """Barras agrupadas: estilo del tecnico (rojo) vs ADN objetivo Rayo (gris)."""
+def _adn_chart(axes, dna_target, w_cm=14.0, h_cm=4.5):
     items = [(lab, axes.get(k), dna_target.get(k, {}).get("ideal"))
              for k, lab in AXES if axes.get(k) is not None]
     if not items:
         return None
-    labels     = [i[0] for i in items]
-    coach_vals = [float(i[1]) for i in items]
+    labels      = [i[0] for i in items]
+    coach_vals  = [float(i[1]) for i in items]
     target_vals = [float(i[2]) if i[2] is not None else 50.0 for i in items]
     x     = np.arange(len(labels))
-    width = 0.38
-    fig, ax = plt.subplots(figsize=(9, 3.5))
-    ax.set_facecolor("#FAFAFA")
+    width = 0.35
+    fig, ax = plt.subplots(figsize=(w_cm * 0.45, h_cm * 0.45))
+    ax.set_facecolor("#F9FAFB")
     fig.patch.set_facecolor("white")
-    bars1 = ax.bar(x - width / 2, coach_vals, width,
-                   label="Tecnico", color="#E30613", alpha=0.85)
-    bars2 = ax.bar(x + width / 2, target_vals, width,
-                   label="ADN Rayo (objetivo)", color="#9CA3AF", alpha=0.65, hatch="//")
+    ax.bar(x - width / 2, coach_vals,  width, label="Tecnico",
+           color="#E30613", alpha=0.88, zorder=3)
+    ax.bar(x + width / 2, target_vals, width, label="ADN Rayo",
+           color="#9CA3AF", alpha=0.65, hatch="//", zorder=3)
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=22, ha="right", fontsize=8)
-    ax.set_ylim(0, 115)
-    ax.set_ylabel("Score 0-100", fontsize=8, color="#6B7280")
-    ax.legend(fontsize=8, loc="upper right")
-    ax.axhline(50, color="#E5E7EB", linewidth=0.8, linestyle="--")
+    ax.set_xticklabels(labels, rotation=20, ha="right", fontsize=7.5)
+    ax.set_ylim(0, 118)
+    ax.set_ylabel("Score 0-100", fontsize=7.5, color="#6B7280")
+    ax.axhline(50, color="#D1D5DB", linewidth=0.8, linestyle="--", zorder=1)
+    ax.legend(fontsize=8, loc="upper right", framealpha=0.8)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    for b1, b2 in zip(bars1, bars2):
-        diff  = b1.get_height() - b2.get_height()
-        color = "#166534" if abs(diff) <= 10 else "#9F1239"
-        ax.text(b1.get_x() + b1.get_width() / 2, b1.get_height() + 2,
-                f"{diff:+.0f}", ha="center", fontsize=7, color=color, fontweight="bold")
-    ax.set_title("Estilo del tecnico vs ADN objetivo Rayo  (diferencia en rojo si > 10 pts)",
-                 fontsize=9, color="#374151", pad=6)
-    plt.tight_layout()
+    ax.spines["left"].set_color("#E5E7EB")
+    ax.spines["bottom"].set_color("#E5E7EB")
+    ax.tick_params(colors="#6B7280")
+    bars = ax.containers
+    if len(bars) >= 2:
+        for b1, b2 in zip(bars[0], bars[1]):
+            diff  = b1.get_height() - b2.get_height()
+            color = "#166534" if abs(diff) <= 10 else "#9F1239"
+            ax.text(b1.get_x() + b1.get_width() / 2, b1.get_height() + 2,
+                    f"{diff:+.0f}", ha="center", fontsize=6.5,
+                    color=color, fontweight="bold")
+    plt.tight_layout(pad=0.5)
     buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=160, bbox_inches="tight")
+    fig.savefig(buf, format="png", dpi=160, bbox_inches="tight",
+                facecolor="white", edgecolor="none")
     plt.close(fig)
     buf.seek(0)
-    return Image(buf, width=14 * cm, height=5.5 * cm)
+    return Image(buf, width=w_cm * cm, height=h_cm * cm)
 
 
 def _team_seasons_table(name):
@@ -211,20 +355,24 @@ def _team_seasons_table(name):
     ten = ten[ten["coach"].map(_n) == _n(name)]
     if ten.empty:
         return None
-    ts  = pd.read_parquet(tsf)
-    rows = [["Temp.", "Equipo", "Pos%", "Tiros/p", "Goles/p", "Encaj/p", "Recup/p", "PC cero"]]
+    ts   = pd.read_parquet(tsf)
+    rows = [["Temp.", "Equipo", "Pos%", "Tiros/p", "Goles/p",
+             "Encaj/p", "Recup/p", "PC cero"]]
     for _, t in ten.sort_values("season").iterrows():
         m = ts[
             (ts["league"] == t["league"]) &
-            (ts["team"].str.contains(str(t["team"]).split()[0], case=False, na=False)) &
+            (ts["team"].str.contains(
+                str(t["team"]).split()[0], case=False, na=False)) &
             (ts["season"].astype(str) == str(t["season"]))
         ]
         if m.empty:
             continue
         r = m.iloc[0]
         g = float(r.get("games_played") or 0) or 1
+
         def pg(c):
             return f"{float(r.get(c) or 0) / g:.1f}"
+
         rows.append([
             str(t["season"]), str(t["team"])[:22],
             str(int(r.get("possession_percentage") or 0)),
@@ -234,361 +382,317 @@ def _team_seasons_table(name):
     return rows if len(rows) > 1 else None
 
 
-# ── Helpers de tabla ──────────────────────────────────────────────────────────
-def _tbl(data, head_bg=RAYO_RED, col_widths=None, fs=8):
-    t = Table(data, repeatRows=1, colWidths=col_widths)
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), head_bg),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), fs),
-        ("GRID", (0, 0), (-1, -1), 0.3, C_GREY_LN),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, C_GREY_BG]),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 5),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 5),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-    ]))
-    return t
-
-
-def _kpi_tbl(rows, col_widths=None):
-    t = Table(rows, colWidths=col_widths)
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), C_LIGHT),
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
-        ("GRID", (0, 0), (-1, -1), 0.3, C_BORDER),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-    ]))
-    return t
-
-
 # ── Constructor principal ─────────────────────────────────────────────────────
 def build_coach_dossier(name):
     profiles = json.load(open(PROC / "coach_profiles.json", encoding="utf-8"))
     c = next((x for x in profiles if _n(x["name"]) == _n(name)), None)
     if c is None:
         raise ValueError(f"Entrenador '{name}' no encontrado")
-    ev   = c.get("evaluation", {})
-    axes = c.get("axes", {})
-    man  = _manual(c["name"])
+
+    ev         = c.get("evaluation", {})
+    axes       = c.get("axes", {})
+    man        = _manual(c["name"])
     dna_target = _load_dna_target()
+    st         = _styles()
+    story      = []
 
-    styles = getSampleStyleSheet()
-    h2     = ParagraphStyle("h2", parent=styles["Heading2"], textColor=RAYO_RED,
-                             fontSize=11, spaceBefore=10, spaceAfter=2)
-    body   = ParagraphStyle("body", parent=styles["BodyText"], fontSize=9, leading=13)
-    small  = ParagraphStyle("small", parent=styles["BodyText"], fontSize=7.5,
-                            textColor=colors.HexColor("#6B7280"), leading=11)
-    italic = ParagraphStyle("italic", parent=styles["BodyText"], fontSize=7.5,
-                            textColor=colors.HexColor("#9CA3AF"), leading=11,
-                            fontName="Helvetica-Oblique")
-    story = []
-
-    # ── Banda roja de portada ─────────────────────────────────────────────────
+    # ── Banda roja de encabezado ──────────────────────────────────────────────
     hdr_left = Paragraph(
         "<font color='white'><b>RAYO VALLECANO  —  DIRECCION DEPORTIVA</b></font>",
-        ParagraphStyle("hl", parent=styles["BodyText"], fontSize=9,
-                       textColor=colors.white, leading=12))
+        ParagraphStyle("hl", fontName="Helvetica-Bold", fontSize=9,
+                       textColor=C_WHITE, leading=12))
     hdr_right = Paragraph(
         f"<font color='white'>{date.today().strftime('%d %b %Y').lstrip('0')}</font>",
-        ParagraphStyle("hr", parent=styles["BodyText"], fontSize=9,
-                       textColor=colors.white, leading=12, alignment=2))
-    hdr_row = Table([[hdr_left, hdr_right]], colWidths=[11 * cm, 5.5 * cm])
+        ParagraphStyle("hr", fontName="Helvetica", fontSize=9,
+                       textColor=C_WHITE, leading=12, alignment=2))
+    hdr_row = Table([[hdr_left, hdr_right]],
+                    colWidths=[11 * cm, CONTENT_W - 11 * cm])
     hdr_row.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), RAYO_RED),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 8),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 8),
-        ("TOPPADDING", (0, 0), (-1, -1), 7),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+        ("BACKGROUND",   (0, 0), (-1, -1), C_RED),
+        ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+        ("TOPPADDING",   (0, 0), (-1, -1), 7),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 7),
     ]))
     story.append(hdr_row)
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 6))
 
-    # ── Foto + bloque info ────────────────────────────────────────────────────
-    foto = ""
-    url  = _coach_photo(c["name"])
-    img_bytes = None
-    if url:
-        if url.startswith("/assets/"):
-            fp = ROOT / "dashboard" / url.lstrip("/")
-            if fp.exists():
-                img_bytes = fp.read_bytes()
-        elif url.startswith("http"):
-            try:
-                import requests
-                r = requests.get(url, timeout=10, headers={"User-Agent": "RayoScoutingTool/1.0"})
-                if r.status_code == 200 and r.content:
-                    img_bytes = r.content
-            except Exception:
-                img_bytes = None
-    if img_bytes:
-        try:
-            foto = _scaled_image(img_bytes, 3, 3.6)
-        except Exception:
-            foto = ""
-
+    # ── Hero card oscuro ──────────────────────────────────────────────────────
     score_10  = ev.get("score_10", 0)
     score_num = float(score_10) if score_10 not in (None, "n/d", "") else 0.0
-
-    # Caja de recomendacion segun Fit Rayo
     if score_num >= 7:
-        rec_label = "RECOMENDADO"
-        rec_color = colors.HexColor("#166534")
-        rec_bg    = colors.HexColor("#F0FDF4")
+        rec_label, rec_color, rec_bg = "RECOMENDADO",    C_GREEN,    C_GREEN_BG
     elif score_num >= 5:
-        rec_label = "VALORAR"
-        rec_color = colors.HexColor("#92400E")
-        rec_bg    = colors.HexColor("#FFFBEB")
+        rec_label, rec_color, rec_bg = "VALORAR",        C_AMBER,    C_AMBER_BG
     else:
-        rec_label = "NO RECOMENDADO"
-        rec_color = colors.HexColor("#9F1239")
-        rec_bg    = colors.HexColor("#FFF1F2")
+        rec_label, rec_color, rec_bg = "NO RECOMENDADO", C_RED_DARK, C_RED_BG
 
-    name_para = Paragraph(
-        f"<b>{c['name']}</b>",
-        ParagraphStyle("nm", parent=styles["BodyText"], fontSize=15,
-                       textColor=RAYO_DARK, leading=18, fontName="Helvetica-Bold"))
-    sub_para = Paragraph(
-        f"{c.get('age', '?')} anos  ·  {c.get('nationality', '')}  ·  "
-        f"Ultimo club: {c.get('last_club', 'n/d')}",
-        ParagraphStyle("sub", parent=styles["BodyText"], fontSize=9,
-                       textColor=RAYO_RED, leading=12))
-    avail_para = Paragraph(
-        f"Situacion: {'Libre' if c.get('available') else 'Con equipo'}  ·  "
-        f"{c.get('contract_status', '')}",
-        small)
-    style_para = Paragraph(
-        f"<b>Estilo:</b>  {c.get('style_main', 'n/d')}",
-        body)
-    tags_para = Paragraph(
-        ", ".join(c.get("style_tags", []) or []), small)
+    img_bytes = _load_photo_bytes(c["name"])
+    foto_img  = None
+    if img_bytes:
+        try:
+            foto_img = _scaled_image(img_bytes, 3.0, 3.5)
+        except Exception:
+            foto_img = None
 
-    left_col = [name_para, Spacer(1, 3), sub_para, Spacer(1, 3),
-                avail_para, Spacer(1, 5), style_para, Spacer(1, 2), tags_para]
-
-    kpi_data = [
-        ["Fit Rayo",              f"{score_10}/10"],
-        ["Salario estimado",      _fmt_salary(c.get("salary_estimate_eur"))],
-        ["Exp. LaLiga",           f"{c.get('laliga_seasons', 0)} temporadas"],
-        ["Recomendacion",         rec_label],
+    hero_texts = [
+        Paragraph(c["name"], st["hero_name"]),
+        Spacer(1, 4),
+        Paragraph(
+            f"{c.get('nationality', '')}  ·  {c.get('age', '?')} anos  ·  "
+            f"Ultimo club: {c.get('last_club', 'n/d')}",
+            st["hero_sub"]),
+        Spacer(1, 4),
+        Paragraph(f"<b>Estilo:</b>  {c.get('style_main', 'n/d')}", st["hero_info"]),
+        Paragraph(", ".join(c.get("style_tags", []) or []), st["hero_info"]),
+        Spacer(1, 4),
+        Paragraph(
+            f"Situacion: {'Libre' if c.get('available') else 'Con equipo'}  ·  "
+            f"{c.get('contract_status', '')}",
+            st["hero_info"]),
     ]
-    kpi_t = _kpi_tbl(kpi_data, col_widths=[4 * cm, 3.5 * cm])
-    kpi_t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), C_LIGHT),
-        ("BACKGROUND", (3, 0), (3, 0), rec_bg),
-        ("FONTSIZE", (0, 0), (-1, -1), 8),
-        ("GRID", (0, 0), (-1, -1), 0.3, C_BORDER),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("TEXTCOLOR", (1, 3), (1, 3), rec_color),
-        ("FONTNAME", (1, 3), (1, 3), "Helvetica-Bold"),
-    ]))
 
-    if foto:
-        cw = [3.4 * cm, 7.5 * cm, 5.5 * cm]
-        main_row = [[foto, left_col, kpi_t]]
+    if foto_img:
+        hero_inner = Table(
+            [[foto_img, hero_texts]],
+            colWidths=[3.4 * cm, CONTENT_W - 3.4 * cm - 16])
+        hero_inner.setStyle(TableStyle([
+            ("VALIGN",       (0, 0), (-1, -1), "MIDDLE"),
+            ("LEFTPADDING",  (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("LEFTPADDING",  (1, 0), (1, -1), 12),
+        ]))
     else:
-        cw = [11 * cm, 5.5 * cm]
-        main_row = [[left_col, kpi_t]]
+        hero_inner = Table([[hero_texts]], colWidths=[CONTENT_W - 16])
+        hero_inner.setStyle(TableStyle([
+            ("LEFTPADDING",  (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ]))
 
-    mt = Table([main_row], colWidths=cw)
-    mt.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP")]))
-    story.append(mt)
+    hero_card = Table([[hero_inner]], colWidths=[CONTENT_W])
+    hero_card.setStyle(TableStyle([
+        ("BACKGROUND",   (0, 0), (-1, -1), C_DARK),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 12),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 12),
+        ("TOPPADDING",   (0, 0), (-1, -1), 14),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 14),
+    ]))
+    story.append(hero_card)
+    story.append(Spacer(1, 8))
+
+    # ── KPI strip ─────────────────────────────────────────────────────────────
+    sal_str = _fmt_salary(c.get("salary_estimate_eur"))
+    ll_str  = f"{c.get('laliga_seasons', 0)} temp."
+    kpi_w   = CONTENT_W / 4
+
+    kpi_strip = Table([[
+        _kpi_card("Recomendacion", rec_label, bg=rec_bg, fg=rec_color, w=kpi_w),
+        _kpi_card("Fit Rayo",      f"{score_10}/10",   w=kpi_w),
+        _kpi_card("Salario est.",  sal_str,             w=kpi_w),
+        _kpi_card("Exp. LaLiga",   ll_str,              w=kpi_w),
+    ]], colWidths=[kpi_w] * 4)
+    kpi_strip.setStyle(TableStyle([
+        ("LEFTPADDING",  (0, 0), (-1, -1), 2),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+        ("TOPPADDING",   (0, 0), (-1, -1), 0),
+        ("BOTTOMPADDING",(0, 0), (-1, -1), 0),
+    ]))
+    story.append(kpi_strip)
     story.append(Spacer(1, 8))
 
     # ── Descripcion automatica ────────────────────────────────────────────────
     desc = c.get("description_auto", "")
     if desc:
-        story.append(Paragraph(desc, body))
+        story.append(Paragraph(desc, st["body"]))
         story.append(Spacer(1, 6))
 
     # ── Pros / Contras / Riesgos ──────────────────────────────────────────────
-    pros  = (ev.get("pros_auto", []) or []) + man.get("pros", [])
+    pros  = (ev.get("pros_auto",    []) or []) + man.get("pros",    [])
     cons  = (ev.get("contras_auto", []) or []) + man.get("contras", [])
     risks = ev.get("risks", {})
 
-    if pros or cons or risks:
-        pcr_rows = []
-        if pros:
-            pcr_rows.append([
-                Paragraph("<b>Pros</b>",
-                          ParagraphStyle("p", parent=styles["BodyText"], fontSize=8,
-                                         textColor=C_GREEN, fontName="Helvetica-Bold")),
-                Paragraph("; ".join(pros), small),
-            ])
-        if cons:
-            pcr_rows.append([
-                Paragraph("<b>Contras</b>",
-                          ParagraphStyle("c", parent=styles["BodyText"], fontSize=8,
-                                         textColor=C_AMBER, fontName="Helvetica-Bold")),
-                Paragraph("; ".join(cons), small),
-            ])
-        if risks:
-            risk_text = "  ·  ".join(f"{RISK_LABELS.get(k, k)}: {v}"
-                                      for k, v in risks.items())
-            pcr_rows.append([
-                Paragraph("<b>Riesgos</b>",
-                          ParagraphStyle("r", parent=styles["BodyText"], fontSize=8,
-                                         textColor=colors.HexColor("#9F1239"),
-                                         fontName="Helvetica-Bold")),
-                Paragraph(risk_text, small),
-            ])
-        if pcr_rows:
-            pcr_t = Table(pcr_rows, colWidths=[2.5 * cm, 14 * cm])
-            pcr_t.setStyle(TableStyle([
-                ("BACKGROUND", (0, 0), (-1, -1), C_LIGHT),
-                ("GRID", (0, 0), (-1, -1), 0.3, C_BORDER),
-                ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 6),
-                ("TOPPADDING", (0, 0), (-1, -1), 4),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ]))
-            story.append(pcr_t)
-            story.append(Spacer(1, 6))
+    pcr_rows = []
+    if pros:
+        pcr_rows.append([
+            Paragraph("FORTALEZAS", st["tag_green"]),
+            Paragraph("  ·  ".join(pros), st["small"]),
+        ])
+    if cons:
+        pcr_rows.append([
+            Paragraph("CONTRAS", st["tag_amber"]),
+            Paragraph("  ·  ".join(cons), st["small"]),
+        ])
+    if risks:
+        risk_text = "  ·  ".join(
+            f"{RISK_LABELS.get(k, k)}: {v}" for k, v in risks.items())
+        pcr_rows.append([
+            Paragraph("RIESGOS", st["tag_red"]),
+            Paragraph(risk_text, st["small"]),
+        ])
+    if pcr_rows:
+        TAG_W = 2.8 * cm
+        pcr_t = Table(pcr_rows, colWidths=[TAG_W, CONTENT_W - TAG_W])
+        pcr_t.setStyle(TableStyle([
+            ("BACKGROUND",   (0, 0), (0, -1), C_BG),
+            ("GRID",         (0, 0), (-1, -1), 0.3, C_BORDER),
+            ("VALIGN",       (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING",  (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING",   (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING",(0, 0), (-1, -1), 5),
+        ]))
+        story.append(pcr_t)
+        story.append(Spacer(1, 8))
 
-    # ── Estilo de juego — radar ───────────────────────────────────────────────
-    story.append(Paragraph("Estilo de juego (calculado desde datos)", h2))
+    # ── Estilo de juego — radar + tabla comparativa ───────────────────────────
+    story.append(_section_header("Estilo de juego", st))
+    story.append(Spacer(1, 5))
     story.append(Paragraph(
-        "Ejes calculados a partir de las estadisticas medias de los equipos dirigidos por "
-        "el tecnico (team_seasons.parquet). Cada eje es el percentil del equipo vs la "
-        "liga en esa metrica. 100 = mejor de la liga en ese eje.",
-        italic))
-    radar = _radar(axes)
-    if radar:
-        story.append(radar)
+        "Ejes calculados como percentil del equipo dirigido vs la liga en cada metrica "
+        "(team_seasons.parquet). 100 = mejor de la liga en ese eje.",
+        st["italic"]))
+    story.append(Spacer(1, 6))
 
-    # ── Comparativa vs ADN Rayo ───────────────────────────────────────────────
-    story.append(Paragraph("Comparativa: estilo del tecnico vs ADN objetivo Rayo", h2))
-    story.append(Paragraph(
-        "Las barras rojas son el percentil del tecnico en cada dimension. "
-        "Las barras grises son el ADN objetivo del Rayo, calculado desde los datos reales "
-        "del equipo (team_seasons.parquet). La diferencia se marca en verde si es <= 10 puntos "
-        "o en rojo si es > 10 (posible desajuste tatico).",
-        italic))
-    cmp_chart = _adn_comparison_chart(axes, dna_target)
-    if cmp_chart:
-        story.append(cmp_chart)
-        story.append(Spacer(1, 4))
+    radar_img = _radar_chart(axes, w_cm=8.5)
 
-    # Tabla numerica de ejes
-    ax_rows = [["Eje tactico", "Tecnico (0-100)", "ADN Rayo", "Diferencia", "Valoracion"]]
+    # Tabla de ejes comparativa (derecha)
+    ax_rows = [["Eje", "Tecnico", "ADN Rayo", "Dif."]]
     for k, lab in AXES:
         if axes.get(k) is None:
             continue
-        coach_v  = int(axes[k])
-        target_v = dna_target.get(k, {}).get("ideal")
-        diff     = coach_v - target_v if target_v is not None else None
-        diff_str = f"{diff:+d}" if diff is not None else "—"
-        val_str  = ("Alineado" if diff is not None and abs(diff) <= 10 else
-                    ("Desajuste leve" if diff is not None and abs(diff) <= 20 else
-                     ("Desajuste importante" if diff is not None else "—")))
-        ax_rows.append([lab, str(coach_v),
-                        str(int(target_v)) if target_v is not None else "—",
-                        diff_str, val_str])
+        cv   = int(axes[k])
+        tv   = dna_target.get(k, {}).get("ideal")
+        diff = cv - tv if tv is not None else None
+        ds   = (f"+{abs(int(float(diff)))}"
+                if diff is not None and float(diff) >= 0
+                else f"-{abs(int(float(diff)))}"
+                if diff is not None else "n/d")
+        ax_rows.append([
+            lab, str(cv),
+            str(int(tv)) if tv is not None else "n/d",
+            ds,
+        ])
     if axes.get("posesion_pct_real") is not None:
-        ax_rows.append(["Posesion media real", f"{axes['posesion_pct_real']}%", "—", "—", "—"])
-    story.append(_tbl(ax_rows, col_widths=[4.5 * cm, 2.8 * cm, 2.5 * cm, 2.2 * cm, 3.5 * cm]))
-    story.append(Spacer(1, 4))
-    story.append(Paragraph(
-        "Metodologia de ejes: se calculan como percentil (0-100) del equipo dirigido "
-        "en esa metrica vs el resto de equipos de la misma liga y temporada. "
-        "Fuente: team_seasons.parquet (datos OPTA de equipos).",
-        italic))
+        ax_rows.append(["Posesion real", f"{axes['posesion_pct_real']}%", "n/d", "n/d"])
+    axes_tbl = _tbl(ax_rows,
+                    col_widths=[3.8 * cm, 1.5 * cm, 2.1 * cm, 1.4 * cm],
+                    fs=7.5)
 
-    # ── Evaluacion — Fit Rayo ─────────────────────────────────────────────────
-    story.append(Paragraph("Evaluacion — Fit Rayo como candidato", h2))
+    L_W = 9.0 * cm
+    R_W = CONTENT_W - L_W
+    left_cell  = [radar_img] if radar_img else [Spacer(1, 1)]
+    right_cell = [
+        Paragraph("COMPARATIVA VS ADN RAYO",
+                  ParagraphStyle("rh", fontName="Helvetica-Bold", fontSize=8,
+                                 textColor=C_DARK, leading=11)),
+        Spacer(1, 5),
+        axes_tbl,
+    ]
+    two_col = Table([[left_cell, right_cell]], colWidths=[L_W, R_W])
+    two_col.setStyle(TableStyle([
+        ("VALIGN",       (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING",  (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+        ("LEFTPADDING",  (1, 0), (1, -1), 10),
+    ]))
+    story.append(two_col)
+    story.append(Spacer(1, 8))
+
+    # ── Comparativa tactica (grafico de barras) ───────────────────────────────
+    story.append(_section_header("Comparativa tactica vs ADN Rayo", st))
+    story.append(Spacer(1, 5))
+    cmp_chart = _adn_chart(axes, dna_target,
+                           w_cm=CONTENT_W / cm, h_cm=4.5)
+    if cmp_chart:
+        story.append(cmp_chart)
+        story.append(Paragraph(
+            "Rojo = tecnico  ·  Gris rayado = ADN objetivo Rayo.  "
+            "Diferencia en verde si <= 10 pts, rojo si > 10 (posible desajuste).",
+            st["italic"]))
+    story.append(Spacer(1, 8))
+
+    # ── Evaluacion Fit Rayo ───────────────────────────────────────────────────
+    story.append(_section_header("Evaluacion — Fit Rayo", st))
+    story.append(Spacer(1, 5))
+    story.append(Paragraph(
+        f"<b>Score global:</b>  {score_10}/10  "
+        f"({float(score_10) * 10:.0f}/100)",
+        st["body"]))
+    story.append(Spacer(1, 4))
+
     sub = ev.get("subscores", {})
-    story.append(Paragraph(
-        f"<b>Fit Rayo global:</b>  {score_10}/10  ({float(score_10) * 10:.0f}/100)",
-        body))
-    story.append(Spacer(1, 4))
-
     sub_labels = {
-        "estilo":       ("Cercania al ADN Rayo (estilo tactico)",   "~55%"),
-        "laliga":       ("Experiencia LaLiga",                       "15%"),
-        "budget":       ("Encaje salarial vs referencia del club",   "15%"),
-        "squad_compat": ("Compatibilidad con la plantilla actual",   "15%"),
+        "estilo":       ("Cercania al ADN Rayo (estilo tactico)",  "~55%"),
+        "laliga":       ("Experiencia LaLiga",                      "15%"),
+        "budget":       ("Encaje salarial vs presupuesto",          "15%"),
+        "squad_compat": ("Compatibilidad con la plantilla",         "15%"),
+    }
+    methodo = {
+        "estilo":       "Distancia coseno entre ejes del tecnico y ADN Rayo",
+        "laliga":       "Temporadas en Primera o Segunda espanola",
+        "budget":       "Salario estimado vs. margen del club",
+        "squad_compat": "Similitud entre estilo del tecnico y perfil plantilla",
     }
     if sub:
         tbl_data = [["Sub-score", "Peso", "Valor (0-100)", "Metodologia"]]
-        methodo  = {
-            "estilo":       "Distancia coseno entre ejes del tecnico y ADN Rayo",
-            "laliga":       "Temporadas en Primera o Segunda Division espanola",
-            "budget":       "Salario estimado vs. margen presupuestario del club",
-            "squad_compat": "Similitud entre estilo del tecnico y perfil de la plantilla",
-        }
         for k, (label, weight) in sub_labels.items():
             v = sub.get(k)
             if v is not None:
-                tbl_data.append([label, weight, str(int(float(v))), methodo.get(k, "—")])
+                tbl_data.append([label, weight, str(int(float(v))),
+                                  methodo.get(k, "n/d")])
         if len(tbl_data) > 1:
             story.append(_tbl(tbl_data,
-                              col_widths=[4.5 * cm, 1.5 * cm, 2 * cm, 8.5 * cm], fs=8))
+                              col_widths=[4.5 * cm, 1.4 * cm,
+                                          2.0 * cm, 8.6 * cm], fs=8))
             story.append(Spacer(1, 4))
 
     story.append(Paragraph(
         "Formula:  Fit = (Estilo x 0.55) + (LaLiga x 0.15) + (Presupuesto x 0.15) "
         "+ (Compat.plantilla x 0.15)  ->  resultado /100, expresado tambien como /10.  "
-        "Estilo: similitud normalizada entre los 8 ejes del tecnico y el ADN objetivo "
-        "del Rayo (distancia euclidea invertida, normalizada 0-100).  "
-        "LaLiga: 25 puntos por cada temporada en Primera, 10 en Segunda, max 100.  "
-        "Presupuesto: score 100 si el salario estimado cabe en el margen, "
-        "reduciendose proporcionalmente.  "
-        "Compat. plantilla: alineamiento entre la demanda tactica del tecnico y los "
-        "roles disponibles en la plantilla.",
-        italic))
+        "Estilo: similitud normalizada (distancia coseno) entre los 8 ejes del tecnico "
+        "y el ADN objetivo Rayo.  LaLiga: 25 pts/temp en Primera, 10 en Segunda, max 100.",
+        st["italic"]))
+    story.append(Spacer(1, 8))
 
     # ── Equipos dirigidos ─────────────────────────────────────────────────────
     tst = _team_seasons_table(c["name"])
     if tst:
-        story.append(Paragraph("Equipos dirigidos y rendimiento medio por partido", h2))
+        story.append(_section_header("Equipos dirigidos y rendimiento", st))
+        story.append(Spacer(1, 5))
         story.append(Paragraph(
-            "Metricas promediadas por partido para cada etapa del tecnico. "
+            "Metricas promediadas por partido para cada etapa del tecnico.  "
             "Fuente: team_seasons.parquet cruzado con coach_tenures.csv.",
-            italic))
-        t2 = Table(tst, repeatRows=1)
-        t2.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), RAYO_RED),
-            ("TEXTCOLOR",  (0, 0), (-1, 0), colors.white),
-            ("FONTNAME",   (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE",   (0, 0), (-1, -1), 7),
-            ("GRID",       (0, 0), (-1, -1), 0.3, C_GREY_LN),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, C_GREY_BG]),
-            ("LEFTPADDING",  (0, 0), (-1, -1), 4),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 4),
-            ("TOPPADDING",   (0, 0), (-1, -1), 3),
-            ("BOTTOMPADDING",(0, 0), (-1, -1), 3),
-        ]))
-        story.append(t2)
+            st["italic"]))
+        story.append(Spacer(1, 4))
+        col_w = [1.8 * cm, 4.0 * cm, 1.2 * cm, 1.5 * cm,
+                 1.5 * cm, 1.5 * cm, 1.5 * cm, 1.5 * cm]
+        story.append(_tbl(tst, col_widths=col_w, fs=7.5))
         story.append(Paragraph(
             "Pos% = posesion media  ·  /p = por partido  ·  PC cero = porterias a cero.",
-            italic))
+            st["italic"]))
+        story.append(Spacer(1, 6))
 
     # ── Pie de pagina ─────────────────────────────────────────────────────────
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
     cov = c.get("coverage", {})
     story.append(Paragraph(
-        f"Cobertura de datos: {', '.join(cov.get('teams', []) or ['—'])}  ·  "
+        f"Cobertura: {', '.join(cov.get('teams', []) or ['n/d'])}  ·  "
         f"{cov.get('n_rows', 0)} temporadas en el scope.  "
         f"Generado el {date.today().strftime('%d %b %Y').lstrip('0')}  ·  "
         f"Rayo Vallecano — Direccion Deportiva.  "
         f"Calculos automaticos basados en datos OPTA de equipos.",
-        italic))
+        st["italic"]))
 
     buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4,
-                            topMargin=1.0 * cm, bottomMargin=1.2 * cm,
-                            leftMargin=1.6 * cm, rightMargin=1.6 * cm)
+    doc = SimpleDocTemplate(
+        buf, pagesize=A4,
+        topMargin=1.0 * cm, bottomMargin=1.2 * cm,
+        leftMargin=MARG, rightMargin=MARG,
+    )
     doc.build(story)
     buf.seek(0)
-    return f"informe_entrenador_{_n(c['name']).replace(' ', '_')}.pdf", buf.read()
+    return (
+        f"informe_entrenador_{_n(c['name']).replace(' ', '_')}.pdf",
+        buf.read(),
+    )

@@ -26,7 +26,7 @@ MASTER   = PROC / "master_players.parquet"
 ECONOMIC = PROC / "player_economic.parquet"
 
 DISPLAY_COLS = [
-    "name", "position_primary", "age", "team", "league",
+    "name", "position_primary", "foot", "age", "team", "league",
     "minutes", "goals", "assists", "shots_on_target",
     "tackles_won", "interceptions", "passes_completed_pct",
     "market_value_eur", "contract_until",
@@ -61,10 +61,9 @@ def _load() -> pd.DataFrame:
     # ---- Enriquecer con datos económicos ----
     if ECONOMIC.exists():
         try:
-            eco = pd.read_parquet(ECONOMIC, columns=[
-                "opta_id", "canonical_name",
-                "market_value_eur", "contract_until",
-            ])
+            eco = pd.read_parquet(ECONOMIC)
+            _eco_want = ["opta_id", "canonical_name", "market_value_eur", "contract_until", "foot"]
+            eco = eco[[c for c in _eco_want if c in eco.columns]]
 
             # 1. Merge por opta_id (preciso, vectorizado)
             eco_by_id = (eco.dropna(subset=["opta_id"])
@@ -85,22 +84,24 @@ def _load() -> pd.DataFrame:
                 df = df[[c for c in df.columns if not c.endswith("_eco")]]
 
             # 2. Fallback por nombre normalizado (vectorizado, sin bucle)
-            if "contract_until" not in df.columns:
-                df["contract_until"] = None
-            if "market_value_eur" not in df.columns:
-                df["market_value_eur"] = None
+            for _c in ("contract_until", "market_value_eur", "foot"):
+                if _c not in df.columns:
+                    df[_c] = None
 
             eco_name = (eco.assign(_nn=eco["canonical_name"].apply(_norm))
                         .drop_duplicates("_nn")
                         .set_index("_nn"))
-            name_to_mv = eco_name["market_value_eur"].to_dict()
-            name_to_cu = eco_name["contract_until"].to_dict()
+            name_to_mv   = eco_name["market_value_eur"].to_dict() if "market_value_eur" in eco_name.columns else {}
+            name_to_cu   = eco_name["contract_until"].to_dict()   if "contract_until"   in eco_name.columns else {}
+            name_to_foot = eco_name["foot"].to_dict()              if "foot"             in eco_name.columns else {}
 
             df["_nn"] = df["name"].apply(_norm)
-            mask_mv = df["market_value_eur"].isna()
-            mask_cu = df["contract_until"].isna()
-            df.loc[mask_mv, "market_value_eur"] = df.loc[mask_mv, "_nn"].map(name_to_mv)
-            df.loc[mask_cu, "contract_until"]   = df.loc[mask_cu, "_nn"].map(name_to_cu)
+            mask_mv   = df["market_value_eur"].isna()
+            mask_cu   = df["contract_until"].isna()
+            mask_foot = df["foot"].isna()
+            df.loc[mask_mv,   "market_value_eur"] = df.loc[mask_mv,   "_nn"].map(name_to_mv)
+            df.loc[mask_cu,   "contract_until"]   = df.loc[mask_cu,   "_nn"].map(name_to_cu)
+            df.loc[mask_foot, "foot"]             = df.loc[mask_foot, "_nn"].map(name_to_foot)
             df = df.drop(columns=["_nn"], errors="ignore")
 
         except Exception:
@@ -150,7 +151,13 @@ def layout(**_params):
                 for v in sorted(str(v) for v in df["league"].unique()
                                 if pd.notna(v) and str(v) != "nan")]
                if not df.empty else [])
-    pos_opt = _opts(df["position_primary"].unique())  if not df.empty else []
+    pos_opt    = _opts(df["position_primary"].unique()) if not df.empty else []
+    player_opt = ([{"label": str(v), "value": str(v)}
+                   for v in sorted(df["name"].dropna().unique())]
+                  if not df.empty else [])
+    foot_opt = ([{"label": str(v), "value": str(v)}
+                 for v in sorted(df["foot"].dropna().unique()) if str(v) not in ("nan","")]
+                if not df.empty and "foot" in df.columns else [])
 
     return html.Div([
         # Store para navegación — clientside callback navega con window.location.href
@@ -162,34 +169,14 @@ def layout(**_params):
                    className="page-subtitle"),
         ], className="page-header"),
 
-        # Buscador con autocomplete
-        html.Div([
-            html.I(className="ti ti-search",
-                   style={"fontSize": "16px", "color": "#E30613",
-                          "marginRight": "10px", "alignSelf": "center", "flexShrink": "0"}),
-            dcc.Dropdown(
-                id="f-search",
-                placeholder="Escribe 2+ letras para buscar (Ej: Mba → Mbappé, Mbangula...)",
-                options=[],
-                value=None,
-                multi=False,
-                clearable=True,
-                optionHeight=44,
-                style={"flex": "1", "fontSize": "13px", "border": "none",
-                       "fontFamily": "Inter, system-ui, sans-serif"},
-            ),
-            html.Span("↵ selecciona", style={"fontSize": "10px", "color": "#9CA3AF",
-                                              "marginLeft": "8px", "flexShrink": "0", "whiteSpace": "nowrap"}),
-        ], style={"display": "flex", "alignItems": "center", "marginBottom": "12px",
-                  "background": "#FFF1F2", "border": "1px solid #FECACA",
-                  "borderRadius": "10px", "padding": "8px 14px"}),
-
         html.Div([
             html.P("Filtros", className="card-modern-title"),
             dbc.Row([
-                dbc.Col(_filter_chip("f-pos",    "Posición", "Todas",  pos_opt), md=2),
-                dbc.Col(_filter_chip("f-league", "Liga",     "Todas",  leagues), md=2),
-                dbc.Col(_filter_chip("f-team",   "Equipo",   "Todos",  []),      md=2),
+                dbc.Col(_filter_chip("f-player",  "Jugador",       "Todos",  player_opt, multi=False), md=2),
+                dbc.Col(_filter_chip("f-pos",     "Posición",      "Todas",  pos_opt),                 md=2),
+                dbc.Col(_filter_chip("f-league",  "Liga",          "Todas",  leagues),                 md=2),
+                dbc.Col(_filter_chip("f-team",    "Equipo",        "Todos",  []),                      md=2),
+                dbc.Col(_filter_chip("f-foot",    "Pie dominante", "Todos",  foot_opt, multi=False),   md=2),
                 dbc.Col(html.Div([
                     html.Span("Edad máx.", className="filter-label"),
                     dcc.Slider(16, 40, 1, value=30, id="f-age",
@@ -197,21 +184,23 @@ def layout(**_params):
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
                 ]), md=2),
+            ], className="g-3"),
+            dbc.Row([
                 dbc.Col(html.Div([
                     html.Span("Valor máx. (M€)", className="filter-label"),
                     dcc.Slider(0, 100, 5, value=100, id="f-mv",
                                marks={0:"0", 25:"25M", 50:"50M", 100:"100M"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
-                ]), md=2),
+                ]), md=3),
                 dbc.Col(html.Div([
                     html.Span("Minutos mín.", className="filter-label"),
                     dcc.Slider(0, 3500, 100, value=500, id="f-min",
                                marks={0:"0", 900:"900", 1800:"1800", 3000:"3000"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
-                ]), md=2),
-            ], className="g-3"),
+                ]), md=3),
+            ], className="g-3 mt-2"),
         ], className="filter-panel"),
 
         dbc.Row([
@@ -267,30 +256,6 @@ def layout(**_params):
 ])
 
 
-@callback(
-    Output("f-search", "options"),
-    Input("f-search", "search_value"),
-)
-def _autocomplete_search(sv):
-    if not sv or len(sv.strip()) < 2:
-        return []
-    df = _load()
-    if df.empty:
-        return []
-    matches = _fuzzy_filter(df, sv).head(20)
-    opts = []
-    for _, row in matches.iterrows():
-        name  = row.get("name", "")
-        team  = row.get("team", "")
-        league = _league_name(str(row.get("league", ""))) if row.get("league") else ""
-        pos   = row.get("position_primary", "")
-        parts = [x for x in [team, league] if x]
-        sub   = " · ".join(parts)
-        label = f"{name}  ({pos})" + (f"  —  {sub}" if sub else "")
-        opts.append({"label": label, "value": name})
-    return opts
-
-
 @callback(Output("f-team", "options"), Input("f-league", "value"))
 def update_teams(leagues):
     df = _load()
@@ -331,33 +296,33 @@ def _fuzzy_filter(df: pd.DataFrame, query: str) -> pd.DataFrame:
     Output("scouting-table", "data"),
     Output("scouting-table", "columns"),
     Output("scouting-count", "children"),
+    Input("f-player", "value"),
     Input("f-pos",    "value"),
     Input("f-league", "value"),
     Input("f-team",   "value"),
+    Input("f-foot",   "value"),
     Input("f-age",    "value"),
     Input("f-mv",     "value"),
     Input("f-min",    "value"),
-    Input("f-search", "value"),
-    Input("f-search", "search_value"),
 )
-def filter_table(pos, leagues, teams, age_max, mv_max_m, min_min, search, search_text):
-    # search = valor seleccionado del dropdown; search_text = lo que se está escribiendo
-    search = search or search_text
+def filter_table(player, pos, leagues, teams, foot, age_max, mv_max_m, min_min):
     df = _load()
     if df.empty:
         return [], [], "Sin datos — ejecuta el ETL primero"
 
-    # Buscador fuzzy (tiene prioridad sobre otros filtros de texto)
-    if search and search.strip():
-        df = _fuzzy_filter(df, search)
+    # Filtro por jugador concreto (tiene prioridad; omite filtros numéricos)
+    if player:
+        df = df[df["name"] == player]
     else:
         if pos:     df = df[df["position_primary"].isin(pos)]
         if leagues: df = df[df["league"].isin(leagues)]
         if teams:   df = df[df["team"].isin(teams)]
+        if foot and "foot" in df.columns:
+            df = df[df["foot"].astype(str).str.lower() == str(foot).lower()]
 
-    if age_max  is not None: df = df[df["_age_n"] <= age_max]
-    if mv_max_m is not None: df = df[df["_mv_n"]  <= mv_max_m * 1_000_000]
-    if min_min  is not None: df = df[df["_min_n"] >= min_min]
+        if age_max  is not None: df = df[df["_age_n"] <= age_max]
+        if mv_max_m is not None: df = df[df["_mv_n"]  <= mv_max_m * 1_000_000]
+        if min_min  is not None: df = df[df["_min_n"] >= min_min]
 
     cols_show = [c for c in DISPLAY_COLS if c in df.columns]
     extra_cols = [c for c in ("player_id", "player_id_src")

@@ -736,7 +736,8 @@ def layout(**_params):
             dbc.Row([
                 dbc.Col([html.Span(lab, style={"fontSize": "10px", "color": "#6B7280"}),
                     dcc.Slider(0, 100, 1, value=_DNA_DEFAULTS.get(axis, 50), id=sid,
-                               marks=None, tooltip={"placement": "bottom", "always_visible": False})],
+                               marks=None, tooltip={"placement": "bottom", "always_visible": False},
+                               updatemode="mouseup")],
                     md=3, style={"marginBottom": "8px"})
                 for sid, lab, axis in DNA_SLIDERS
             ], className="g-2"),
@@ -855,20 +856,33 @@ def edit_manual(add_pro, add_con, del_pro, del_con, name, pro_txt, con_txt, refr
     return no_update
 
 
+_COACH_PDF_BTN_DEFAULT = [
+    html.I(className="ti ti-file-download", style={"marginRight": "6px"}),
+    "Descargar PDF",
+]
+_COACH_PDF_BTN_STYLE = {
+    "marginTop": "8px", "background": "#1A1A2E", "color": "#fff",
+    "border": "none", "borderRadius": "8px", "padding": "6px 14px",
+    "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
+}
+
+
 @callback(
     Output("dl-coach", "data"),
     Output("coach-pdf-error", "children"),
+    Output("dl-coach-btn", "disabled"),
+    Output("dl-coach-btn", "children"),
     Input("dl-coach-btn", "n_clicks"),
     State("current-coach", "data"),
     prevent_initial_call=True,
 )
 def _download_coach_pdf(n, name):
     if not n or not name:
-        return no_update, no_update
+        return no_update, no_update, no_update, no_update
     from src.reports.coach_dossier import build_coach_dossier
     try:
         fname, data = build_coach_dossier(name)
-        return dcc.send_bytes(data, fname), ""
+        return dcc.send_bytes(data, fname), "", False, _COACH_PDF_BTN_DEFAULT
     except Exception as exc:
         import traceback
         traceback.print_exc()
@@ -880,7 +894,7 @@ def _download_coach_pdf(n, name):
             html.Span(" — Vuelve a intentarlo",
                       style={"fontSize": "11px", "color": "#6B7280"}),
         ], style={"display": "flex", "alignItems": "center"})
-        return no_update, err
+        return no_update, err, False, _COACH_PDF_BTN_DEFAULT
 
 
 @callback(

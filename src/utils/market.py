@@ -169,14 +169,56 @@ def _get_from_economic(name, opta_id=None) -> dict:
     nn = _norm(name)
     if nn in by_name:
         return by_name[nn]
+    # Surname matching con initial-guard (mismo algoritmo que _match_market)
     sn = _surname(name)
-    merged = {}
-    for k, v in by_name.items():
-        if _surname(k) == sn:
-            for fld, val in v.items():
-                if not merged.get(fld) and val is not None:
-                    merged[fld] = val
-    return merged
+    parts = [p for p in nn.split() if p]
+    first_initial = parts[0][0] if parts else None
+    is_single = len(parts) == 1
+    sn_hits = [(k, v) for k, v in by_name.items() if _surname(k) == sn]
+    if first_initial and sn_hits:
+        confirmed = [(k, v) for k, v in sn_hits
+                     if (k.split() or [""])[0][:1] == first_initial]
+        if len(confirmed) == 1:
+            return dict(confirmed[0][1])
+    elif is_single and sn_hits:
+        if len(sn_hits) == 1:
+            return dict(sn_hits[0][1])
+    return {}
+
+
+def _match_market(nn: str, sn: str, mv: dict) -> dict:
+    """
+    Matching con initial-guard para evitar falsos positivos por apellido.
+
+    Algoritmo (en orden de precisión):
+      1. Coincidencia exacta (nombre normalizado).
+      2. Apellido único + inicial del primer nombre confirma.
+      3. Nombre de una sola palabra → prefijo en base TM (e.g. "Yeray" → "Yeray Álvarez").
+    """
+    # 1. Exacta
+    if nn in mv:
+        return dict(mv[nn])
+
+    parts = [p for p in nn.split() if p]
+    first_initial = parts[0][0] if parts else None
+    is_single = len(parts) == 1
+
+    # 2. Apellido con confirmación de inicial
+    if first_initial:
+        sn_hits = [(k, v) for k, v in mv.items() if _surname(k) == sn]
+        # Filtrar por inicial del primer token del nombre TM
+        confirmed = [(k, v) for k, v in sn_hits
+                     if (k.split() or [""])[0][:1] == first_initial]
+        if len(confirmed) == 1:
+            return dict(confirmed[0][1])
+
+    # 3. Prefijo para nombres de una sola palabra ("Yeray", "Pedri", "Yuri"…)
+    if is_single:
+        prefix_hits = [(k, v) for k, v in mv.items() if k.startswith(nn + " ")]
+        if len(prefix_hits) == 1:
+            return dict(prefix_hits[0][1])
+
+    return {}
 
 
 def get_value(name, opta_id=None) -> dict:
@@ -188,16 +230,8 @@ def get_value(name, opta_id=None) -> dict:
     nn = _norm(name)
     sn = _surname(name)
 
-    # 3. Fallback legacy: market_values.csv
-    legacy = dict(mv.get(nn, {}))
-    for k, v in mv.items():
-        if k == nn:
-            continue
-        if _surname(k) == sn:
-            for fld in ("value_eur", "contract_until", "photo_url", "tm_id", "name",
-                        "age", "foot", "height", "position", "dob"):
-                if not legacy.get(fld) and v.get(fld):
-                    legacy[fld] = v[fld]
+    # 3. Fallback legacy: market_values.csv (matching mejorado)
+    legacy = _match_market(nn, sn, mv)
 
     # 2. Parquet economico (sobreescribe legacy si tiene valor)
     econ = _get_from_economic(name, opta_id)

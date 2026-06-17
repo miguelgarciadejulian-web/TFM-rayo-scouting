@@ -382,14 +382,31 @@ class FitRayoScorer:
         mins = self._sf(row.get("minutes"))
         if mins <= 0:
             return 10.0
-        # Normalizar sobre 2500 min como referencia de titular indiscutible
-        min_s = min(100.0, mins / 25.0)
-        # Goles + asistencias /90 (peso extra para atacantes)
-        ga90 = (self._sf(row.get("goals")) + self._sf(row.get("assists"))) / max(mins/90, 1)
-        ga_s = min(100.0, ga90 * 300)
-        # Duelos ganados
+        min_s  = min(100.0, mins / 25.0)
+        ga90   = (self._sf(row.get("goals")) + self._sf(row.get("assists"))) / max(mins/90, 1)
+        ga_s   = min(100.0, ga90 * 300)
         duel_s = min(100.0, self._sf(row.get("tackles_won")) / max(mins/90, 1) * 150)
         return round((0.5*min_s + 0.3*ga_s + 0.2*duel_s), 1)
+
+    def score_rendimiento_breakdown(self, row: pd.Series) -> dict:
+        """Desglosa el score de rendimiento para mostrar en la UI."""
+        mins = self._sf(row.get("minutes"))
+        if mins <= 0:
+            return {"mins": 0, "goals": 0, "assists": 0, "tackles_won": 0,
+                    "min_s": 0, "ga_s": 0, "duel_s": 0, "score": 10.0}
+        goals   = self._sf(row.get("goals"))
+        assists = self._sf(row.get("assists"))
+        duels   = self._sf(row.get("tackles_won"))
+        min_s   = round(min(100.0, mins / 25.0), 1)
+        ga90    = (goals + assists) / max(mins/90, 1)
+        ga_s    = round(min(100.0, ga90 * 300), 1)
+        duel_s  = round(min(100.0, duels / max(mins/90, 1) * 150), 1)
+        score   = round(0.5*min_s + 0.3*ga_s + 0.2*duel_s, 1)
+        return {
+            "mins": int(mins), "goals": int(goals), "assists": int(assists),
+            "tackles_won": int(duels),
+            "min_s": min_s, "ga_s": ga_s, "duel_s": duel_s, "score": score,
+        }
 
     def _score_economico(self, mv: float) -> float:
         bp = _budget_params()
@@ -406,6 +423,28 @@ class FitRayoScorer:
             return round(90.0 - 40.0*(mv - mv_sweet)/(mv_max - mv_sweet), 1)
         return 15.0   # demasiado caro
 
+    def score_economico_breakdown(self, mv: float) -> dict:
+        """Desglosa el score económico para la UI."""
+        bp       = _budget_params()
+        mv_min   = bp.get("mv_min",   _RAYO_MV_MIN_FALLBACK)
+        mv_sweet = bp.get("mv_sweet", _RAYO_MV_SWEET_FALLBACK)
+        mv_max   = bp.get("mv_max",   _RAYO_MV_MAX_FALLBACK)
+        score    = self._score_economico(mv)
+        if mv <= 0:
+            tramo = "Desconocido (sin datos TM)"
+        elif mv <= mv_min:
+            tramo = f"Por debajo del mínimo ({mv_min/1e6:.1f}M€) → jugador muy económico"
+        elif mv <= mv_sweet:
+            tramo = f"En zona ideal (≤ {mv_sweet/1e6:.0f}M€) → precio óptimo para Rayo"
+        elif mv <= mv_max:
+            tramo = f"En zona de negociación ({mv_sweet/1e6:.0f}M–{mv_max/1e6:.0f}M€)"
+        else:
+            tramo = f"Por encima del presupuesto máximo ({mv_max/1e6:.0f}M€)"
+        return {
+            "mv_eur": mv, "mv_min": mv_min, "mv_sweet": mv_sweet, "mv_max": mv_max,
+            "tramo": tramo, "score": score,
+        }
+
     def _score_edad(self, age: float, pos: str) -> float:
         if age <= 0:
             return 50.0
@@ -417,6 +456,66 @@ class FitRayoScorer:
         if age <= decl:
             return 90.0
         return round(max(10.0, 90.0 - (age - decl)*8), 1)
+
+    def score_edad_breakdown(self, age: float, pos: str) -> dict:
+        """Desglosa el score de edad para la UI."""
+        PRIME_AGE = {"GK":27,"CB":25,"RB":24,"LB":24,"DM":25,"CM":24,
+                     "AM":23,"RW":22,"LW":22,"ST":24}
+        prime = PRIME_AGE.get(pos, 24)
+        decl  = DECLINE_AGE.get(pos, 31)
+        score = self._score_edad(age, pos)
+        if age <= 0:
+            fase = "Edad desconocida"
+        elif age < prime:
+            fase = f"En desarrollo (< {prime} años prime para {pos})"
+        elif age <= decl:
+            fase = f"En peak ({prime}–{decl} años)"
+        else:
+            fase = f"En declive (> {decl} años para {pos})"
+        return {
+            "age": age, "pos": pos, "prime": prime, "decline": decl,
+            "fase": fase, "score": score,
+        }
+
+    def score_disponibilidad_breakdown(self, contract_until: str | None, name: str,
+                                       squad_entry: dict | None = None,
+                                       loan_from: str = "") -> dict:
+        """Desglosa el score de disponibilidad para la UI."""
+        from datetime import date
+        score = self._score_disponibilidad(contract_until, name, squad_entry)
+        is_loan = bool(loan_from) or (squad_entry and squad_entry.get("loan_from"))
+        is_rayo = (squad_entry is not None) or (name.lower() in self._rayo_names)
+
+        months = None
+        if contract_until:
+            try:
+                y = int(str(contract_until)[:4])
+                m = int(str(contract_until)[5:7]) if len(str(contract_until)) >= 7 else 6
+                end = date(y, m, 1)
+                months = max(0, (end - date.today()).days // 30)
+            except Exception:
+                pass
+
+        if is_loan:
+            situacion = f"Cedido — negociación con club propietario ({loan_from or squad_entry.get('loan_from','')})"
+        elif months is not None:
+            if months <= 6:
+                situacion = f"Contrato expira en {months} meses — disponible libre o a coste mínimo"
+            elif months <= 12:
+                situacion = f"Contrato expira en {months} meses — ventana de negociación favorable"
+            elif months <= 24:
+                situacion = f"Contrato vigente ~{months//12} año(s) — traspaso necesario"
+            else:
+                situacion = f"Contrato largo ({months//12} años) — coste de adquisición elevado"
+        else:
+            situacion = "Sin datos de contrato"
+
+        bonus_rayo = "+10 por estar en plantilla Rayo" if is_rayo and not is_loan else ""
+        return {
+            "contract_until": contract_until, "months": months,
+            "is_loan": is_loan, "is_rayo": is_rayo,
+            "situacion": situacion, "bonus_rayo": bonus_rayo, "score": score,
+        }
 
     def _score_disponibilidad(self, contract_until: str | None, name: str,
                                   squad_entry: dict | None = None) -> float:
@@ -495,30 +594,22 @@ class FitRayoScorer:
     # ------------------------------------------------------------------ #
 
     def _best_row(self, name: str) -> pd.Series | None:
-        """Busca la mejor fila para un jugador.
-        Soporta:
-          - Coincidencia exacta: "Ilias Akhomach" == "Ilias Akhomach"
-          - Abreviatura: "Ilias Akhomach" → "I. Akhomach"
-          - Apellido: "Akhomach" en cualquier formato
-        """
+        """Busca la mejor fila para un jugador."""
         nl = name.strip().lower()
         mask = self.master["name"].str.lower() == nl
         rows = self.master[mask]
         if not rows.empty:
             return self._dedup_latest(rows).iloc[0]
 
-        # Intento por abreviatura: "Ilias Akhomach" → buscar "I. Akhomach"
         parts = nl.split()
         if len(parts) >= 2:
             initial = parts[0][0] + "."
-            # Reconstruir con inicial + apellidos
             abbrev  = (initial + " " + " ".join(parts[1:])).lower()
             mask2   = self.master["name"].str.lower() == abbrev
             rows    = self.master[mask2]
             if not rows.empty:
                 return self._dedup_latest(rows).iloc[0]
 
-            # Intento sólo por apellido(s)
             surname = " ".join(parts[1:])
             mask3   = self.master["name"].str.lower().str.contains(surname, regex=False)
             rows    = self.master[mask3]
@@ -542,46 +633,53 @@ class FitRayoScorer:
             return 0.0
         import unicodedata
         def _n(s): return unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode().lower()
-        mask = self.economic["display_name"].apply(_n) == _n(name)
-        rows = self.economic[mask]
-        if rows.empty:
-            mask2 = self.economic["canonical_name"].apply(_n) == _n(name)
-            rows  = self.economic[mask2]
-        if rows.empty:
-            return 0.0
-        v = rows.iloc[0].get("market_value_eur")
-        try:
-            return float(v) if v and not math.isnan(float(v)) else 0.0
-        except Exception:
-            return 0.0
+        nl = _n(name)
+        # 1) por canonical_name
+        if "canonical_name" in self.economic.columns:
+            mask = self.economic["canonical_name"].apply(_n) == nl
+            rows = self.economic[mask]
+            if not rows.empty:
+                v = rows.iloc[0].get("market_value_eur")
+                if v and float(v) > 0:
+                    return float(v)
+        # 2) por display_name
+        if "display_name" in self.economic.columns:
+            mask = self.economic["display_name"].apply(_n) == nl
+            rows = self.economic[mask]
+            if not rows.empty:
+                v = rows.iloc[0].get("market_value_eur")
+                if v and float(v) > 0:
+                    return float(v)
+        return 0.0
 
     def _get_contract(self, name: str) -> str | None:
         if self.economic is None or self.economic.empty:
             return None
         import unicodedata
         def _n(s): return unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode().lower()
-        mask = self.economic["display_name"].apply(_n) == _n(name)
-        rows = self.economic[mask]
-        if rows.empty:
-            mask2 = self.economic["canonical_name"].apply(_n) == _n(name)
-            rows  = self.economic[mask2]
-        if rows.empty:
-            return None
-        v = rows.iloc[0].get("contract_until")
-        return str(v)[:10] if v and str(v) not in ("None","nan","") else None
+        nl = _n(name)
+        for col in ("canonical_name", "display_name"):
+            if col not in self.economic.columns:
+                continue
+            mask = self.economic[col].apply(_n) == nl
+            rows = self.economic[mask]
+            if not rows.empty:
+                v = rows.iloc[0].get("contract_until")
+                if v and str(v) not in ("nan", "None", ""):
+                    return str(v)[:10]
+        return None
 
 
 # ---------------------------------------------------------------------------
-# Función de conveniencia
+# Factory helper
 # ---------------------------------------------------------------------------
 
-def load_scorer(proc_path: Path, squad: list[dict]) -> FitRayoScorer:
-    mp  = pd.read_parquet(proc_path / "master_players.parquet")
-    eco_path = proc_path / "player_economic.parquet"
-    eco = None
-    if eco_path.exists():
-        try:
-            eco = pd.read_parquet(eco_path)
-        except Exception:
-            pass
-    return FitRayoScorer(master_df=mp, economic_df=eco, squad_info=squad)
+def load_scorer(proc_path: Path, squad_info: list[dict] | None = None) -> "FitRayoScorer":
+    """Carga los parquets y devuelve un FitRayoScorer listo para usar."""
+    master_path   = proc_path / "master_players.parquet"
+    economic_path = proc_path / "player_economic.parquet"
+
+    master = pd.read_parquet(master_path) if master_path.exists() else pd.DataFrame()
+    economic = pd.read_parquet(economic_path) if economic_path.exists() else None
+
+    return FitRayoScorer(master_df=master, economic_df=economic, squad_info=squad_info or [])

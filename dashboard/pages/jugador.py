@@ -430,19 +430,167 @@ def _fit_rayo_card(name: str) -> html.Div:
         if r.loan_from else None
     )
 
-    # Desglose de la fórmula (transparencia total)
+    # ── Desglose por sub-score (transparencia total) ─────────────────────
+    def _mini_row(label, weight, value, note=""):
+        c = _color(value)
+        return html.Div([
+            html.Div([
+                html.Span(label, style={"fontSize": "10px", "color": "#374151",
+                                        "fontWeight": "600", "minWidth": "120px"}),
+                html.Span(f"×{weight}", style={"fontSize": "9px", "color": "#9CA3AF",
+                                                "marginLeft": "6px", "minWidth": "30px"}),
+                html.Span(f"{value:.0f}", style={"fontSize": "10px", "fontWeight": "800",
+                                                   "color": c, "marginLeft": "auto"}),
+            ], style={"display": "flex", "alignItems": "center", "marginBottom": "2px"}),
+            html.Div(html.Div(style={"width": f"{value}%", "height": "3px",
+                                     "background": c, "borderRadius": "2px"}),
+                     style={"background": "#E5E7EB", "borderRadius": "2px",
+                            "height": "3px", "marginBottom": "4px"}),
+            (html.Div(note, style={"fontSize": "9px", "color": "#6B7280",
+                                   "marginBottom": "6px", "fontStyle": "italic"}) if note else html.Span()),
+        ])
+
+    # --- Rendimiento ---
+    scorer = _get_fit_scorer()
+    rend_bd = disp_bd = eco_bd = edad_bd = {}
+    if scorer:
+        try:
+            row_data = scorer._best_row(r.name)
+            if row_data is not None:
+                rend_bd = scorer.score_rendimiento_breakdown(row_data)
+                eco_bd  = scorer.score_economico_breakdown(r.market_value_eur or 0)
+                edad_bd = scorer.score_edad_breakdown(r.age, r.position)
+                disp_bd = scorer.score_disponibilidad_breakdown(
+                    r.contract_until, r.name,
+                    loan_from=r.loan_from,
+                )
+        except Exception:
+            pass
+
+    def _sub_panel(title, icon, items, formula_line):
+        """Panel colapsable de desglose de un sub-score."""
+        return html.Details([
+            html.Summary([
+                html.I(className=f"ti {icon}",
+                       style={"fontSize": "11px", "marginRight": "5px", "color": "#E30613"}),
+                html.Span(title, style={"fontSize": "10px", "fontWeight": "700",
+                                        "color": "#374151", "cursor": "pointer"}),
+            ], style={"listStyle": "none", "display": "flex", "alignItems": "center",
+                      "padding": "6px 0", "cursor": "pointer"}),
+            html.Div([
+                html.Div(formula_line,
+                         style={"fontSize": "9px", "fontFamily": "monospace",
+                                "color": "#6B7280", "marginBottom": "8px",
+                                "padding": "4px 8px", "background": "#F3F4F6",
+                                "borderRadius": "4px"}),
+                *items,
+            ], style={"paddingLeft": "16px"}),
+        ], style={"borderBottom": "1px solid #F3F4F6", "paddingBottom": "4px"})
+
+    # Paneles de cada sub-score
+    rend_items = ([
+        _mini_row("Minutos jugados", "0.50",
+                  rend_bd.get("min_s", 0),
+                  f"{rend_bd.get('mins',0)} min → min(100, {rend_bd.get('mins',0)}/25)"),
+        _mini_row("Goles+Asist /90", "0.30",
+                  rend_bd.get("ga_s", 0),
+                  f"{rend_bd.get('goals',0)}G + {rend_bd.get('assists',0)}A"),
+        _mini_row("Duelos ganados /90", "0.20",
+                  rend_bd.get("duel_s", 0),
+                  f"{rend_bd.get('tackles_won',0)} duelos"),
+    ] if rend_bd else [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})])
+
+    eco_items = ([
+        html.Div([
+            html.Span("Valor mercado: ", style={"fontSize": "10px", "color": "#6B7280"}),
+            html.Span(f"€{eco_bd.get('mv_eur',0)/1e6:.1f}M" if eco_bd.get('mv_eur') else "Sin datos",
+                      style={"fontSize": "10px", "fontWeight": "700", "color": "#1A1A2E"}),
+        ], style={"marginBottom": "4px"}),
+        html.Div(eco_bd.get("tramo", ""), style={"fontSize": "9px", "color": "#6B7280",
+                                                   "fontStyle": "italic", "marginBottom": "6px"}),
+        html.Div([
+            html.Span("Horquilla Rayo: ", style={"fontSize": "9px", "color": "#9CA3AF"}),
+            html.Span(f"Min {eco_bd.get('mv_min',0)/1e6:.1f}M · Ideal ≤{eco_bd.get('mv_sweet',0)/1e6:.0f}M · Máx {eco_bd.get('mv_max',0)/1e6:.0f}M",
+                      style={"fontSize": "9px", "color": "#6B7280"}),
+        ]),
+    ] if eco_bd else [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})])
+
+    edad_items = ([
+        html.Div([
+            html.Span(f"Edad: {edad_bd.get('age',0):.0f} años  ·  Posición: {edad_bd.get('pos','')}",
+                      style={"fontSize": "10px", "color": "#374151", "fontWeight": "600"}),
+        ], style={"marginBottom": "4px"}),
+        html.Div(edad_bd.get("fase", ""), style={"fontSize": "9px", "color": "#6B7280",
+                                                   "fontStyle": "italic", "marginBottom": "4px"}),
+        html.Div([
+            html.Span("Curva: ", style={"fontSize": "9px", "color": "#9CA3AF"}),
+            html.Span(f"Prime {edad_bd.get('prime',0)} años · Declive >{edad_bd.get('decline',0)} años",
+                      style={"fontSize": "9px", "color": "#6B7280"}),
+        ]),
+    ] if edad_bd else [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})])
+
+    disp_items = ([
+        html.Div(disp_bd.get("situacion", ""), style={"fontSize": "10px", "color": "#374151",
+                                                        "fontWeight": "600", "marginBottom": "4px"}),
+        html.Div([
+            html.Span("Contrato hasta: ", style={"fontSize": "9px", "color": "#9CA3AF"}),
+            html.Span(str(disp_bd.get("contract_until","Sin datos") or "Sin datos")[:10],
+                      style={"fontSize": "9px", "color": "#374151"}),
+        ], style={"marginBottom": "4px"}),
+        (html.Div(disp_bd.get("bonus_rayo", ""),
+                  style={"fontSize": "9px", "color": "#166534", "fontStyle": "italic"})
+         if disp_bd.get("bonus_rayo") else html.Span()),
+    ] if disp_bd else [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})])
+
+    breakdown_panel = html.Div([
+        html.Div([
+            html.Div("Desglose de sub-scores", style={
+                "fontSize": "9px", "fontWeight": "700", "color": "#9CA3AF",
+                "textTransform": "uppercase", "letterSpacing": ".05em", "marginBottom": "8px",
+            }),
+            html.Div("Score = 0.35 × Rendimiento + 0.25 × Económico + 0.20 × Edad + 0.20 × Disponibilidad",
+                     style={"fontSize": "9px", "color": "#6B7280", "fontStyle": "italic",
+                            "marginBottom": "10px", "fontFamily": "monospace"}),
+
+            dbc.Row([
+                dbc.Col(_sub_panel(
+                    "Rendimiento (35%)", "ti-run", rend_items,
+                    "Score = 0.50×Minutos + 0.30×G+A/90 + 0.20×Duelos/90",
+                ), md=6),
+                dbc.Col(_sub_panel(
+                    "Encaje económico (25%)", "ti-coin-euro", eco_items,
+                    "Horquilla de inversión Rayo: tramos Min/Ideal/Máx",
+                ), md=6),
+            ], className="g-2"),
+            dbc.Row([
+                dbc.Col(_sub_panel(
+                    "Perfil de edad (20%)", "ti-calendar", edad_items,
+                    "Curva Prime→Peak→Declive por posición",
+                ), md=6),
+                dbc.Col(_sub_panel(
+                    "Disponibilidad (20%)", "ti-door-enter", disp_items,
+                    "Meses contrato restantes: ≤6→95 / ≤12→75 / ≤24→50 / >24→25",
+                ), md=6),
+            ], className="g-2 mt-1"),
+        ]),
+    ], style={
+        "background": "#F9FAFB", "borderRadius": "8px", "padding": "12px 14px",
+        "marginTop": "14px", "border": "1px solid #F3F4F6",
+    })
+
+    # Tabla resumen fórmula
     formula_items = [
-        ("Rendimiento",    r.score_rendimiento,    "35%", "#1A1A2E"),
-        ("Enc. económico", r.score_economico,      "25%", "#1A1A2E"),
-        ("Perfil de edad", r.score_edad,           "20%", "#1A1A2E"),
-        ("Disponibilidad", r.score_disponibilidad, "20%", "#1A1A2E"),
+        ("Rendimiento",    r.score_rendimiento,    "35%"),
+        ("Enc. económico", r.score_economico,      "25%"),
+        ("Perfil de edad", r.score_edad,           "20%"),
+        ("Disponibilidad", r.score_disponibilidad, "20%"),
     ]
     formula_rows = []
-    for label, val, weight, _ in formula_items:
+    for lbl, val, weight in formula_items:
         c = _color(val)
         formula_rows.append(html.Tr([
-            html.Td(label,    style={"fontSize": "10px", "color": "#6B7280", "paddingRight": "8px"}),
-            html.Td(weight,   style={"fontSize": "10px", "color": "#9CA3AF", "textAlign": "right", "paddingRight": "8px"}),
+            html.Td(lbl,    style={"fontSize": "10px", "color": "#6B7280", "paddingRight": "8px"}),
+            html.Td(weight, style={"fontSize": "10px", "color": "#9CA3AF", "textAlign": "right", "paddingRight": "8px"}),
             html.Td(f"{val:.0f}", style={"fontSize": "10px", "fontWeight": "700", "color": c, "textAlign": "right"}),
         ]))
     formula_rows.append(html.Tr([
@@ -454,15 +602,7 @@ def _fit_rayo_card(name: str) -> html.Div:
                                               "color": score_color, "textAlign": "right",
                                               "paddingTop": "4px", "borderTop": "1px solid #E5E7EB"}),
     ]))
-
     formula_panel = html.Div([
-        html.Div("Fórmula del Fit Rayo", style={
-            "fontSize": "9px", "fontWeight": "700", "color": "#9CA3AF",
-            "textTransform": "uppercase", "letterSpacing": ".05em", "marginBottom": "6px",
-        }),
-        html.Div("Score = 0.35 × Rendimiento + 0.25 × Económico + 0.20 × Edad + 0.20 × Disponibilidad",
-                 style={"fontSize": "9px", "color": "#6B7280", "fontStyle": "italic",
-                        "marginBottom": "8px", "fontFamily": "monospace"}),
         html.Table(formula_rows, style={"width": "100%", "borderCollapse": "collapse"}),
     ], style={
         "background": "#F9FAFB", "borderRadius": "8px", "padding": "10px 12px",
@@ -507,8 +647,9 @@ def _fit_rayo_card(name: str) -> html.Div:
             ], md=7),
         ]),
 
-        # Fórmula con pesos y valores reales
+        # Fórmula resumen + desglose por sub-score
         formula_panel,
+        breakdown_panel,
     ], style={
         "background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "12px",
         "padding": "16px 18px", "marginTop": "16px",
@@ -622,19 +763,42 @@ _BTN_STYLE_LOADING = {
     Output("dl-pdf-btn", "style"),
     Input("dl-pdf-btn", "n_clicks"),
     State("current-player", "data"),
+    State("jugador-loc", "search"),
+    State("jugador-search", "value"),
     prevent_initial_call=True,
 )
-def _download_pdf(n, cur):
-    if not n or not cur or not cur.get("name"):
+def _download_pdf(n, cur, search, picked):
+    if not n:
         return no_update, no_update, no_update, no_update, no_update
-    # Indicar carga — devolvemos estado "loading" + generamos PDF en la misma llamada
+
+    # Resolve player name: store (fast path) → dropdown → URL (fallback for race condition)
+    name, team = "", ""
+    if cur and cur.get("name"):
+        name, team = cur["name"], cur.get("team") or ""
+    elif picked and "|||" in picked:
+        name, team = picked.split("|||", 1)
+    elif search and search.startswith("?"):
+        import urllib.parse as _up
+        pr = dict(_up.parse_qsl(search[1:]))
+        name = pr.get("name", "")
+        team = pr.get("team", "")
+
+    if not name:
+        err = html.Div([
+            html.I(className="ti ti-alert-circle",
+                   style={"color": "#F59E0B", "marginRight": "6px"}),
+            html.Span("Selecciona un jugador primero",
+                      style={"fontSize": "11px", "color": "#92400E"}),
+        ], style={"display": "flex", "alignItems": "center"})
+        return no_update, err, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
+
     from src.reports.player_dossier import build_player_dossier
     try:
-        fname, data = build_player_dossier(cur["name"], team=cur.get("team") or None)
+        fname, data = build_player_dossier(name, team=team or None)
         return dcc.send_bytes(data, fname), "", False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
     except Exception as exc:
         import traceback
-        tb = traceback.format_exc()
+        traceback.print_exc()
         err_msg = html.Div([
             html.I(className="ti ti-alert-circle",
                    style={"color": "#E30613", "marginRight": "6px"}),
