@@ -29,7 +29,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-# ── Metricas de equipo (por partido) usadas en los ejes ─────────────────────
+# -- Metricas de equipo (por partido) usadas en los ejes -----------------------------------------
 PER_GAME_METRICS = [
     "total_shots", "shots_on_target_inc_goals", "goals", "goals_conceded",
     "successful_passes_opposition_half", "key_passes_attempt_assists",
@@ -92,16 +92,12 @@ def _per_game(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_reference(team_seasons: pd.DataFrame) -> pd.DataFrame:
-    """Tabla de referencia con metricas por-partido y percentiles por liga.
-
-    Se calcula una sola vez y se reutiliza para todos los entrenadores.
-    """
+    """Tabla de referencia con metricas por-partido y percentiles por liga."""
     ref = _per_game(team_seasons)
     for m in PER_GAME_METRICS:
         col = f"{m}__pg"
         if col in ref.columns:
             ref[f"{col}__pct"] = ref.groupby("league")[col].rank(pct=True) * 100
-    # posesion percentil
     if "possession_percentage" in ref.columns:
         ref["possession__pct"] = ref.groupby("league")["possession_percentage"].rank(pct=True) * 100
     return ref
@@ -115,7 +111,6 @@ def _axis_value(rows_pct: pd.DataFrame, weights: dict) -> float:
         if col in rows_pct.columns:
             val = rows_pct[col].mean(skipna=True)
             if pd.notna(val):
-                # peso negativo: invertir percentil
                 v = (100 - val) if w < 0 else val
                 acc += abs(w) * v
                 wsum += abs(w)
@@ -123,12 +118,7 @@ def _axis_value(rows_pct: pd.DataFrame, weights: dict) -> float:
 
 
 def coach_axes(reference: pd.DataFrame, team_season_keys: list[tuple[str, str]]) -> dict:
-    """Calcula los ejes de estilo de un entrenador.
-
-    team_season_keys: lista de (team_match, season) donde team_match es un texto
-    que debe aparecer en el nombre del equipo (p.ej. 'Osasuna').
-    Devuelve dict con ejes 0-100, posesion media, n_seasons y cobertura.
-    """
+    """Calcula los ejes de estilo de un entrenador."""
     mask = pd.Series(False, index=reference.index)
     matched = []
     for team_match, season in team_season_keys:
@@ -148,7 +138,6 @@ def coach_axes(reference: pd.DataFrame, team_season_keys: list[tuple[str, str]])
     for axis, weights in AXES.items():
         axes[axis] = _axis_value(rows, weights)
 
-    # Posesion (media directa del % real)
     if "possession_percentage" in rows.columns:
         axes["posesion_pct_real"] = round(
             pd.to_numeric(rows["possession_percentage"], errors="coerce").mean(), 1
@@ -156,7 +145,6 @@ def coach_axes(reference: pd.DataFrame, team_season_keys: list[tuple[str, str]])
         axes["posesion"] = round(rows["possession__pct"].mean(skipna=True), 1) \
             if "possession__pct" in rows.columns else float("nan")
 
-    # Uso de transiciones: vertical + ofensivo pero SIN dominar posesion
     vert = axes.get("verticalidad", np.nan)
     poss = axes.get("posesion", np.nan)
     off = axes.get("tendencia_ofensiva", np.nan)
@@ -165,11 +153,9 @@ def coach_axes(reference: pd.DataFrame, team_season_keys: list[tuple[str, str]])
             np.clip(0.5 * vert + 0.3 * (100 - poss) + 0.2 * (off if pd.notna(off) else 50), 0, 100), 1
         )
 
-    # Flexibilidad tactica: variabilidad del estilo entre temporadas
     if len(rows) >= 2 and "possession_percentage" in rows.columns:
         poss_std = pd.to_numeric(rows["possession_percentage"], errors="coerce").std()
         shots_std = rows.get("total_shots__pg", pd.Series(dtype=float)).std()
-        # mas dispersion => mas flexible (normalizado a escala razonable)
         flex = np.clip((poss_std or 0) * 6 + (shots_std or 0) * 8, 0, 100)
         axes["flexibilidad_tactica"] = round(float(flex), 1)
     else:
@@ -185,7 +171,7 @@ def coach_axes(reference: pd.DataFrame, team_season_keys: list[tuple[str, str]])
     return axes
 
 
-# ── Descripcion textual automatica por reglas ───────────────────────────────
+# -- Descripcion textual automatica por reglas ---------------------------------------------------
 def _band(v, lo=40, hi=66):
     if pd.isna(v):
         return None
@@ -203,14 +189,12 @@ def describe_style(axes: dict) -> dict:
     trans = axes.get("uso_transiciones", np.nan)
 
     tags = []
-    # Bloque / linea
     if _band(press) == "alto":
         tags.append("Presion alta")
     elif _band(press) == "bajo":
         tags.append("Bloque medio-bajo")
     else:
         tags.append("Bloque medio")
-    # Balon
     if _band(poss) == "alto":
         tags.append("Dominio de balon")
     elif _band(poss) == "bajo":
@@ -228,7 +212,6 @@ def describe_style(axes: dict) -> dict:
     if _band(trans) == "alto":
         tags.append("Peligro en transicion")
 
-    # Estilo principal (combinacion dominante)
     if _band(poss) == "alto" and _band(press) == "alto":
         style_main = "Presion alta / Posicional"
     elif _band(poss) == "alto":
@@ -242,7 +225,6 @@ def describe_style(axes: dict) -> dict:
     else:
         style_main = "Bloque medio / Equilibrado"
 
-    # Texto descriptivo
     def lvl(v):
         b = _band(v)
         return {"alto": "elevada", "medio": "media", "bajo": "reducida", None: "n/d"}[b]
@@ -283,10 +265,89 @@ def describe_style(axes: dict) -> dict:
     }
 
 
-def profile_coach(reference: pd.DataFrame, history_entry: dict) -> dict:
+def yaml_to_proxy_axes(ctx: dict) -> dict | None:
+    """Convierte campos descriptivos del YAML del entrenador en ejes 0-100 estimados.
+
+    Se usa como FALLBACK cuando un entrenador no tiene cobertura en team_seasons.parquet.
+    Los valores son estimaciones razonables, NO datos reales; el perfil resultante
+    se marca como data_partial=True y axes_source='yaml_proxy'.
+
+    Campos leidos del contexto YAML:
+      possession_pct        (int 0-100)  -> posesion percentil estimado
+      pressing_intensity    (str)        -> presion_alta + intensidad_defensiva
+      offensive_approach    (str)        -> tendencia_ofensiva
+      defensive_line        (str)        -> solidez_defensiva + verticalidad
+    """
+    PRESSING_MAP = {
+        "muy alta": 85, "alta": 72, "media-alta": 62,
+        "media": 50, "media-baja": 38, "baja-media": 35, "baja": 25,
+    }
+    OFFENSE_MAP = {
+        "ataque": 75, "equilibrado": 52, "defensivo": 32, "contraataque": 30,
+    }
+    DEFLINE_MAP = {
+        # (solidez_defensiva, verticalidad)
+        "alta": (38, 38), "media-alta": (50, 45),
+        "media": (60, 55), "media-baja": (70, 68), "baja": (80, 75),
+    }
+
+    poss_raw = ctx.get("possession_pct")
+    press_raw = (ctx.get("pressing_intensity") or "").lower().strip()
+    off_raw = (ctx.get("offensive_approach") or "").lower().strip()
+    defline_raw = (ctx.get("defensive_line") or "").lower().strip()
+
+    has_data = sum([
+        poss_raw is not None,
+        press_raw in PRESSING_MAP,
+        off_raw in OFFENSE_MAP,
+        defline_raw in DEFLINE_MAP,
+    ])
+    if has_data < 2:
+        return None
+
+    axes: dict = {}
+
+    if poss_raw is not None:
+        try:
+            from scipy.stats import norm as _norm
+            pct = float(_norm.cdf((float(poss_raw) - 50) / 6.5) * 100)
+        except ImportError:
+            pct = float(np.clip((float(poss_raw) - 36) / 0.28, 0, 100))
+        axes["posesion"] = round(pct, 1)
+        axes["posesion_pct_real"] = float(poss_raw)
+
+    if press_raw in PRESSING_MAP:
+        v = PRESSING_MAP[press_raw]
+        axes["presion_alta"] = float(v)
+        axes["intensidad_defensiva"] = float(np.clip(v + np.random.uniform(-5, 5), 0, 100))
+
+    if off_raw in OFFENSE_MAP:
+        axes["tendencia_ofensiva"] = float(OFFENSE_MAP[off_raw])
+
+    if defline_raw in DEFLINE_MAP:
+        sol, vert = DEFLINE_MAP[defline_raw]
+        axes["solidez_defensiva"] = float(sol)
+        axes["verticalidad"] = float(vert)
+
+    vert = axes.get("verticalidad", np.nan)
+    poss = axes.get("posesion", np.nan)
+    off = axes.get("tendencia_ofensiva", np.nan)
+    if not np.isnan(vert) and not np.isnan(poss):
+        axes["uso_transiciones"] = round(
+            float(np.clip(0.5 * vert + 0.3 * (100 - poss) + 0.2 * (off if not np.isnan(off) else 50), 0, 100)), 1
+        )
+
+    axes["flexibilidad_tactica"] = float("nan")
+    return axes
+
+
+def profile_coach(reference: pd.DataFrame, history_entry: dict,
+                  yaml_ctx: dict | None = None) -> dict:
     """Perfil completo de un entrenador a partir de su entrada de historial.
 
     history_entry debe incluir 'stints': lista de {team_match, seasons:[...]}.
+    yaml_ctx (opcional): dict del coaches.yaml con campos como possession_pct,
+      pressing_intensity, etc. Se usa como fallback si no hay datos OPTA.
     """
     keys = []
     for stint in history_entry.get("stints", []):
@@ -295,13 +356,31 @@ def profile_coach(reference: pd.DataFrame, history_entry: dict) -> dict:
             keys.append((tm, str(s)))
     axes = coach_axes(reference, keys)
     cov = axes.get("_coverage", {})
+
     if cov.get("n_rows", 0) == 0:
+        proxy = yaml_to_proxy_axes(yaml_ctx or {}) if yaml_ctx is not None else None
+        if proxy:
+            desc = describe_style(proxy)
+            return {
+                "axes": proxy,
+                "style_main": desc["style_main"],
+                "style_tags": desc["style_tags"],
+                "description_auto": (
+                    "[Estimacion por perfil declarado - sin datos OPTA] "
+                    + desc["description_auto"]
+                ),
+                "coverage": cov,
+                "data_partial": True,
+                "axes_source": "yaml_proxy",
+            }
         return {
             "axes": {}, "style_main": "Sin datos en la plataforma",
             "style_tags": [], "description_auto":
             "No hay temporadas de este tecnico cubiertas por los datos disponibles.",
             "coverage": cov, "data_partial": True,
+            "axes_source": "none",
         }
+
     desc = describe_style(axes)
     requested = len(keys)
     matched = cov.get("n_rows", 0)
@@ -313,4 +392,5 @@ def profile_coach(reference: pd.DataFrame, history_entry: dict) -> dict:
         "coverage": cov,
         "data_partial": matched < requested,
         "coverage_ratio": round(matched / requested, 2) if requested else 0.0,
+        "axes_source": "opta",
     }

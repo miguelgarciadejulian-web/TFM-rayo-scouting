@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Página de inicio — Dashboard ejecutivo de la dirección deportiva.
 Muestra KPIs reales de la plantilla, gráficos automáticos y navegación rápida.

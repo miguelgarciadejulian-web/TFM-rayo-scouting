@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Decisiones deportivas - Rayo 2026/27.
 Rankings AUTOMATICOS (fichar / vender / ceder / renovar) y recomendacion de

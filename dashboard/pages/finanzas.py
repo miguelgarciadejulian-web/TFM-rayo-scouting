@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Pestaña de Finanzas — salarios, presupuesto, riesgo de cláusulas y simulador."""
 from __future__ import annotations
 import sys, traceback

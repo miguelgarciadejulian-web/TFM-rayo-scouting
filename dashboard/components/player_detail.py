@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 player_detail.py
 ================
@@ -23,6 +24,9 @@ from src.profiling.player_profile import (
 from src.fit.player_fit import evaluate_player_fit
 from src.utils.market import get_value
 from src.utils.leagues import league_name as _league_name
+from src.utils.lateral_position import (
+    build_lateral_map, lateral_pos_label, role_type_label, LATERAL_LABELS,
+)
 
 def _s(v) -> str | None:
     """None si el valor es vacío/nan."""
@@ -100,16 +104,63 @@ def _needs():
     return {}
 
 
-def player_options(min_minutes: int = 1000):
-    """Opciones para el buscador: jugadores con minutos en las 2 últimas temporadas."""
+@lru_cache(maxsize=1)
+def _player_lookup() -> pd.DataFrame:
+    """Tabla precalculada: un registro por jugador con su equipo más reciente.
+
+    Para traspasos de invierno (2 equipos en la misma temporada) se prefiere
+    el equipo NUEVO (distinto al de la temporada anterior).
+    Cacheada en memoria — se calcula una sola vez al arrancar.
+    """
     df = enriched()
     if df.empty:
+        return pd.DataFrame(columns=["name", "team", "_name_n"])
+
+    season_order = {"2025-2026": 6, "2025": 5, "2024-2025": 4,
+                    "2023-2024": 3, "2022-2023": 2, "2021-2022": 1}
+    df2 = df[["name", "team", "season"]].drop_duplicates()
+    df2 = df2.copy()
+    df2["_so"] = df2["season"].map(season_order).fillna(0)
+
+    # Para cada jugador: equipo de su temporada más reciente
+    # Si tiene 2 equipos en esa temporada, tomar el que difiere del anterior
+    df2 = df2.sort_values(["name", "_so", "team"], ascending=[True, False, True])
+
+    # Equipo más reciente simple
+    latest_simple = df2.drop_duplicates(subset=["name"], keep="first")[["name", "team", "_so"]]
+
+    # Detectar jugadores con 2 equipos en la temporada top → traspaso
+    top_so_per = df2.groupby("name")["_so"].max().reset_index().rename(columns={"_so": "_top"})
+    df2 = df2.merge(top_so_per, on="name")
+    in_top = df2[df2["_so"] == df2["_top"]]
+    multi = in_top.groupby("name").filter(lambda g: len(g) > 1)
+
+    if not multi.empty:
+        # Para los transferidos: equipo previo (primera temporada anterior)
+        prev = (df2[df2["_so"] < df2["_top"]]
+                .drop_duplicates(subset=["name"], keep="first")[["name", "team"]]
+                .rename(columns={"team": "_prev"}))
+        multi2 = multi.merge(prev, on="name", how="left")
+        new_clubs = multi2[multi2["team"] != multi2["_prev"]].drop_duplicates(subset=["name"], keep="first")
+        transferred_names = set(new_clubs["name"])
+        latest_simple = latest_simple[~latest_simple["name"].isin(transferred_names)]
+        latest_simple = pd.concat([latest_simple, new_clubs[["name", "team"]]], ignore_index=True)
+
+    latest_simple["_name_n"] = latest_simple["name"].map(_n)
+    return latest_simple[["name", "team", "_name_n"]]
+
+
+def player_options(search: str = "") -> list[dict]:
+    """Búsqueda server-side sobre la tabla precalculada. Devuelve hasta 50 resultados."""
+    if not search or len(search) < 2:
         return []
-    recent = df[df["season"].isin(["2024-2025", "2025-2026", "2025"])]
-    recent = recent[pd.to_numeric(recent["minutes"], errors="coerce").fillna(0) >= min_minutes]
-    opts = (recent[["name", "team"]].drop_duplicates()
-            .assign(lbl=lambda d: d["name"] + " · " + d["team"]))
-    return [{"label": r.lbl, "value": f"{r.name}|||{r.team}"} for r in opts.itertuples()]
+    lookup = _player_lookup()
+    if lookup.empty:
+        return []
+    q = _n(search)
+    matches = lookup[lookup["_name_n"].str.contains(q, na=False)].sort_values("name").head(50)
+    return [{"label": f"{r.name} · {r.team}", "value": f"{r.name}|||{r.team}"}
+            for r in matches.itertuples()]
 
 
 def _find_rows(name, team=None):
@@ -231,13 +282,22 @@ def _style_transparency(prof: dict, pct_for_fn):
     ], style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
                "borderRadius": "6px", "padding": "8px 10px", "marginTop": "4px"})
 
+    style_label = prof.get("style_label", "n/d")
     return html.Details([
-        html.Summary("¿Cómo se calcula el estilo? ▸", style={
-            "fontSize": "10px", "color": "#6B7280", "cursor": "pointer",
-            "marginBottom": "0", "userSelect": "none",
-        }),
+        html.Summary(
+            f"Estilo «{style_label}» — ¿cómo se calcula? ▸",
+            style={"fontSize": "10px", "color": "#1D4ED8", "cursor": "pointer",
+                   "marginBottom": "4px", "userSelect": "none", "fontWeight": "600"},
+        ),
+        html.P(
+            f"El estilo se asigna automáticamente según el rol principal detectado "
+            f"(★ {ROLE_LABELS.get(primary, primary)}). "
+            f"El rol se obtiene comparando las métricas del jugador con los pesos de cada rol.",
+            style={"fontSize": "9px", "color": "#6B7280", "margin": "0 0 6px",
+                   "fontStyle": "italic"},
+        ),
         panel,
-    ], style={"marginTop": "4px", "marginBottom": "4px"})
+    ], open=True, style={"marginTop": "4px", "marginBottom": "4px"})
 
 
 def _radar(role_scores: dict):
@@ -307,6 +367,42 @@ def build_detail(name, team=None, league=None, age=None,
     role_lbl = prof["primary_role_label"] if prof else "n/d"
     fit = evaluate_player_fit(prof, _needs(), coach_style) if prof and prof.get("primary_role") else None
 
+    # ── Posición lateral + tipologia: inferida + override manual ─────────────
+    _lat_code      = None
+    _role_type_key = None
+    try:
+        _lat_map   = build_lateral_map(
+            PROC / "player_seasons_enriched.parquet",
+            PROC / "master_players.parquet",
+        )
+        _player_row = _lat_map[_lat_map["name"] == str(latest["name"])]
+        if not _player_row.empty:
+            _lat_code      = _player_row.iloc[0].get("lateral_pos")
+            _role_type_key = _player_row.iloc[0].get("role_type")
+    except Exception:
+        pass
+    # Override manual desde player_overrides.json (tiene prioridad)
+    try:
+        _ov_path = PROC / "player_overrides.json"
+        if _ov_path.exists():
+            import unicodedata as _uda
+            _all_ovs = json.load(open(_ov_path, encoding="utf-8"))
+            _key_norm = (_uda.normalize("NFKD", str(latest["name"]))
+                         .encode("ascii", "ignore").decode().lower().strip())
+            _ov = _all_ovs.get(_key_norm, {})
+            if _ov.get("lateral_pos"):
+                _lat_code = _ov["lateral_pos"]
+            if _ov.get("role_type"):
+                _role_type_key = _ov["role_type"]
+    except Exception:
+        pass
+
+    _lat_label       = LATERAL_LABELS.get(_lat_code, "") if _lat_code else ""
+    _role_type_label = role_type_label(_role_type_key)
+    _FOOT_TRANS = {"right": "Der.", "left": "Izq.", "both": "Ambos"}
+    _foot_raw  = (mvinfo.get("foot") or "").strip().lower()
+    _foot_val  = _FOOT_TRANS.get(_foot_raw, _foot_raw)
+
     header = html.Div([
         foto_elem,
         html.Div([
@@ -315,13 +411,29 @@ def build_detail(name, team=None, league=None, age=None,
                 html.Span(real_team, style={"fontSize": "13px", "color": "#374151", "marginRight": "10px"}),
                 html.Span(_league_name(real_league), style={"fontSize": "12px", "color": "#6B7280"}),
             ], style={"marginBottom": "6px"}),
+            # Badges de posición y rol
             html.Div([
                 html.Span(role_lbl, style={"fontSize": "12px", "fontWeight": "700", "color": "#fff",
-                    "background": "#E30613", "borderRadius": "99px", "padding": "3px 12px"}),
-                html.Span(f"{latest.get('position_raw','')}", style={"fontSize": "11px",
-                    "color": "#6B7280", "marginLeft": "8px"}),
+                    "background": "#E30613", "borderRadius": "99px", "padding": "3px 12px",
+                    "marginRight": "6px"}),
+                *([ html.Span(_lat_label, style={
+                        "fontSize": "12px", "fontWeight": "700", "color": "#fff",
+                        "background": "#111827", "borderRadius": "99px",
+                        "padding": "3px 10px", "marginRight": "6px",
+                    }) ] if _lat_label else []),
+                *([ html.Span(_role_type_label, style={
+                        "fontSize": "11px", "color": "#374151",
+                        "background": "#F3F4F6", "borderRadius": "99px",
+                        "padding": "2px 9px", "marginRight": "6px",
+                    }) ] if _role_type_key and _role_type_key != "portero" else []),
+                *([ html.Span(
+                        f"Pie: {_foot_val}", style={
+                            "fontSize": "11px", "color": "#1D4ED8",
+                            "background": "#EFF6FF", "borderRadius": "99px",
+                            "padding": "2px 9px", "marginRight": "6px",
+                        }) ] if _foot_val else []),
                 (html.A("Ver en Transfermarkt", href=tm_url, target="_blank",
-                        style={"fontSize": "11px", "marginLeft": "10px", "color": "#1D4ED8"})
+                        style={"fontSize": "11px", "marginLeft": "4px", "color": "#1D4ED8"})
                  if tm_url else html.Span()),
             ]),
             html.Div([
@@ -344,7 +456,6 @@ def build_detail(name, team=None, league=None, age=None,
                                     "borderRadius": "99px", "padding": "2px 9px", "marginRight": "6px"})
                 for t in [
                     (f"Edad: {mvinfo['age']}" if mvinfo.get('age') else None),
-                    (f"Pie: {mvinfo['foot']}" if mvinfo.get('foot') else None),
                     (f"Altura: {mvinfo['height']} m" if mvinfo.get('height') else None),
                     (f"Pos. TM: {mvinfo['position']}" if mvinfo.get('position') else None),
                     (f"Nac.: {mvinfo['nationality']}" if mvinfo.get('nationality') else None),
@@ -429,19 +540,21 @@ def build_detail(name, team=None, league=None, age=None,
                        style={"fontSize": "12px", "color": "#6B7280", "margin": "0 0 8px"}),
                 _style_transparency(prof, _pct_for) if prof else html.Div(),
                 html.Div([
-                    html.Span(f"Confianza: {prof['confidence'] if prof else 'n/d'}", style={"fontSize": "10px",
-                        "background": "#F3F4F6", "borderRadius": "99px", "padding": "2px 8px", "marginRight": "5px"}),
-                    html.Span(f"Riesgo: {prof['risk_level'] if prof else 'n/d'}", style={"fontSize": "10px",
-                        "background": "#FEF3C7", "borderRadius": "99px", "padding": "2px 8px", "marginRight": "5px"}),
-                ]),
-                html.P(fit["compatibilidad_plantilla_txt"] if fit else "", style={"fontSize": "11px",
-                       "color": "#374151", "marginTop": "8px", "fontStyle": "italic"}),
+                    html.Span(f"Confianza: {prof['confidence'] if prof else 'n/d'}",
+                             style={"fontSize": "11px", "color": "#6B7280", "marginRight": "12px"}),
+                    html.Span(f"Potencial: {prof['potential'] if prof else 'n/d'}",
+                             style={"fontSize": "11px", "color": "#6B7280"}),
+                ], style={"marginBottom": "8px"}),
+                html.P("Fortalezas: " + (", ".join(prof["strengths"]) if prof and prof["strengths"] else "—"),
+                       style={"fontSize": "12px", "color": "#166534", "margin": "0 0 4px"}),
+                html.P("Debilidades: " + (", ".join(prof["weaknesses"]) if prof and prof["weaknesses"] else "—"),
+                       style={"fontSize": "12px", "color": "#991B1B", "margin": "0"}),
             ], md=7),
         ], className="mb-3"),
         html.P("Percentiles por métrica · histórico completo (vs su posición)", style={"fontSize": "11px",
                "fontWeight": "700", "color": "#9CA3AF", "textTransform": "uppercase", "marginBottom": "8px"}),
         dbc.Row(metric_cols),
-        html.P("Evolución por temporada", style={"fontSize": "11px", "fontWeight": "700",
+        html.P("Evolucion por temporada", style={"fontSize": "11px", "fontWeight": "700",
                "color": "#9CA3AF", "textTransform": "uppercase", "margin": "10px 0 8px"}),
         html.Div(html.Table([html.Thead(evo_head), html.Tbody(evo_body)],
                  style={"width": "100%", "borderCollapse": "collapse"}),

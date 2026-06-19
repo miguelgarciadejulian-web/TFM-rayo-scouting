@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Obtiene la URL de la foto de un jugador en Transfermarkt a partir de su nombre.
 Los resultados se cachean en data/external/cache/tm_photos.json para no

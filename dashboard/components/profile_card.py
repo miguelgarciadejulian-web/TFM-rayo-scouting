@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Componente reutilizable: tarjeta de perfil automatico + encaje de un jugador."""
 from __future__ import annotations
 import json

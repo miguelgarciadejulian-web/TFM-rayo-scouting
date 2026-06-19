@@ -22,10 +22,4 @@ target_style:
 context_weights:
   laliga_experience:     0.20   # experiencia en LaLiga (clave para adaptacion rapida)
   budget_fit:            0.15   # encaje con masa salarial reducida del club
-  squad_compatibility:   0.15   # compatibilidad con la plantilla actual
-
-# Referencias economicas para evaluar riesgo economico/clausula.
-economics:
-  target_salary_eur: 1500000        # salario de referencia para un tecnico Rayo
-  max_salary_eur: 2500000           # techo razonable
-  budget_salary_mass_eur: 53000000  # masa salarial objetivo (club_profile)
+  squad_compatibility:   0.15   # compatibilidad con la p

@@ -11,6 +11,7 @@
   "release_clause_eur": null,
   "formation_preferred": "4-2-3-1 / 4-4-2",
   "laliga_seasons": 4,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -28,6 +29,7 @@
    "uso_transiciones": 54.4,
    "flexibilidad_tactica": 10.5
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -80,22 +82,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Jagoba Arrasate",
-   "global_score": 89.2,
-   "score_10": 8.9,
+   "global_score": 85.2,
+   "score_10": 8.5,
    "subscores": {
-    "estilo": 87.4,
+    "estilo": 76.0,
     "experiencia_laliga": 100.0,
     "encaje_presupuesto": 100.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 85.5,
-    "posesion": 84.4,
-    "solidez_defensiva": 88.2,
-    "tendencia_ofensiva": 75.0,
-    "verticalidad": 99.3,
-    "intensidad_defensiva": 86.6,
-    "uso_transiciones": 92.4
+    "presion_alta": 62.5,
+    "posesion": 68.1,
+    "solidez_defensiva": 94.9,
+    "tendencia_ofensiva": 93.3,
+    "verticalidad": 95.4,
+    "intensidad_defensiva": 86.9,
+    "uso_transiciones": 61.1
    },
    "pros_auto": [
     "Amplia experiencia en LaLiga (4 temporadas en los datos).",
@@ -117,111 +119,123 @@
   }
  },
  {
-  "name": "Ernesto Valverde",
+  "name": "Quique Sánchez Flores",
   "age": 61,
-  "nationality": "Española (Euskadi)",
+  "nationality": "España",
   "current_club": null,
-  "last_club": "Athletic Club",
-  "available": true,
-  "contract_status": "Libre (contrato finalizado jun-2026)",
-  "salary_estimate_eur": 2000000,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
   "release_clause_eur": null,
-  "formation_preferred": "4-4-2 / 4-2-3-1",
-  "laliga_seasons": 3,
+  "formation_preferred": null,
+  "laliga_seasons": 4,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
-   "Vocacion ofensiva",
-   "Solidez defensiva"
+   "Sin balon / reactivo",
+   "Alta intensidad"
   ],
-  "description_auto": "Equipos con una posesion media del 49.2% (percentil 52 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
+  "description_auto": "Equipos con una posesion media del 44.5% (percentil 26 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
   "axes": {
-   "tendencia_ofensiva": 70.6,
-   "solidez_defensiva": 82.8,
-   "presion_alta": 62.8,
-   "intensidad_defensiva": 54.7,
-   "verticalidad": 60.4,
-   "posesion_pct_real": 49.2,
-   "posesion": 52.0,
-   "uso_transiciones": 58.7,
-   "flexibilidad_tactica": 15.2
+   "tendencia_ofensiva": 35.1,
+   "solidez_defensiva": 48.3,
+   "presion_alta": 60.1,
+   "intensidad_defensiva": 66.7,
+   "verticalidad": 50.1,
+   "posesion_pct_real": 44.5,
+   "posesion": 26.2,
+   "uso_transiciones": 54.2,
+   "flexibilidad_tactica": 46.6
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Athletic Club",
+     "Deportivo Alavés",
+     "2025-2026"
+    ],
+    [
+     "Getafe CF",
+     "2021-2022"
+    ],
+    [
+     "Getafe CF",
      "2022-2023"
     ],
     [
-     "Athletic Club",
+     "Sevilla FC",
      "2023-2024"
-    ],
-    [
-     "Athletic Club",
-     "2024-2025"
     ]
    ],
    "requested": [
     [
-     "Athletic Club",
+     "Deportivo Alavés",
+     "2025-2026"
+    ],
+    [
+     "Getafe CF",
+     "2021-2022"
+    ],
+    [
+     "Getafe CF",
      "2022-2023"
     ],
     [
-     "Athletic Club",
+     "Sevilla FC",
      "2023-2024"
-    ],
-    [
-     "Athletic Club",
-     "2024-2025"
     ]
    ],
-   "n_rows": 3,
+   "n_rows": 4,
    "teams": [
-    "Athletic Club"
+    "Deportivo Alavés",
+    "Getafe CF",
+    "Sevilla FC"
    ],
    "seasons": [
+    "2021-2022",
     "2022-2023",
     "2023-2024",
-    "2024-2025"
+    "2025-2026"
    ]
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Ernesto Valverde",
-   "global_score": 84.3,
-   "score_10": 8.4,
+   "name": "Quique Sánchez Flores",
+   "global_score": 79.1,
+   "score_10": 7.9,
    "subscores": {
-    "estilo": 92.7,
-    "experiencia_laliga": 75.0,
-    "encaje_presupuesto": 75.0,
-    "compatibilidad_plantilla": 78.0
+    "estilo": 75.7,
+    "experiencia_laliga": 100.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 99.2,
-    "posesion": 100.0,
-    "solidez_defensiva": 82.2,
-    "tendencia_ofensiva": 84.4,
-    "verticalidad": 97.6,
-    "intensidad_defensiva": 92.7,
-    "uso_transiciones": 96.7
+    "presion_alta": 75.1,
+    "posesion": 57.9,
+    "solidez_defensiva": 90.0,
+    "tendencia_ofensiva": 88.2,
+    "verticalidad": 86.8,
+    "intensidad_defensiva": 95.0,
+    "uso_transiciones": 60.9
    },
    "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
     "Presion alta e intensa, identidad afin a Vallecas.",
-    "Amplia experiencia en LaLiga (3 temporadas en los datos).",
-    "Disponible / libre: sin coste de rescision.",
-    "Estilo compatible con el perfil de la plantilla actual."
+    "Amplia experiencia en LaLiga (4 temporadas en los datos)."
    ],
-   "contras_auto": [],
+   "contras_auto": [
+    "Produccion ofensiva baja en sus equipos; poca generacion."
+   ],
    "risks": {
     "deportivo": "medio",
-    "economico": "medio",
-    "clausula": "bajo",
+    "economico": "bajo",
+    "clausula": "medio",
     "adaptacion_laliga": "bajo",
-    "incompatibilidad_plantilla": "bajo"
+    "incompatibilidad_plantilla": "medio"
    },
    "data_partial": false,
-   "coverage_n": 3
+   "coverage_n": 4
   }
  },
  {
@@ -236,6 +250,7 @@
   "release_clause_eur": null,
   "formation_preferred": "4-4-2 / 4-2-3-1",
   "laliga_seasons": 3,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -254,6 +269,7 @@
    "uso_transiciones": 55.5,
    "flexibilidad_tactica": 15.9
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -297,22 +313,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Pepe Bordalás",
-   "global_score": 84.0,
-   "score_10": 8.4,
+   "global_score": 77.8,
+   "score_10": 7.8,
    "subscores": {
-    "estilo": 87.0,
+    "estilo": 74.5,
     "experiencia_laliga": 75.0,
     "encaje_presupuesto": 100.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 95.0,
-    "posesion": 63.7,
-    "solidez_defensiva": 86.2,
-    "tendencia_ofensiva": 76.9,
-    "verticalidad": 89.7,
-    "intensidad_defensiva": 93.8,
-    "uso_transiciones": 93.5
+    "presion_alta": 72.0,
+    "posesion": 47.4,
+    "solidez_defensiva": 92.9,
+    "tendencia_ofensiva": 91.4,
+    "verticalidad": 84.4,
+    "intensidad_defensiva": 93.5,
+    "uso_transiciones": 62.2
    },
    "pros_auto": [
     "Amplia experiencia en LaLiga (3 temporadas en los datos).",
@@ -334,78 +350,71 @@
   }
  },
  {
-  "name": "Diego Simeone",
-  "age": 56,
-  "nationality": "Argentina",
+  "name": "Ernesto Valverde",
+  "age": 61,
+  "nationality": "Española (Euskadi)",
   "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "last_club": "Athletic Club",
+  "available": true,
+  "contract_status": "Libre (contrato finalizado jun-2026)",
+  "salary_estimate_eur": 2000000,
   "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 4,
+  "formation_preferred": "4-4-2 / 4-2-3-1",
+  "laliga_seasons": 3,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
    "Vocacion ofensiva",
    "Solidez defensiva"
   ],
-  "description_auto": "Equipos con una posesion media del 51.1% (percentil 65 de su liga). Intensidad de presion media y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
+  "description_auto": "Equipos con una posesion media del 49.2% (percentil 52 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
   "axes": {
-   "tendencia_ofensiva": 71.9,
-   "solidez_defensiva": 80.1,
-   "presion_alta": 40.9,
-   "intensidad_defensiva": 31.2,
-   "verticalidad": 56.1,
-   "posesion_pct_real": 51.1,
-   "posesion": 65.0,
-   "uso_transiciones": 52.9,
-   "flexibilidad_tactica": 9.6
+   "tendencia_ofensiva": 70.6,
+   "solidez_defensiva": 82.8,
+   "presion_alta": 62.8,
+   "intensidad_defensiva": 54.7,
+   "verticalidad": 60.4,
+   "posesion_pct_real": 49.2,
+   "posesion": 52.0,
+   "uso_transiciones": 58.7,
+   "flexibilidad_tactica": 15.2
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Club Atlético de Madrid",
-     "2021-2022"
-    ],
-    [
-     "Club Atlético de Madrid",
+     "Athletic Club",
      "2022-2023"
     ],
     [
-     "Club Atlético de Madrid",
+     "Athletic Club",
      "2023-2024"
     ],
     [
-     "Club Atlético de Madrid",
+     "Athletic Club",
      "2024-2025"
     ]
    ],
    "requested": [
     [
-     "Club Atlético de Madrid",
-     "2021-2022"
-    ],
-    [
-     "Club Atlético de Madrid",
+     "Athletic Club",
      "2022-2023"
     ],
     [
-     "Club Atlético de Madrid",
+     "Athletic Club",
      "2023-2024"
     ],
     [
-     "Club Atlético de Madrid",
+     "Athletic Club",
      "2024-2025"
     ]
    ],
-   "n_rows": 4,
+   "n_rows": 3,
    "teams": [
-    "Club Atlético de Madrid"
+    "Athletic Club"
    ],
    "seasons": [
-    "2021-2022",
     "2022-2023",
     "2023-2024",
     "2024-2025"
@@ -413,52 +422,56 @@
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Diego Simeone",
-   "global_score": 81.7,
-   "score_10": 8.2,
+   "name": "Ernesto Valverde",
+   "global_score": 76.3,
+   "score_10": 7.6,
    "subscores": {
-    "estilo": 84.3,
-    "experiencia_laliga": 100.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
+    "estilo": 74.9,
+    "experiencia_laliga": 75.0,
+    "encaje_presupuesto": 80.7,
+    "compatibilidad_plantilla": 78.0
    },
    "style_detail": {
-    "presion_alta": 78.9,
-    "posesion": 87.0,
-    "solidez_defensiva": 84.9,
-    "tendencia_ofensiva": 83.1,
-    "verticalidad": 98.1,
-    "intensidad_defensiva": 69.2,
-    "uso_transiciones": 90.9
+    "presion_alta": 77.8,
+    "posesion": 83.7,
+    "solidez_defensiva": 75.5,
+    "tendencia_ofensiva": 52.7,
+    "verticalidad": 97.1,
+    "intensidad_defensiva": 93.0,
+    "uso_transiciones": 65.4
    },
    "pros_auto": [
     "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
-    "Amplia experiencia en LaLiga (4 temporadas en los datos)."
+    "Presion alta e intensa, identidad afin a Vallecas.",
+    "Amplia experiencia en LaLiga (3 temporadas en los datos).",
+    "Disponible / libre: sin coste de rescision.",
+    "Estilo compatible con el perfil de la plantilla actual."
    ],
    "contras_auto": [],
    "risks": {
     "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "medio",
+    "economico": "medio",
+    "clausula": "bajo",
     "adaptacion_laliga": "bajo",
-    "incompatibilidad_plantilla": "medio"
+    "incompatibilidad_plantilla": "bajo"
    },
    "data_partial": false,
-   "coverage_n": 4
+   "coverage_n": 3
   }
  },
  {
   "name": "Manuel Pellegrini",
-  "age": 72,
+  "age": 71,
   "nationality": "Chile",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "current_club": "Real Betis Balompié",
+  "last_club": "Real Betis Balompié",
+  "available": false,
+  "contract_status": "Contrato vigente Real Betis",
+  "salary_estimate_eur": 5000000,
   "release_clause_eur": null,
-  "formation_preferred": null,
+  "formation_preferred": "4-2-3-1 / 4-3-3",
   "laliga_seasons": 4,
+  "segunda_seasons": 0,
   "style_main": "Presion alta / Posicional",
   "style_tags": [
    "Presion alta",
@@ -479,6 +492,7 @@
    "uso_transiciones": 61.3,
    "flexibilidad_tactica": 20.4
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -530,252 +544,38 @@
   "data_partial": false,
   "evaluation": {
    "name": "Manuel Pellegrini",
-   "global_score": 80.8,
-   "score_10": 8.1,
+   "global_score": 74.5,
+   "score_10": 7.4,
    "subscores": {
-    "estilo": 86.6,
+    "estilo": 80.2,
     "experiencia_laliga": 100.0,
-    "encaje_presupuesto": 60.0,
+    "encaje_presupuesto": 30.0,
     "compatibilidad_plantilla": 57.0
    },
    "style_detail": {
-    "presion_alta": 78.3,
-    "posesion": 84.0,
-    "solidez_defensiva": 94.8,
-    "tendencia_ofensiva": 77.0,
-    "verticalidad": 85.8,
-    "intensidad_defensiva": 79.1,
-    "uso_transiciones": 99.3
+    "presion_alta": 98.7,
+    "posesion": 99.7,
+    "solidez_defensiva": 98.5,
+    "tendencia_ofensiva": 45.3,
+    "verticalidad": 91.1,
+    "intensidad_defensiva": 78.8,
+    "uso_transiciones": 68.0
    },
    "pros_auto": [
     "Presion alta e intensa, identidad afin a Vallecas.",
     "Genera mucho peligro en transiciones rapidas.",
     "Amplia experiencia en LaLiga (4 temporadas en los datos)."
    ],
-   "contras_auto": [],
+   "contras_auto": [
+    "Salario por encima de la referencia del club.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
+   ],
    "risks": {
     "deportivo": "medio",
-    "economico": "bajo",
+    "economico": "alto",
     "clausula": "medio",
     "adaptacion_laliga": "bajo",
     "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 4
-  }
- },
- {
-  "name": "Quique Sánchez Flores",
-  "age": 61,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 3,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 43.3% (percentil 20 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 31.9,
-   "solidez_defensiva": 58.3,
-   "presion_alta": 64.6,
-   "intensidad_defensiva": 67.0,
-   "verticalidad": 57.1,
-   "posesion_pct_real": 43.3,
-   "posesion": 20.3,
-   "uso_transiciones": 58.8,
-   "flexibilidad_tactica": 52.7
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Getafe CF",
-     "2021-2022"
-    ],
-    [
-     "Getafe CF",
-     "2022-2023"
-    ],
-    [
-     "Sevilla FC",
-     "2023-2024"
-    ]
-   ],
-   "requested": [
-    [
-     "Getafe CF",
-     "2021-2022"
-    ],
-    [
-     "Getafe CF",
-     "2022-2023"
-    ],
-    [
-     "Sevilla FC",
-     "2023-2024"
-    ]
-   ],
-   "n_rows": 3,
-   "teams": [
-    "Getafe CF",
-    "Sevilla FC"
-   ],
-   "seasons": [
-    "2021-2022",
-    "2022-2023",
-    "2023-2024"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Quique Sánchez Flores",
-   "global_score": 80.0,
-   "score_10": 8.0,
-   "subscores": {
-    "estilo": 91.0,
-    "experiencia_laliga": 75.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 97.4,
-    "posesion": 68.3,
-    "solidez_defensiva": 93.3,
-    "tendencia_ofensiva": 76.9,
-    "verticalidad": 99.1,
-    "intensidad_defensiva": 95.0,
-    "uso_transiciones": 96.8
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Amplia experiencia en LaLiga (3 temporadas en los datos)."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "bajo",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 3
-  }
- },
- {
-  "name": "Marcelino García Toral",
-  "age": 60,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 3,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Vocacion ofensiva"
-  ],
-  "description_auto": "Equipos con una posesion media del 48.0% (percentil 43 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de marcada vocacion ofensiva.",
-  "axes": {
-   "tendencia_ofensiva": 67.3,
-   "solidez_defensiva": 33.6,
-   "presion_alta": 50.7,
-   "intensidad_defensiva": 45.2,
-   "verticalidad": 59.4,
-   "posesion_pct_real": 48.0,
-   "posesion": 43.0,
-   "uso_transiciones": 60.3,
-   "flexibilidad_tactica": 15.4
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Athletic Club",
-     "2021-2022"
-    ],
-    [
-     "Villarreal CF",
-     "2023-2024"
-    ],
-    [
-     "Villarreal CF",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Athletic Club",
-     "2021-2022"
-    ],
-    [
-     "Villarreal CF",
-     "2023-2024"
-    ],
-    [
-     "Villarreal CF",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 4,
-   "teams": [
-    "Athletic Club",
-    "Villarreal CF",
-    "Villarreal CF II"
-   ],
-   "seasons": [
-    "2021-2022",
-    "2023-2024",
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Marcelino García Toral",
-   "global_score": 79.7,
-   "score_10": 8.0,
-   "subscores": {
-    "estilo": 86.8,
-    "experiencia_laliga": 75.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 82.0
-   },
-   "style_detail": {
-    "presion_alta": 88.7,
-    "posesion": 91.0,
-    "solidez_defensiva": 68.6,
-    "tendencia_ofensiva": 87.7,
-    "verticalidad": 98.6,
-    "intensidad_defensiva": 83.2,
-    "uso_transiciones": 98.3
-   },
-   "pros_auto": [
-    "Genera mucho peligro en transiciones rapidas.",
-    "Amplia experiencia en LaLiga (3 temporadas en los datos).",
-    "Estilo compatible con el perfil de la plantilla actual."
-   ],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "bajo",
-    "incompatibilidad_plantilla": "bajo"
    },
    "data_partial": false,
    "coverage_n": 4
@@ -793,6 +593,7 @@
   "release_clause_eur": null,
   "formation_preferred": "4-3-3 / 4-2-3-1",
   "laliga_seasons": 4,
+  "segunda_seasons": 1,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio",
@@ -811,6 +612,7 @@
    "uso_transiciones": 39.9,
    "flexibilidad_tactica": 14.9
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -862,22 +664,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Imanol Alguacil",
-   "global_score": 78.1,
-   "score_10": 7.8,
+   "global_score": 73.3,
+   "score_10": 7.3,
    "subscores": {
-    "estilo": 87.7,
+    "estilo": 72.1,
     "experiencia_laliga": 100.0,
-    "encaje_presupuesto": 50.0,
+    "encaje_presupuesto": 57.1,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 89.4,
-    "posesion": 76.1,
-    "solidez_defensiva": 96.1,
-    "tendencia_ofensiva": 88.7,
-    "verticalidad": 89.9,
-    "intensidad_defensiva": 92.6,
-    "uso_transiciones": 77.9
+    "presion_alta": 66.4,
+    "posesion": 92.4,
+    "solidez_defensiva": 89.4,
+    "tendencia_ofensiva": 79.6,
+    "verticalidad": 84.6,
+    "intensidad_defensiva": 92.9,
+    "uso_transiciones": 46.6
    },
    "pros_auto": [
     "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
@@ -900,6 +702,238 @@
   }
  },
  {
+  "name": "Marcelino García Toral",
+  "age": 60,
+  "nationality": "Española (Asturias)",
+  "current_club": "Villarreal CF",
+  "last_club": "Villarreal CF",
+  "available": false,
+  "contract_status": "Contrato vigente Villarreal CF",
+  "salary_estimate_eur": 2500000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-4-2 / 4-2-3-1",
+  "laliga_seasons": 3,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Vocacion ofensiva"
+  ],
+  "description_auto": "Equipos con una posesion media del 48.0% (percentil 43 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de marcada vocacion ofensiva.",
+  "axes": {
+   "tendencia_ofensiva": 67.3,
+   "solidez_defensiva": 33.6,
+   "presion_alta": 50.7,
+   "intensidad_defensiva": 45.2,
+   "verticalidad": 59.4,
+   "posesion_pct_real": 48.0,
+   "posesion": 43.0,
+   "uso_transiciones": 60.3,
+   "flexibilidad_tactica": 15.4
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Athletic Club",
+     "2021-2022"
+    ],
+    [
+     "Villarreal CF",
+     "2023-2024"
+    ],
+    [
+     "Villarreal CF",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Athletic Club",
+     "2021-2022"
+    ],
+    [
+     "Villarreal CF",
+     "2023-2024"
+    ],
+    [
+     "Villarreal CF",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 4,
+   "teams": [
+    "Athletic Club",
+    "Villarreal CF",
+    "Villarreal CF II"
+   ],
+   "seasons": [
+    "2021-2022",
+    "2023-2024",
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Marcelino García Toral",
+   "global_score": 71.9,
+   "score_10": 7.2,
+   "subscores": {
+    "estilo": 71.5,
+    "experiencia_laliga": 75.0,
+    "encaje_presupuesto": 57.1,
+    "compatibilidad_plantilla": 82.0
+   },
+   "style_detail": {
+    "presion_alta": 65.7,
+    "posesion": 74.7,
+    "solidez_defensiva": 75.3,
+    "tendencia_ofensiva": 56.0,
+    "verticalidad": 96.1,
+    "intensidad_defensiva": 83.5,
+    "uso_transiciones": 67.0
+   },
+   "pros_auto": [
+    "Genera mucho peligro en transiciones rapidas.",
+    "Amplia experiencia en LaLiga (3 temporadas en los datos).",
+    "Estilo compatible con el perfil de la plantilla actual."
+   ],
+   "contras_auto": [
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Salario por encima de la referencia del club.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
+   ],
+   "risks": {
+    "deportivo": "medio",
+    "economico": "medio",
+    "clausula": "medio",
+    "adaptacion_laliga": "bajo",
+    "incompatibilidad_plantilla": "bajo"
+   },
+   "data_partial": false,
+   "coverage_n": 4
+  }
+ },
+ {
+  "name": "Diego Simeone",
+  "age": 54,
+  "nationality": "Argentina",
+  "current_club": "Club Atlético de Madrid",
+  "last_club": "Club Atlético de Madrid",
+  "available": false,
+  "contract_status": "Contrato vigente Atlético de Madrid",
+  "salary_estimate_eur": 20000000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-4-2 / 4-2-3-1",
+  "laliga_seasons": 4,
+  "segunda_seasons": 0,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Vocacion ofensiva",
+   "Solidez defensiva"
+  ],
+  "description_auto": "Equipos con una posesion media del 51.1% (percentil 65 de su liga). Intensidad de presion media y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
+  "axes": {
+   "tendencia_ofensiva": 71.9,
+   "solidez_defensiva": 80.1,
+   "presion_alta": 40.9,
+   "intensidad_defensiva": 31.2,
+   "verticalidad": 56.1,
+   "posesion_pct_real": 51.1,
+   "posesion": 65.0,
+   "uso_transiciones": 52.9,
+   "flexibilidad_tactica": 9.6
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Club Atlético de Madrid",
+     "2021-2022"
+    ],
+    [
+     "Club Atlético de Madrid",
+     "2022-2023"
+    ],
+    [
+     "Club Atlético de Madrid",
+     "2023-2024"
+    ],
+    [
+     "Club Atlético de Madrid",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Club Atlético de Madrid",
+     "2021-2022"
+    ],
+    [
+     "Club Atlético de Madrid",
+     "2022-2023"
+    ],
+    [
+     "Club Atlético de Madrid",
+     "2023-2024"
+    ],
+    [
+     "Club Atlético de Madrid",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 4,
+   "teams": [
+    "Club Atlético de Madrid"
+   ],
+   "seasons": [
+    "2021-2022",
+    "2022-2023",
+    "2023-2024",
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Diego Simeone",
+   "global_score": 71.3,
+   "score_10": 7.1,
+   "subscores": {
+    "estilo": 68.1,
+    "experiencia_laliga": 100.0,
+    "encaje_presupuesto": 30.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 55.9,
+    "posesion": 96.7,
+    "solidez_defensiva": 78.2,
+    "tendencia_ofensiva": 51.4,
+    "verticalidad": 92.8,
+    "intensidad_defensiva": 69.5,
+    "uso_transiciones": 59.6
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
+    "Amplia experiencia en LaLiga (4 temporadas en los datos)."
+   ],
+   "contras_auto": [
+    "Salario por encima de la referencia del club.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
+   ],
+   "risks": {
+    "deportivo": "medio",
+    "economico": "alto",
+    "clausula": "medio",
+    "adaptacion_laliga": "bajo",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 4
+  }
+ },
+ {
   "name": "Luis García Plaza",
   "age": 53,
   "nationality": "España",
@@ -911,6 +945,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 3,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -928,6 +963,7 @@
    "uso_transiciones": 51.9,
    "flexibilidad_tactica": 17.8
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -971,22 +1007,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Luis García Plaza",
-   "global_score": 76.4,
-   "score_10": 7.6,
+   "global_score": 70.5,
+   "score_10": 7.0,
    "subscores": {
-    "estilo": 83.8,
+    "estilo": 71.6,
     "experiencia_laliga": 75.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 92.1,
-    "posesion": 63.7,
-    "solidez_defensiva": 76.9,
-    "tendencia_ofensiva": 77.2,
-    "verticalidad": 82.4,
-    "intensidad_defensiva": 98.2,
-    "uso_transiciones": 89.9
+    "presion_alta": 69.1,
+    "posesion": 47.4,
+    "solidez_defensiva": 83.6,
+    "tendencia_ofensiva": 91.1,
+    "verticalidad": 77.1,
+    "intensidad_defensiva": 97.9,
+    "uso_transiciones": 58.6
    },
    "pros_auto": [
     "Amplia experiencia en LaLiga (3 temporadas en los datos)."
@@ -1007,195 +1043,90 @@
   }
  },
  {
-  "name": "Sergio González",
-  "age": 49,
-  "nationality": "España",
+  "name": "Vicente Moreno",
+  "age": 46,
+  "nationality": "Española (Valencia)",
   "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "last_club": "RCD Mallorca",
+  "available": true,
+  "contract_status": "Libre",
+  "salary_estimate_eur": 700000,
   "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 3,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Presion alta",
-   "Sin balon / reactivo",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 41.7% (percentil 9 de su liga). Intensidad de presion elevada y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 17.3,
-   "solidez_defensiva": 50.5,
-   "presion_alta": 70.6,
-   "intensidad_defensiva": 69.9,
-   "verticalidad": 43.3,
-   "posesion_pct_real": 41.7,
-   "posesion": 9.5,
-   "uso_transiciones": 52.3,
-   "flexibilidad_tactica": 8.2
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Cádiz CF",
-     "2021-2022"
-    ],
-    [
-     "Cádiz CF",
-     "2022-2023"
-    ],
-    [
-     "Cádiz CF",
-     "2023-2024"
-    ]
-   ],
-   "requested": [
-    [
-     "Cádiz CF",
-     "2021-2022"
-    ],
-    [
-     "Cádiz CF",
-     "2022-2023"
-    ],
-    [
-     "Cádiz CF",
-     "2023-2024"
-    ]
-   ],
-   "n_rows": 3,
-   "teams": [
-    "Cádiz CF"
-   ],
-   "seasons": [
-    "2021-2022",
-    "2022-2023",
-    "2023-2024"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Sergio González",
-   "global_score": 75.8,
-   "score_10": 7.6,
-   "subscores": {
-    "estilo": 82.6,
-    "experiencia_laliga": 75.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 91.4,
-    "posesion": 57.5,
-    "solidez_defensiva": 85.5,
-    "tendencia_ofensiva": 62.3,
-    "verticalidad": 85.3,
-    "intensidad_defensiva": 92.1,
-    "uso_transiciones": 90.3
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Amplia experiencia en LaLiga (3 temporadas en los datos)."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "bajo",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 3
-  }
- },
- {
-  "name": "Francisco Rodríguez",
-  "age": 51,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
+  "formation_preferred": "4-4-2 / 4-2-3-1",
   "laliga_seasons": 2,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
-   "Presion alta",
-   "Alta intensidad"
+   "Bloque medio-bajo",
+   "Sin balon / reactivo"
   ],
-  "description_auto": "Equipos con una posesion media del 48.5% (percentil 46 de su liga). Intensidad de presion elevada y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
+  "description_auto": "Equipos con una posesion media del 46.4% (percentil 33 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
   "axes": {
-   "tendencia_ofensiva": 36.0,
-   "solidez_defensiva": 44.6,
-   "presion_alta": 70.7,
-   "intensidad_defensiva": 66.3,
-   "verticalidad": 57.6,
-   "posesion_pct_real": 48.5,
-   "posesion": 46.2,
-   "uso_transiciones": 52.1,
-   "flexibilidad_tactica": 18.0
+   "tendencia_ofensiva": 29.1,
+   "solidez_defensiva": 42.0,
+   "presion_alta": 31.1,
+   "intensidad_defensiva": 35.0,
+   "verticalidad": 47.9,
+   "posesion_pct_real": 46.4,
+   "posesion": 33.2,
+   "uso_transiciones": 49.8,
+   "flexibilidad_tactica": 5.3
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Elche CF",
-     "2021-2022"
+     "CA Osasuna",
+     "2024-2025"
     ],
     [
-     "Rayo Vallecano de Madrid",
-     "2023-2024"
+     "Reial Club Deportiu Espanyol de Barcelona",
+     "2021-2022"
     ]
    ],
    "requested": [
     [
-     "Elche CF",
-     "2021-2022"
+     "CA Osasuna",
+     "2024-2025"
     ],
     [
-     "Rayo Vallecano de Madrid",
-     "2023-2024"
+     "Reial Club Deportiu Espanyol de Barcelona",
+     "2021-2022"
     ]
    ],
    "n_rows": 2,
    "teams": [
-    "Elche CF",
-    "Rayo Vallecano de Madrid"
+    "CA Osasuna",
+    "Reial Club Deportiu Espanyol de Barcelona"
    ],
    "seasons": [
     "2021-2022",
-    "2023-2024"
+    "2024-2025"
    ]
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Francisco Rodríguez",
-   "global_score": 75.3,
-   "score_10": 7.5,
+   "name": "Vicente Moreno",
+   "global_score": 68.3,
+   "score_10": 6.8,
    "subscores": {
-    "estilo": 89.2,
+    "estilo": 68.1,
     "experiencia_laliga": 50.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 78.0
+    "encaje_presupuesto": 100.0,
+    "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 91.3,
-    "posesion": 94.2,
-    "solidez_defensiva": 79.6,
-    "tendencia_ofensiva": 81.0,
-    "verticalidad": 99.6,
-    "intensidad_defensiva": 95.7,
-    "uso_transiciones": 90.1
+    "presion_alta": 46.1,
+    "posesion": 64.9,
+    "solidez_defensiva": 83.7,
+    "tendencia_ofensiva": 94.2,
+    "verticalidad": 84.6,
+    "intensidad_defensiva": 73.3,
+    "uso_transiciones": 56.5
    },
    "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Estilo compatible con el perfil de la plantilla actual."
+    "Coste salarial compatible con la masa salarial reducida del club.",
+    "Disponible / libre: sin coste de rescision."
    ],
    "contras_auto": [
     "Produccion ofensiva baja en sus equipos; poca generacion."
@@ -1203,26 +1134,228 @@
    "risks": {
     "deportivo": "medio",
     "economico": "bajo",
-    "clausula": "medio",
+    "clausula": "bajo",
     "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "bajo"
+    "incompatibilidad_plantilla": "medio"
    },
    "data_partial": false,
    "coverage_n": 2
   }
  },
  {
+  "name": "Diego Martínez",
+  "age": 44,
+  "nationality": "Española (Galicia)",
+  "current_club": null,
+  "last_club": "RCD Espanyol",
+  "available": true,
+  "contract_status": "Libre",
+  "salary_estimate_eur": 900000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-2-3-1 / 4-4-2",
+  "laliga_seasons": 2,
+  "segunda_seasons": 0,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Sin balon / reactivo",
+   "Juego elaborado"
+  ],
+  "description_auto": "Equipos con una posesion media del 46.8% (percentil 37 de su liga). Intensidad de presion media y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 41.6,
+   "solidez_defensiva": 8.5,
+   "presion_alta": 46.4,
+   "intensidad_defensiva": 56.4,
+   "verticalidad": 34.1,
+   "posesion_pct_real": 46.8,
+   "posesion": 37.8,
+   "uso_transiciones": 44.0,
+   "flexibilidad_tactica": 35.6
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Reial Club Deportiu Espanyol de Barcelona",
+     "2022-2023"
+    ],
+    [
+     "UD Las Palmas",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Reial Club Deportiu Espanyol de Barcelona",
+     "2022-2023"
+    ],
+    [
+     "UD Las Palmas",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 2,
+   "teams": [
+    "Reial Club Deportiu Espanyol de Barcelona",
+    "UD Las Palmas"
+   ],
+   "seasons": [
+    "2022-2023",
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Diego Martínez",
+   "global_score": 67.2,
+   "score_10": 6.7,
+   "subscores": {
+    "estilo": 65.5,
+    "experiencia_laliga": 50.0,
+    "encaje_presupuesto": 100.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 61.4,
+    "posesion": 69.5,
+    "solidez_defensiva": 50.2,
+    "tendencia_ofensiva": 81.7,
+    "verticalidad": 70.8,
+    "intensidad_defensiva": 94.7,
+    "uso_transiciones": 50.7
+   },
+   "pros_auto": [
+    "Coste salarial compatible con la masa salarial reducida del club.",
+    "Disponible / libre: sin coste de rescision."
+   ],
+   "contras_auto": [
+    "Produccion ofensiva baja en sus equipos; poca generacion.",
+    "Sus equipos encajan con facilidad; riesgo defensivo."
+   ],
+   "risks": {
+    "deportivo": "medio",
+    "economico": "bajo",
+    "clausula": "bajo",
+    "adaptacion_laliga": "medio",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 2
+  }
+ },
+ {
+  "name": "Asier Garitano",
+  "age": 52,
+  "nationality": "Española (Euskadi)",
+  "current_club": null,
+  "last_club": "SD Eibar",
+  "available": true,
+  "contract_status": "Libre",
+  "salary_estimate_eur": 800000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-2-3-1 / 4-4-2",
+  "laliga_seasons": 2,
+  "segunda_seasons": 1,
+  "style_main": "Juego directo / Transiciones",
+  "style_tags": [
+   "Bloque medio",
+   "Juego directo / vertical",
+   "Vocacion ofensiva",
+   "Solidez defensiva"
+  ],
+  "description_auto": "Equipos con una posesion media del 51.0% (percentil 59 de su liga). Intensidad de presion media y intensidad defensiva media. En salida tiende al juego directo y vertical. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
+  "axes": {
+   "tendencia_ofensiva": 84.5,
+   "solidez_defensiva": 68.8,
+   "presion_alta": 57.5,
+   "intensidad_defensiva": 53.9,
+   "verticalidad": 72.1,
+   "posesion_pct_real": 51.0,
+   "posesion": 59.5,
+   "uso_transiciones": 65.1,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "SD Eibar",
+     "2021-2022"
+    ]
+   ],
+   "requested": [
+    [
+     "SD Eibar",
+     "2020-2021"
+    ],
+    [
+     "SD Eibar",
+     "2021-2022"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "SD Eibar"
+   ],
+   "seasons": [
+    "2021-2022"
+   ]
+  },
+  "data_partial": true,
+  "evaluation": {
+   "name": "Asier Garitano",
+   "global_score": 66.5,
+   "score_10": 6.6,
+   "subscores": {
+    "estilo": 74.1,
+    "experiencia_laliga": 50.0,
+    "encaje_presupuesto": 100.0,
+    "compatibilidad_plantilla": 90.0
+   },
+   "style_detail": {
+    "presion_alta": 72.5,
+    "posesion": 91.2,
+    "solidez_defensiva": 89.5,
+    "tendencia_ofensiva": 38.8,
+    "verticalidad": 91.2,
+    "intensidad_defensiva": 92.2,
+    "uso_transiciones": 71.8
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
+    "Genera mucho peligro en transiciones rapidas.",
+    "Coste salarial compatible con la masa salarial reducida del club.",
+    "Disponible / libre: sin coste de rescision.",
+    "Estilo compatible con el perfil de la plantilla actual."
+   ],
+   "contras_auto": [
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "bajo",
+    "adaptacion_laliga": "medio",
+    "incompatibilidad_plantilla": "bajo"
+   },
+   "data_partial": true,
+   "coverage_n": 1
+  }
+ },
+ {
   "name": "Carlo Ancelotti",
   "age": 66,
-  "nationality": "Italia",
+  "nationality": "Italiana",
   "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "last_club": "Real Madrid CF",
+  "available": true,
+  "contract_status": "Libre (salida Real Madrid jun-2025)",
+  "salary_estimate_eur": 15000000,
   "release_clause_eur": null,
-  "formation_preferred": null,
+  "formation_preferred": "4-3-3 / 4-4-2",
   "laliga_seasons": 4,
+  "segunda_seasons": 0,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio-bajo",
@@ -1243,6 +1376,7 @@
    "uso_transiciones": 64.2,
    "flexibilidad_tactica": 10.3
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -1294,236 +1428,41 @@
   "data_partial": false,
   "evaluation": {
    "name": "Carlo Ancelotti",
-   "global_score": 74.8,
-   "score_10": 7.5,
+   "global_score": 66.5,
+   "score_10": 6.6,
    "subscores": {
-    "estilo": 74.6,
+    "estilo": 61.5,
     "experiencia_laliga": 100.0,
-    "encaje_presupuesto": 60.0,
+    "encaje_presupuesto": 30.0,
     "compatibilidad_plantilla": 57.0
    },
    "style_detail": {
-    "presion_alta": 77.3,
-    "posesion": 59.2,
-    "solidez_defensiva": 75.2,
-    "tendencia_ofensiva": 59.3,
-    "verticalidad": 72.2,
-    "intensidad_defensiva": 64.8,
-    "uso_transiciones": 97.8
+    "presion_alta": 54.3,
+    "posesion": 75.5,
+    "solidez_defensiva": 68.5,
+    "tendencia_ofensiva": 27.6,
+    "verticalidad": 77.5,
+    "intensidad_defensiva": 65.1,
+    "uso_transiciones": 70.9
    },
    "pros_auto": [
     "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
     "Genera mucho peligro en transiciones rapidas.",
-    "Amplia experiencia en LaLiga (4 temporadas en los datos)."
+    "Amplia experiencia en LaLiga (4 temporadas en los datos).",
+    "Disponible / libre: sin coste de rescision."
    ],
-   "contras_auto": [],
+   "contras_auto": [
+    "Salario por encima de la referencia del club."
+   ],
    "risks": {
     "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "medio",
+    "economico": "alto",
+    "clausula": "bajo",
     "adaptacion_laliga": "bajo",
     "incompatibilidad_plantilla": "medio"
    },
    "data_partial": false,
    "coverage_n": 4
-  }
- },
- {
-  "name": "Vicente Moreno",
-  "age": 46,
-  "nationality": "Española (Valencia)",
-  "current_club": null,
-  "last_club": "RCD Mallorca",
-  "available": true,
-  "contract_status": "Libre",
-  "salary_estimate_eur": 700000,
-  "release_clause_eur": null,
-  "formation_preferred": "4-4-2 / 4-2-3-1",
-  "laliga_seasons": 2,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Sin balon / reactivo"
-  ],
-  "description_auto": "Equipos con una posesion media del 46.4% (percentil 33 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 29.1,
-   "solidez_defensiva": 42.0,
-   "presion_alta": 31.1,
-   "intensidad_defensiva": 35.0,
-   "verticalidad": 47.9,
-   "posesion_pct_real": 46.4,
-   "posesion": 33.2,
-   "uso_transiciones": 49.8,
-   "flexibilidad_tactica": 5.3
-  },
-  "coverage": {
-   "matched": [
-    [
-     "CA Osasuna",
-     "2024-2025"
-    ],
-    [
-     "Reial Club Deportiu Espanyol de Barcelona",
-     "2021-2022"
-    ]
-   ],
-   "requested": [
-    [
-     "CA Osasuna",
-     "2024-2025"
-    ],
-    [
-     "Reial Club Deportiu Espanyol de Barcelona",
-     "2021-2022"
-    ]
-   ],
-   "n_rows": 2,
-   "teams": [
-    "CA Osasuna",
-    "Reial Club Deportiu Espanyol de Barcelona"
-   ],
-   "seasons": [
-    "2021-2022",
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Vicente Moreno",
-   "global_score": 74.7,
-   "score_10": 7.5,
-   "subscores": {
-    "estilo": 78.4,
-    "experiencia_laliga": 50.0,
-    "encaje_presupuesto": 100.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 69.1,
-    "posesion": 81.2,
-    "solidez_defensiva": 77.0,
-    "tendencia_ofensiva": 74.1,
-    "verticalidad": 89.9,
-    "intensidad_defensiva": 73.0,
-    "uso_transiciones": 87.8
-   },
-   "pros_auto": [
-    "Coste salarial compatible con la masa salarial reducida del club.",
-    "Disponible / libre: sin coste de rescision."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "bajo",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 2
-  }
- },
- {
-  "name": "Diego Martínez",
-  "age": 44,
-  "nationality": "Española (Galicia)",
-  "current_club": null,
-  "last_club": "RCD Espanyol",
-  "available": true,
-  "contract_status": "Libre",
-  "salary_estimate_eur": 900000,
-  "release_clause_eur": null,
-  "formation_preferred": "4-2-3-1 / 4-4-2",
-  "laliga_seasons": 2,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo",
-   "Juego elaborado"
-  ],
-  "description_auto": "Equipos con una posesion media del 46.8% (percentil 37 de su liga). Intensidad de presion media y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 41.6,
-   "solidez_defensiva": 8.5,
-   "presion_alta": 46.4,
-   "intensidad_defensiva": 56.4,
-   "verticalidad": 34.1,
-   "posesion_pct_real": 46.8,
-   "posesion": 37.8,
-   "uso_transiciones": 44.0,
-   "flexibilidad_tactica": 35.6
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Reial Club Deportiu Espanyol de Barcelona",
-     "2022-2023"
-    ],
-    [
-     "UD Las Palmas",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Reial Club Deportiu Espanyol de Barcelona",
-     "2022-2023"
-    ],
-    [
-     "UD Las Palmas",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 2,
-   "teams": [
-    "Reial Club Deportiu Espanyol de Barcelona",
-    "UD Las Palmas"
-   ],
-   "seasons": [
-    "2022-2023",
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Diego Martínez",
-   "global_score": 73.8,
-   "score_10": 7.4,
-   "subscores": {
-    "estilo": 76.6,
-    "experiencia_laliga": 50.0,
-    "encaje_presupuesto": 100.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 84.4,
-    "posesion": 85.8,
-    "solidez_defensiva": 43.5,
-    "tendencia_ofensiva": 86.6,
-    "verticalidad": 76.1,
-    "intensidad_defensiva": 94.4,
-    "uso_transiciones": 82.0
-   },
-   "pros_auto": [
-    "Coste salarial compatible con la masa salarial reducida del club.",
-    "Disponible / libre: sin coste de rescision."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sus equipos encajan con facilidad; riesgo defensivo."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "bajo",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 2
   }
  },
  {
@@ -1538,6 +1477,7 @@
   "release_clause_eur": null,
   "formation_preferred": "4-2-3-1 / 4-3-3",
   "laliga_seasons": 2,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -1556,6 +1496,7 @@
    "uso_transiciones": 33.0,
    "flexibilidad_tactica": 18.8
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -1589,22 +1530,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Rubén Baraja",
-   "global_score": 73.8,
-   "score_10": 7.4,
+   "global_score": 66.5,
+   "score_10": 6.6,
    "subscores": {
-    "estilo": 76.6,
+    "estilo": 64.0,
     "experiencia_laliga": 50.0,
     "encaje_presupuesto": 100.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 83.1,
-    "posesion": 80.0,
-    "solidez_defensiva": 85.3,
-    "tendencia_ofensiva": 65.1,
-    "verticalidad": 59.2,
-    "intensidad_defensiva": 84.0,
-    "uso_transiciones": 71.0
+    "presion_alta": 60.1,
+    "posesion": 63.7,
+    "solidez_defensiva": 92.0,
+    "tendencia_ofensiva": 96.8,
+    "verticalidad": 53.9,
+    "intensidad_defensiva": 84.3,
+    "uso_transiciones": 39.7
    },
    "pros_auto": [
     "Coste salarial compatible con la masa salarial reducida del club.",
@@ -1622,409 +1563,6 @@
    },
    "data_partial": false,
    "coverage_n": 2
-  }
- },
- {
-  "name": "Javier Aguirre",
-  "age": 67,
-  "nationality": "México",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 2,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Presion alta",
-   "Sin balon / reactivo",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 43.0% (percentil 16 de su liga). Intensidad de presion elevada y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 19.5,
-   "solidez_defensiva": 63.7,
-   "presion_alta": 69.6,
-   "intensidad_defensiva": 78.0,
-   "verticalidad": 56.6,
-   "posesion_pct_real": 43.0,
-   "posesion": 16.2,
-   "uso_transiciones": 57.3,
-   "flexibilidad_tactica": 26.9
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Real Club Deportivo Mallorca",
-     "2022-2023"
-    ],
-    [
-     "Real Club Deportivo Mallorca",
-     "2023-2024"
-    ]
-   ],
-   "requested": [
-    [
-     "Real Club Deportivo Mallorca",
-     "2022-2023"
-    ],
-    [
-     "Real Club Deportivo Mallorca",
-     "2023-2024"
-    ]
-   ],
-   "n_rows": 2,
-   "teams": [
-    "Real Club Deportivo Mallorca"
-   ],
-   "seasons": [
-    "2022-2023",
-    "2023-2024"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Javier Aguirre",
-   "global_score": 73.3,
-   "score_10": 7.3,
-   "subscores": {
-    "estilo": 87.6,
-    "experiencia_laliga": 50.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 92.4,
-    "posesion": 64.2,
-    "solidez_defensiva": 98.7,
-    "tendencia_ofensiva": 64.5,
-    "verticalidad": 98.6,
-    "intensidad_defensiva": 84.0,
-    "uso_transiciones": 95.3
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
-    "Presion alta e intensa, identidad afin a Vallecas."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 2
-  }
- },
- {
-  "name": "Gaizka Garitano",
-  "age": 52,
-  "nationality": "Española (Euskadi)",
-  "current_club": null,
-  "last_club": "Athletic Club",
-  "available": true,
-  "contract_status": "Libre",
-  "salary_estimate_eur": 800000,
-  "release_clause_eur": null,
-  "formation_preferred": "4-2-3-1 / 4-4-2",
-  "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo"
-  ],
-  "description_auto": "Equipos con una posesion media del 47.2% (percentil 34 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 57.5,
-   "solidez_defensiva": 27.3,
-   "presion_alta": 46.4,
-   "intensidad_defensiva": 57.7,
-   "verticalidad": 42.1,
-   "posesion_pct_real": 47.2,
-   "posesion": 34.9,
-   "uso_transiciones": 52.1,
-   "flexibilidad_tactica": 16.5
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Cádiz CF",
-     "2024-2025"
-    ],
-    [
-     "UD Almería",
-     "2023-2024"
-    ]
-   ],
-   "requested": [
-    [
-     "Cádiz CF",
-     "2024-2025"
-    ],
-    [
-     "UD Almería",
-     "2023-2024"
-    ]
-   ],
-   "n_rows": 2,
-   "teams": [
-    "Cádiz CF",
-    "UD Almería"
-   ],
-   "seasons": [
-    "2023-2024",
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Gaizka Garitano",
-   "global_score": 72.4,
-   "score_10": 7.2,
-   "subscores": {
-    "estilo": 83.8,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 100.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 84.4,
-    "posesion": 82.9,
-    "solidez_defensiva": 62.3,
-    "tendencia_ofensiva": 97.5,
-    "verticalidad": 84.1,
-    "intensidad_defensiva": 95.7,
-    "uso_transiciones": 90.1
-   },
-   "pros_auto": [
-    "Coste salarial compatible con la masa salarial reducida del club.",
-    "Disponible / libre: sin coste de rescision."
-   ],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "bajo",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 2
-  }
- },
- {
-  "name": "Andoni Iraola",
-  "age": 42,
-  "nationality": "Española (Euskadi)",
-  "current_club": "Liverpool FC",
-  "last_club": "Bournemouth AFC",
-  "available": false,
-  "contract_status": "Firmado con Liverpool (4 jun-2026)",
-  "salary_estimate_eur": 6000000,
-  "release_clause_eur": null,
-  "formation_preferred": "4-3-3 / 4-2-3-1",
-  "laliga_seasons": 2,
-  "style_main": "Presion alta / Transiciones",
-  "style_tags": [
-   "Presion alta",
-   "Juego directo / vertical"
-  ],
-  "description_auto": "Equipos con una posesion media del 50.0% (percentil 57 de su liga). Intensidad de presion elevada y intensidad defensiva media. En salida tiende al juego directo y vertical. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 56.6,
-   "solidez_defensiva": 40.8,
-   "presion_alta": 76.1,
-   "intensidad_defensiva": 65.1,
-   "verticalidad": 69.2,
-   "posesion_pct_real": 50.0,
-   "posesion": 57.5,
-   "uso_transiciones": 58.7,
-   "flexibilidad_tactica": 10.4
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Rayo Vallecano de Madrid",
-     "2021-2022"
-    ],
-    [
-     "Rayo Vallecano de Madrid",
-     "2022-2023"
-    ]
-   ],
-   "requested": [
-    [
-     "Rayo Vallecano de Madrid",
-     "2021-2022"
-    ],
-    [
-     "Rayo Vallecano de Madrid",
-     "2022-2023"
-    ]
-   ],
-   "n_rows": 2,
-   "teams": [
-    "Rayo Vallecano de Madrid"
-   ],
-   "seasons": [
-    "2021-2022",
-    "2022-2023"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Andoni Iraola",
-   "global_score": 71.1,
-   "score_10": 7.1,
-   "subscores": {
-    "estilo": 89.8,
-    "experiencia_laliga": 50.0,
-    "encaje_presupuesto": 30.0,
-    "compatibilidad_plantilla": 78.0
-   },
-   "style_detail": {
-    "presion_alta": 85.9,
-    "posesion": 94.5,
-    "solidez_defensiva": 75.8,
-    "tendencia_ofensiva": 98.4,
-    "verticalidad": 88.8,
-    "intensidad_defensiva": 96.9,
-    "uso_transiciones": 96.7
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Estilo compatible con el perfil de la plantilla actual."
-   ],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Salario por encima de la referencia del club.",
-    "Bajo contrato: requeriria negociacion/indemnizacion."
-   ],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "alto",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "bajo"
-   },
-   "data_partial": false,
-   "coverage_n": 2
-  }
- },
- {
-  "name": "Xavi Hernández",
-  "age": 46,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 3,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio",
-   "Dominio de balon",
-   "Juego directo / vertical",
-   "Vocacion ofensiva",
-   "Solidez defensiva"
-  ],
-  "description_auto": "Equipos con una posesion media del 64.0% (percentil 97 de su liga). Intensidad de presion media y intensidad defensiva reducida. En salida tiende al juego directo y vertical. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
-  "axes": {
-   "tendencia_ofensiva": 89.7,
-   "solidez_defensiva": 82.9,
-   "presion_alta": 41.0,
-   "intensidad_defensiva": 26.0,
-   "verticalidad": 86.5,
-   "posesion_pct_real": 64.0,
-   "posesion": 97.0,
-   "uso_transiciones": 62.1,
-   "flexibilidad_tactica": 2.5
-  },
-  "coverage": {
-   "matched": [
-    [
-     "FC Barcelona",
-     "2021-2022"
-    ],
-    [
-     "FC Barcelona",
-     "2022-2023"
-    ],
-    [
-     "FC Barcelona",
-     "2023-2024"
-    ]
-   ],
-   "requested": [
-    [
-     "FC Barcelona",
-     "2021-2022"
-    ],
-    [
-     "FC Barcelona",
-     "2022-2023"
-    ],
-    [
-     "FC Barcelona",
-     "2023-2024"
-    ]
-   ],
-   "n_rows": 3,
-   "teams": [
-    "FC Barcelona"
-   ],
-   "seasons": [
-    "2021-2022",
-    "2022-2023",
-    "2023-2024"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Xavi Hernández",
-   "global_score": 71.0,
-   "score_10": 7.1,
-   "subscores": {
-    "estilo": 76.8,
-    "experiencia_laliga": 75.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 57.0
-   },
-   "style_detail": {
-    "presion_alta": 79.0,
-    "posesion": 55.0,
-    "solidez_defensiva": 82.1,
-    "tendencia_ofensiva": 65.3,
-    "verticalidad": 71.5,
-    "intensidad_defensiva": 64.0,
-    "uso_transiciones": 99.9
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
-    "Genera mucho peligro en transiciones rapidas.",
-    "Amplia experiencia en LaLiga (3 temporadas en los datos)."
-   ],
-   "contras_auto": [],
-   "risks": {
-    "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "bajo",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 3
   }
  },
  {
@@ -2039,6 +1577,7 @@
   "release_clause_eur": null,
   "formation_preferred": "4-3-3 / 4-2-3-1",
   "laliga_seasons": 3,
+  "segunda_seasons": 0,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio-bajo",
@@ -2056,6 +1595,7 @@
    "uso_transiciones": 41.7,
    "flexibilidad_tactica": 29.7
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -2098,22 +1638,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Míchel Sánchez",
-   "global_score": 69.8,
-   "score_10": 7.0,
+   "global_score": 65.1,
+   "score_10": 6.5,
    "subscores": {
-    "estilo": 73.6,
+    "estilo": 60.4,
     "experiencia_laliga": 75.0,
-    "encaje_presupuesto": 75.0,
+    "encaje_presupuesto": 80.7,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 67.8,
-    "posesion": 73.7,
-    "solidez_defensiva": 67.4,
-    "tendencia_ofensiva": 89.3,
-    "verticalidad": 86.0,
-    "intensidad_defensiva": 57.0,
-    "uso_transiciones": 79.7
+    "presion_alta": 44.8,
+    "posesion": 90.0,
+    "solidez_defensiva": 74.1,
+    "tendencia_ofensiva": 57.6,
+    "verticalidad": 80.7,
+    "intensidad_defensiva": 57.3,
+    "uso_transiciones": 48.4
    },
    "pros_auto": [
     "Amplia experiencia en LaLiga (3 temporadas en los datos).",
@@ -2135,93 +1675,111 @@
   }
  },
  {
-  "name": "Quique Setién",
-  "age": 67,
-  "nationality": "Española (Cantabria)",
-  "current_club": null,
-  "last_club": "FC Barcelona",
-  "available": true,
-  "contract_status": "Libre",
-  "salary_estimate_eur": 1500000,
+  "name": "Andoni Iraola",
+  "age": 42,
+  "nationality": "Española (Euskadi)",
+  "current_club": "Liverpool FC",
+  "last_club": "Bournemouth AFC",
+  "available": false,
+  "contract_status": "Firmado con Liverpool (4 jun-2026)",
+  "salary_estimate_eur": 6000000,
   "release_clause_eur": null,
-  "formation_preferred": "4-3-3",
-  "laliga_seasons": 1,
-  "style_main": "Posicional / Dominio de balon",
+  "formation_preferred": "4-3-3 / 4-2-3-1",
+  "laliga_seasons": 2,
+  "segunda_seasons": 0,
+  "style_main": "Presion alta / Transiciones",
   "style_tags": [
-   "Bloque medio",
-   "Dominio de balon",
-   "Juego directo / vertical",
-   "Vocacion ofensiva"
+   "Presion alta",
+   "Juego directo / vertical"
   ],
-  "description_auto": "Equipos con una posesion media del 54.5% (percentil 77 de su liga). Intensidad de presion media y intensidad defensiva reducida. En salida tiende al juego directo y vertical. Muestra un perfil de marcada vocacion ofensiva.",
+  "description_auto": "Equipos con una posesion media del 50.0% (percentil 57 de su liga). Intensidad de presion elevada y intensidad defensiva media. En salida tiende al juego directo y vertical. Muestra un perfil equilibrado entre ataque y defensa.",
   "axes": {
-   "tendencia_ofensiva": 71.8,
-   "solidez_defensiva": 56.7,
-   "presion_alta": 48.6,
-   "intensidad_defensiva": 29.7,
-   "verticalidad": 71.8,
-   "posesion_pct_real": 54.5,
-   "posesion": 77.8,
-   "uso_transiciones": 56.9,
-   "flexibilidad_tactica": 27.0
+   "tendencia_ofensiva": 56.6,
+   "solidez_defensiva": 40.8,
+   "presion_alta": 76.1,
+   "intensidad_defensiva": 65.1,
+   "verticalidad": 69.2,
+   "posesion_pct_real": 50.0,
+   "posesion": 57.5,
+   "uso_transiciones": 58.7,
+   "flexibilidad_tactica": 10.4
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Villarreal CF",
+     "Rayo Vallecano de Madrid",
+     "2021-2022"
+    ],
+    [
+     "Rayo Vallecano de Madrid",
      "2022-2023"
     ]
    ],
    "requested": [
     [
-     "Villarreal CF",
+     "Bournemouth AFC",
+     "2023-2024"
+    ],
+    [
+     "Bournemouth AFC",
+     "2024-2025"
+    ],
+    [
+     "Rayo Vallecano de Madrid",
+     "2021-2022"
+    ],
+    [
+     "Rayo Vallecano de Madrid",
      "2022-2023"
     ]
    ],
    "n_rows": 2,
    "teams": [
-    "Villarreal CF",
-    "Villarreal CF II"
+    "Rayo Vallecano de Madrid"
    ],
    "seasons": [
+    "2021-2022",
     "2022-2023"
    ]
   },
-  "data_partial": false,
+  "data_partial": true,
   "evaluation": {
-   "name": "Quique Setién",
-   "global_score": 69.3,
-   "score_10": 6.9,
+   "name": "Andoni Iraola",
+   "global_score": 64.4,
+   "score_10": 6.4,
    "subscores": {
-    "estilo": 85.2,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 100.0,
-    "compatibilidad_plantilla": 45.0
+    "estilo": 80.7,
+    "experiencia_laliga": 50.0,
+    "encaje_presupuesto": 30.0,
+    "compatibilidad_plantilla": 78.0
    },
    "style_detail": {
-    "presion_alta": 86.6,
-    "posesion": 74.2,
-    "solidez_defensiva": 91.7,
-    "tendencia_ofensiva": 83.2,
-    "verticalidad": 86.2,
-    "intensidad_defensiva": 67.7,
-    "uso_transiciones": 94.9
+    "presion_alta": 91.1,
+    "posesion": 89.2,
+    "solidez_defensiva": 82.5,
+    "tendencia_ofensiva": 66.7,
+    "verticalidad": 94.1,
+    "intensidad_defensiva": 96.6,
+    "uso_transiciones": 65.4
    },
    "pros_auto": [
-    "Coste salarial compatible con la masa salarial reducida del club.",
-    "Disponible / libre: sin coste de rescision."
+    "Presion alta e intensa, identidad afin a Vallecas.",
+    "Estilo compatible con el perfil de la plantilla actual."
    ],
    "contras_auto": [
-    "Su estilo exige perfiles de los que la plantilla anda escasa."
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Salario por encima de la referencia del club.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
    ],
    "risks": {
     "deportivo": "medio",
-    "economico": "bajo",
-    "clausula": "bajo",
+    "economico": "alto",
+    "clausula": "medio",
     "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio-alto"
+    "incompatibilidad_plantilla": "bajo"
    },
-   "data_partial": false,
+   "data_partial": true,
    "coverage_n": 2
   }
  },
@@ -2237,6 +1795,7 @@
   "release_clause_eur": null,
   "formation_preferred": "4-3-3 / 4-2-3-1",
   "laliga_seasons": 2,
+  "segunda_seasons": 0,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio",
@@ -2255,6 +1814,7 @@
    "uso_transiciones": 27.7,
    "flexibilidad_tactica": 53.3
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -2289,22 +1849,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "García Pimienta",
-   "global_score": 69.2,
-   "score_10": 6.9,
+   "global_score": 62.9,
+   "score_10": 6.3,
    "subscores": {
-    "estilo": 75.0,
+    "estilo": 64.2,
     "experiencia_laliga": 50.0,
     "encaje_presupuesto": 100.0,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 79.4,
-    "posesion": 77.2,
-    "solidez_defensiva": 76.0,
-    "tendencia_ofensiva": 79.6,
-    "verticalidad": 68.5,
-    "intensidad_defensiva": 79.8,
-    "uso_transiciones": 65.7
+    "presion_alta": 56.4,
+    "posesion": 93.5,
+    "solidez_defensiva": 82.7,
+    "tendencia_ofensiva": 88.7,
+    "verticalidad": 63.2,
+    "intensidad_defensiva": 80.1,
+    "uso_transiciones": 34.4
    },
    "pros_auto": [
     "Coste salarial compatible con la masa salarial reducida del club."
@@ -2327,6 +1887,192 @@
   }
  },
  {
+  "name": "Gaizka Garitano",
+  "age": 52,
+  "nationality": "Española (Euskadi)",
+  "current_club": null,
+  "last_club": "Athletic Club",
+  "available": true,
+  "contract_status": "Libre",
+  "salary_estimate_eur": 800000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-2-3-1 / 4-4-2",
+  "laliga_seasons": 1,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Sin balon / reactivo"
+  ],
+  "description_auto": "Equipos con una posesion media del 47.2% (percentil 34 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 57.5,
+   "solidez_defensiva": 27.3,
+   "presion_alta": 46.4,
+   "intensidad_defensiva": 57.7,
+   "verticalidad": 42.1,
+   "posesion_pct_real": 47.2,
+   "posesion": 34.9,
+   "uso_transiciones": 52.1,
+   "flexibilidad_tactica": 16.5
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Cádiz CF",
+     "2024-2025"
+    ],
+    [
+     "UD Almería",
+     "2023-2024"
+    ]
+   ],
+   "requested": [
+    [
+     "Cádiz CF",
+     "2024-2025"
+    ],
+    [
+     "UD Almería",
+     "2023-2024"
+    ]
+   ],
+   "n_rows": 2,
+   "teams": [
+    "Cádiz CF",
+    "UD Almería"
+   ],
+   "seasons": [
+    "2023-2024",
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Gaizka Garitano",
+   "global_score": 61.2,
+   "score_10": 6.1,
+   "subscores": {
+    "estilo": 67.3,
+    "experiencia_laliga": 25.0,
+    "encaje_presupuesto": 100.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 61.4,
+    "posesion": 66.6,
+    "solidez_defensiva": 69.0,
+    "tendencia_ofensiva": 65.8,
+    "verticalidad": 78.8,
+    "intensidad_defensiva": 96.0,
+    "uso_transiciones": 58.8
+   },
+   "pros_auto": [
+    "Coste salarial compatible con la masa salarial reducida del club.",
+    "Disponible / libre: sin coste de rescision."
+   ],
+   "contras_auto": [
+    "Sus equipos encajan con facilidad; riesgo defensivo."
+   ],
+   "risks": {
+    "deportivo": "medio",
+    "economico": "bajo",
+    "clausula": "bajo",
+    "adaptacion_laliga": "medio",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 2
+  }
+ },
+ {
+  "name": "Álvaro Cervera",
+  "age": 57,
+  "nationality": "Española (Andalucía)",
+  "current_club": null,
+  "last_club": "Cádiz CF",
+  "available": true,
+  "contract_status": "Libre",
+  "salary_estimate_eur": 700000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-4-2 / 4-2-3-1",
+  "laliga_seasons": 1,
+  "segunda_seasons": 0,
+  "style_main": "Bloque solido / Reactivo",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Sin balon / reactivo",
+   "Juego directo / vertical",
+   "Solidez defensiva",
+   "Peligro en transicion"
+  ],
+  "description_auto": "[Estimacion por perfil declarado - sin datos OPTA] Equipos con una posesion media del 38.0% (percentil 3 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida tiende al juego directo y vertical. Muestra un perfil de prioridad defensiva y orden. Genera peligro especialmente en transiciones rapidas.",
+  "axes": {
+   "posesion": 3.2,
+   "posesion_pct_real": 38.0,
+   "presion_alta": 25.0,
+   "intensidad_defensiva": 28.919938941727267,
+   "tendencia_ofensiva": 32.0,
+   "solidez_defensiva": 80.0,
+   "verticalidad": 75.0,
+   "uso_transiciones": 72.9,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "yaml_proxy",
+  "coverage": {
+   "matched": [],
+   "requested": [
+    [
+     "Cádiz CF",
+     "2020-2021"
+    ]
+   ],
+   "n_rows": 0
+  },
+  "data_partial": true,
+  "evaluation": {
+   "name": "Álvaro Cervera",
+   "global_score": 57.2,
+   "score_10": 5.7,
+   "subscores": {
+    "estilo": 68.7,
+    "experiencia_laliga": 25.0,
+    "encaje_presupuesto": 100.0,
+    "compatibilidad_plantilla": 82.0
+   },
+   "style_detail": {
+    "presion_alta": 40.0,
+    "posesion": 34.9,
+    "solidez_defensiva": 78.3,
+    "tendencia_ofensiva": 91.3,
+    "verticalidad": 88.3,
+    "intensidad_defensiva": 67.2,
+    "uso_transiciones": 79.6
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
+    "Genera mucho peligro en transiciones rapidas.",
+    "Coste salarial compatible con la masa salarial reducida del club.",
+    "Disponible / libre: sin coste de rescision.",
+    "Estilo compatible con el perfil de la plantilla actual."
+   ],
+   "contras_auto": [
+    "Produccion ofensiva baja en sus equipos; poca generacion.",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "bajo",
+    "adaptacion_laliga": "medio",
+    "incompatibilidad_plantilla": "bajo"
+   },
+   "data_partial": true,
+   "coverage_n": 0
+  }
+ },
+ {
   "name": "Carles Martínez Novell",
   "age": 42,
   "nationality": "Española (Cataluña)",
@@ -2338,91 +2084,82 @@
   "release_clause_eur": null,
   "formation_preferred": "4-2-3-1 / 4-3-3",
   "laliga_seasons": 0,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo",
-   "Juego elaborado"
+   "Bloque medio"
   ],
-  "description_auto": "Equipos con una posesion media del 46.3% (percentil 33 de su liga). Intensidad de presion media y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "description_auto": "Equipos con una posesion media del 47.7% (percentil 43 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
   "axes": {
-   "tendencia_ofensiva": 48.6,
-   "solidez_defensiva": 49.2,
-   "presion_alta": 47.8,
-   "intensidad_defensiva": 57.8,
-   "verticalidad": 37.5,
-   "posesion_pct_real": 46.3,
-   "posesion": 33.8,
-   "uso_transiciones": 48.3,
-   "flexibilidad_tactica": 29.6
+   "tendencia_ofensiva": 47.8,
+   "solidez_defensiva": 48.2,
+   "presion_alta": 53.6,
+   "intensidad_defensiva": 60.7,
+   "verticalidad": 44.7,
+   "posesion_pct_real": 47.7,
+   "posesion": 43.3,
+   "uso_transiciones": 48.9,
+   "flexibilidad_tactica": 26.9
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Toulouse",
+     "Toulouse FC",
      "2022-2023"
     ],
     [
-     "Toulouse",
+     "Toulouse FC",
      "2023-2024"
     ],
     [
-     "Toulouse",
+     "Toulouse FC",
      "2024-2025"
-    ],
-    [
-     "Toulouse",
-     "2025-2026"
     ]
    ],
    "requested": [
     [
-     "Toulouse",
+     "Toulouse FC",
      "2022-2023"
     ],
     [
-     "Toulouse",
+     "Toulouse FC",
      "2023-2024"
     ],
     [
-     "Toulouse",
+     "Toulouse FC",
      "2024-2025"
-    ],
-    [
-     "Toulouse",
-     "2025-2026"
     ]
    ],
-   "n_rows": 4,
+   "n_rows": 3,
    "teams": [
     "Toulouse FC"
    ],
    "seasons": [
     "2022-2023",
     "2023-2024",
-    "2024-2025",
-    "2025-2026"
+    "2024-2025"
    ]
   },
   "data_partial": false,
   "evaluation": {
    "name": "Carles Martínez Novell",
-   "global_score": 68.8,
-   "score_10": 6.9,
+   "global_score": 56.6,
+   "score_10": 5.7,
    "subscores": {
-    "estilo": 86.7,
+    "estilo": 72.4,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 100.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 85.8,
-    "posesion": 81.8,
-    "solidez_defensiva": 84.2,
-    "tendencia_ofensiva": 93.6,
-    "verticalidad": 79.5,
-    "intensidad_defensiva": 95.8,
-    "uso_transiciones": 86.3
+    "presion_alta": 68.6,
+    "posesion": 75.0,
+    "solidez_defensiva": 89.9,
+    "tendencia_ofensiva": 75.5,
+    "verticalidad": 81.4,
+    "intensidad_defensiva": 99.0,
+    "uso_transiciones": 55.6
    },
    "pros_auto": [
     "Coste salarial compatible con la masa salarial reducida del club.",
@@ -2439,7 +2176,110 @@
     "incompatibilidad_plantilla": "medio"
    },
    "data_partial": false,
-   "coverage_n": 4
+   "coverage_n": 3
+  }
+ },
+ {
+  "name": "Beñat San José",
+  "age": 47,
+  "nationality": "Española (Euskadi)",
+  "current_club": "SD Eibar",
+  "last_club": "SD Eibar",
+  "available": false,
+  "contract_status": "Contrato vigente (1ª RFEF → ascenso play-offs)",
+  "salary_estimate_eur": 600000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-2-3-1 / 4-4-2",
+  "laliga_seasons": 0,
+  "segunda_seasons": 2,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Juego elaborado",
+   "Solidez defensiva",
+   "Alta intensidad"
+  ],
+  "description_auto": "Equipos con una posesion media del 49.6% (percentil 49 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida prioriza la elaboracion y el pase corto. Muestra un perfil de prioridad defensiva y orden.",
+  "axes": {
+   "tendencia_ofensiva": 45.9,
+   "solidez_defensiva": 78.4,
+   "presion_alta": 51.5,
+   "intensidad_defensiva": 67.4,
+   "verticalidad": 36.1,
+   "posesion_pct_real": 49.6,
+   "posesion": 49.5,
+   "uso_transiciones": 42.4,
+   "flexibilidad_tactica": 11.1
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "SD Eibar",
+     "2024-2025"
+    ],
+    [
+     "SD Eibar",
+     "2025-2026"
+    ]
+   ],
+   "requested": [
+    [
+     "SD Eibar",
+     "2024-2025"
+    ],
+    [
+     "SD Eibar",
+     "2025-2026"
+    ]
+   ],
+   "n_rows": 2,
+   "teams": [
+    "SD Eibar"
+   ],
+   "seasons": [
+    "2024-2025",
+    "2025-2026"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Beñat San José",
+   "global_score": 56.4,
+   "score_10": 5.6,
+   "subscores": {
+    "estilo": 69.1,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 100.0,
+    "compatibilidad_plantilla": 78.0
+   },
+   "style_detail": {
+    "presion_alta": 66.5,
+    "posesion": 81.2,
+    "solidez_defensiva": 79.9,
+    "tendencia_ofensiva": 77.4,
+    "verticalidad": 72.8,
+    "intensidad_defensiva": 94.3,
+    "uso_transiciones": 49.1
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
+    "Coste salarial compatible con la masa salarial reducida del club.",
+    "Estilo compatible con el perfil de la plantilla actual."
+   ],
+   "contras_auto": [
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
+   ],
+   "risks": {
+    "deportivo": "medio",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "bajo"
+   },
+   "data_partial": false,
+   "coverage_n": 2
   }
  },
  {
@@ -2454,6 +2294,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 1,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -2472,6 +2313,7 @@
    "uso_transiciones": 52.1,
    "flexibilidad_tactica": 8.2
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -2506,22 +2348,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Alessio Lisci",
-   "global_score": 68.0,
-   "score_10": 6.8,
+   "global_score": 55.8,
+   "score_10": 5.6,
    "subscores": {
-    "estilo": 87.0,
+    "estilo": 68.7,
     "experiencia_laliga": 25.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 91.0,
-    "posesion": 77.0,
-    "solidez_defensiva": 77.5,
-    "tendencia_ofensiva": 99.2,
-    "verticalidad": 81.3,
-    "intensidad_defensiva": 93.0,
-    "uso_transiciones": 90.1
+    "presion_alta": 68.0,
+    "posesion": 60.7,
+    "solidez_defensiva": 84.2,
+    "tendencia_ofensiva": 67.5,
+    "verticalidad": 76.0,
+    "intensidad_defensiva": 93.3,
+    "uso_transiciones": 58.8
    },
    "pros_auto": [],
    "contras_auto": [],
@@ -2537,90 +2379,112 @@
   }
  },
  {
-  "name": "Carlos Carvalhal",
-  "age": 60,
-  "nationality": "Portugal",
+  "name": "Julen Lopetegui",
+  "age": 58,
+  "nationality": "Española (Euskadi)",
   "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "last_club": "West Ham United",
+  "available": true,
+  "contract_status": "Libre (despedido West Ham dic-2024)",
+  "salary_estimate_eur": 5000000,
   "release_clause_eur": null,
-  "formation_preferred": null,
+  "formation_preferred": "4-2-3-1 / 4-3-3",
   "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
+  "segunda_seasons": 0,
+  "style_main": "Juego directo / Transiciones",
   "style_tags": [
-   "Presion alta"
+   "Bloque medio",
+   "Juego directo / vertical"
   ],
-  "description_auto": "Equipos con una posesion media del 50.0% (percentil 55 de su liga). Intensidad de presion elevada y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
+  "description_auto": "Equipos con una posesion media del 49.9% (percentil 50 de su liga). Intensidad de presion media y intensidad defensiva media. En salida tiende al juego directo y vertical. Muestra un perfil equilibrado entre ataque y defensa.",
   "axes": {
-   "tendencia_ofensiva": 56.6,
-   "solidez_defensiva": 43.2,
-   "presion_alta": 75.1,
-   "intensidad_defensiva": 65.6,
-   "verticalidad": 61.4,
-   "posesion_pct_real": 50.0,
-   "posesion": 55.0,
-   "uso_transiciones": 55.5,
-   "flexibilidad_tactica": null
+   "tendencia_ofensiva": 46.7,
+   "solidez_defensiva": 45.4,
+   "presion_alta": 50.5,
+   "intensidad_defensiva": 55.4,
+   "verticalidad": 67.5,
+   "posesion_pct_real": 49.9,
+   "posesion": 50.0,
+   "uso_transiciones": 58.1,
+   "flexibilidad_tactica": 60.9
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Real Club Celta de Vigo",
-     "2022-2023"
+     "Sevilla FC",
+     "2021-2022"
+    ],
+    [
+     "West Ham United",
+     "2023-2024"
+    ],
+    [
+     "West Ham United",
+     "2024-2025"
     ]
    ],
    "requested": [
     [
-     "Real Club Celta de Vigo",
-     "2022-2023"
+     "Sevilla FC",
+     "2021-2022"
+    ],
+    [
+     "West Ham United",
+     "2023-2024"
+    ],
+    [
+     "West Ham United",
+     "2024-2025"
     ]
    ],
-   "n_rows": 1,
+   "n_rows": 3,
    "teams": [
-    "Real Club Celta de Vigo"
+    "Sevilla FC",
+    "West Ham United FC"
    ],
    "seasons": [
-    "2022-2023"
+    "2021-2022",
+    "2023-2024",
+    "2024-2025"
    ]
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Carlos Carvalhal",
-   "global_score": 64.0,
-   "score_10": 6.4,
+   "name": "Julen Lopetegui",
+   "global_score": 55.8,
+   "score_10": 5.6,
    "subscores": {
-    "estilo": 90.8,
+    "estilo": 76.4,
     "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
+    "encaje_presupuesto": 30.0,
     "compatibilidad_plantilla": 78.0
    },
    "style_detail": {
-    "presion_alta": 86.9,
-    "posesion": 97.0,
-    "solidez_defensiva": 78.2,
-    "tendencia_ofensiva": 98.4,
-    "verticalidad": 96.6,
-    "intensidad_defensiva": 96.4,
-    "uso_transiciones": 93.5
+    "presion_alta": 65.5,
+    "posesion": 81.7,
+    "solidez_defensiva": 87.1,
+    "tendencia_ofensiva": 76.6,
+    "verticalidad": 95.8,
+    "intensidad_defensiva": 93.7,
+    "uso_transiciones": 64.8
    },
    "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
+    "Disponible / libre: sin coste de rescision.",
     "Estilo compatible con el perfil de la plantilla actual."
    ],
    "contras_auto": [
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+    "Salario por encima de la referencia del club."
    ],
    "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
+    "deportivo": "medio",
+    "economico": "alto",
+    "clausula": "bajo",
     "adaptacion_laliga": "medio",
     "incompatibilidad_plantilla": "bajo"
    },
    "data_partial": false,
-   "coverage_n": 1
+   "coverage_n": 3
   }
  },
  {
@@ -2635,6 +2499,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 1,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio-bajo",
@@ -2652,6 +2517,7 @@
    "uso_transiciones": 49.4,
    "flexibilidad_tactica": 53.8
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -2685,22 +2551,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Rubi",
-   "global_score": 63.2,
-   "score_10": 6.3,
+   "global_score": 53.5,
+   "score_10": 5.4,
    "subscores": {
-    "estilo": 75.1,
+    "estilo": 60.5,
     "experiencia_laliga": 25.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 78.0
    },
    "style_detail": {
-    "presion_alta": 69.5,
-    "posesion": 99.8,
-    "solidez_defensiva": 53.1,
-    "tendencia_ofensiva": 85.0,
-    "verticalidad": 83.9,
-    "intensidad_defensiva": 63.9,
-    "uso_transiciones": 87.4
+    "presion_alta": 46.5,
+    "posesion": 83.5,
+    "solidez_defensiva": 59.8,
+    "tendencia_ofensiva": 53.3,
+    "verticalidad": 78.6,
+    "intensidad_defensiva": 64.2,
+    "uso_transiciones": 56.1
    },
    "pros_auto": [
     "Estilo compatible con el perfil de la plantilla actual."
@@ -2720,384 +2586,18 @@
   }
  },
  {
-  "name": "Pacheta",
-  "age": 57,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Presion alta / Transiciones",
-  "style_tags": [
-   "Presion alta",
-   "Juego directo / vertical",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 49.0% (percentil 50 de su liga). Intensidad de presion elevada y intensidad defensiva elevada. En salida tiende al juego directo y vertical. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 44.3,
-   "solidez_defensiva": 24.0,
-   "presion_alta": 74.9,
-   "intensidad_defensiva": 70.1,
-   "verticalidad": 69.6,
-   "posesion_pct_real": 49.0,
-   "posesion": 50.0,
-   "uso_transiciones": 58.7,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Real Valladolid CF",
-     "2022-2023"
-    ]
-   ],
-   "requested": [
-    [
-     "Real Valladolid CF",
-     "2022-2023"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Real Valladolid CF"
-   ],
-   "seasons": [
-    "2022-2023"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Pacheta",
-   "global_score": 61.5,
-   "score_10": 6.2,
-   "subscores": {
-    "estilo": 85.3,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 78.0
-   },
-   "style_detail": {
-    "presion_alta": 87.1,
-    "posesion": 98.0,
-    "solidez_defensiva": 59.0,
-    "tendencia_ofensiva": 89.3,
-    "verticalidad": 88.4,
-    "intensidad_defensiva": 91.9,
-    "uso_transiciones": 96.7
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Estilo compatible con el perfil de la plantilla actual."
-   ],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "bajo"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Eduardo Coudet",
-  "age": 49,
-  "nationality": "Argentina",
-  "current_club": "Deportivo Alavés",
-  "last_club": "Deportivo Alavés",
-  "available": false,
-  "contract_status": "Contrato hasta 2026 (situación incierta por descenso)",
-  "salary_estimate_eur": 1000000,
-  "release_clause_eur": null,
-  "formation_preferred": "4-3-3 / 4-2-3-1",
-  "laliga_seasons": 1,
-  "style_main": "Presion alta / Posicional",
-  "style_tags": [
-   "Presion alta",
-   "Dominio de balon",
-   "Juego directo / vertical",
-   "Solidez defensiva",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 55.0% (percentil 82 de su liga). Intensidad de presion elevada y intensidad defensiva elevada. En salida tiende al juego directo y vertical. Muestra un perfil de prioridad defensiva y orden.",
-  "axes": {
-   "tendencia_ofensiva": 31.4,
-   "solidez_defensiva": 77.5,
-   "presion_alta": 80.5,
-   "intensidad_defensiva": 76.5,
-   "verticalidad": 83.0,
-   "posesion_pct_real": 55.0,
-   "posesion": 82.5,
-   "uso_transiciones": 53.0,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Real Club Celta de Vigo",
-     "2021-2022"
-    ]
-   ],
-   "requested": [
-    [
-     "Real Club Celta de Vigo",
-     "2021-2022"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Real Club Celta de Vigo"
-   ],
-   "seasons": [
-    "2021-2022"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Eduardo Coudet",
-   "global_score": 61.2,
-   "score_10": 6.1,
-   "subscores": {
-    "estilo": 82.4,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 100.0,
-    "compatibilidad_plantilla": 45.0
-   },
-   "style_detail": {
-    "presion_alta": 81.5,
-    "posesion": 69.5,
-    "solidez_defensiva": 87.5,
-    "tendencia_ofensiva": 76.4,
-    "verticalidad": 75.0,
-    "intensidad_defensiva": 85.5,
-    "uso_transiciones": 91.0
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Coste salarial compatible con la masa salarial reducida del club."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable.",
-    "Bajo contrato: requeriria negociacion/indemnizacion."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio-alto"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Joseba Etxeberria",
-  "age": 48,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Solidez defensiva",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 50.1% (percentil 54 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil de prioridad defensiva y orden.",
-  "axes": {
-   "tendencia_ofensiva": 52.1,
-   "solidez_defensiva": 71.6,
-   "presion_alta": 55.0,
-   "intensidad_defensiva": 70.1,
-   "verticalidad": 48.3,
-   "posesion_pct_real": 50.1,
-   "posesion": 54.5,
-   "uso_transiciones": 48.2,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "SD Eibar",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "SD Eibar",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "SD Eibar"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Joseba Etxeberria",
-   "global_score": 60.2,
-   "score_10": 6.0,
-   "subscores": {
-    "estilo": 92.4,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 78.0
-   },
-   "style_detail": {
-    "presion_alta": 93.0,
-    "posesion": 97.5,
-    "solidez_defensiva": 93.4,
-    "tendencia_ofensiva": 97.1,
-    "verticalidad": 90.3,
-    "intensidad_defensiva": 91.9,
-    "uso_transiciones": 86.2
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
-    "Estilo compatible con el perfil de la plantilla actual."
-   ],
-   "contras_auto": [
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "bajo"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Unai Emery",
-  "age": 54,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio",
-   "Dominio de balon",
-   "Juego directo / vertical",
-   "Vocacion ofensiva",
-   "Solidez defensiva"
-  ],
-  "description_auto": "Equipos con una posesion media del 57.0% (percentil 86 de su liga). Intensidad de presion media y intensidad defensiva media. En salida tiende al juego directo y vertical. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
-  "axes": {
-   "tendencia_ofensiva": 76.6,
-   "solidez_defensiva": 83.1,
-   "presion_alta": 63.3,
-   "intensidad_defensiva": 50.7,
-   "verticalidad": 84.4,
-   "posesion_pct_real": 57.0,
-   "posesion": 86.0,
-   "uso_transiciones": 61.7,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Villarreal CF",
-     "2021-2022"
-    ]
-   ],
-   "requested": [
-    [
-     "Villarreal CF",
-     "2021-2022"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Villarreal CF"
-   ],
-   "seasons": [
-    "2021-2022"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Unai Emery",
-   "global_score": 59.0,
-   "score_10": 5.9,
-   "subscores": {
-    "estilo": 86.1,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 57.0
-   },
-   "style_detail": {
-    "presion_alta": 98.7,
-    "posesion": 66.0,
-    "solidez_defensiva": 81.9,
-    "tendencia_ofensiva": 78.4,
-    "verticalidad": 73.6,
-    "intensidad_defensiva": 88.7,
-    "uso_transiciones": 99.7
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Genera mucho peligro en transiciones rapidas."
-   ],
-   "contras_auto": [
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
   "name": "Íñigo Pérez",
   "age": 38,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "nationality": "Española (Navarra)",
+  "current_club": "Villarreal CF",
+  "last_club": "Rayo Vallecano de Madrid",
+  "available": false,
+  "contract_status": "Firmado con Villarreal CF (reemplaza a Marcelino)",
+  "salary_estimate_eur": 1200000,
   "release_clause_eur": null,
-  "formation_preferred": null,
+  "formation_preferred": "4-2-3-1 / 4-4-2",
   "laliga_seasons": 1,
+  "segunda_seasons": 0,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio",
@@ -3116,6 +2616,7 @@
    "uso_transiciones": 38.2,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -3140,27 +2641,30 @@
   "data_partial": false,
   "evaluation": {
    "name": "Íñigo Pérez",
-   "global_score": 58.3,
-   "score_10": 5.8,
+   "global_score": 52.7,
+   "score_10": 5.3,
    "subscores": {
-    "estilo": 88.1,
+    "estilo": 70.0,
     "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
+    "encaje_presupuesto": 100.0,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 96.3,
-    "posesion": 82.0,
-    "solidez_defensiva": 90.9,
-    "tendencia_ofensiva": 93.3,
-    "verticalidad": 75.7,
-    "intensidad_defensiva": 99.6,
-    "uso_transiciones": 76.2
+    "presion_alta": 73.3,
+    "posesion": 98.3,
+    "solidez_defensiva": 97.6,
+    "tendencia_ofensiva": 61.6,
+    "verticalidad": 70.4,
+    "intensidad_defensiva": 99.9,
+    "uso_transiciones": 44.9
    },
-   "pros_auto": [],
+   "pros_auto": [
+    "Coste salarial compatible con la masa salarial reducida del club."
+   ],
    "contras_auto": [
     "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
    ],
    "risks": {
     "deportivo": "medio-alto",
@@ -3174,448 +2678,120 @@
   }
  },
  {
-  "name": "Fran Escribá",
-  "age": 61,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "name": "Unai Emery",
+  "age": 52,
+  "nationality": "Española (País Vasco)",
+  "current_club": "Aston Villa FC",
+  "last_club": "Aston Villa FC",
+  "available": false,
+  "contract_status": "Contrato vigente Aston Villa",
+  "salary_estimate_eur": 8000000,
   "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Juego directo / Transiciones",
+  "formation_preferred": "4-2-3-1 / 4-3-3",
+  "laliga_seasons": 1,
+  "segunda_seasons": 0,
+  "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
-   "Bloque medio",
-   "Juego directo / vertical",
-   "Vocacion ofensiva"
+   "Bloque medio-bajo"
   ],
-  "description_auto": "Equipos con una posesion media del 51.4% (percentil 62 de su liga). Intensidad de presion media y intensidad defensiva media. En salida tiende al juego directo y vertical. Muestra un perfil de marcada vocacion ofensiva.",
+  "description_auto": "Equipos con una posesion media del 52.4% (percentil 65 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
   "axes": {
-   "tendencia_ofensiva": 85.1,
-   "solidez_defensiva": 38.1,
-   "presion_alta": 54.8,
-   "intensidad_defensiva": 65.4,
-   "verticalidad": 73.5,
-   "posesion_pct_real": 51.4,
-   "posesion": 62.7,
-   "uso_transiciones": 65.0,
-   "flexibilidad_tactica": null
+   "tendencia_ofensiva": 57.3,
+   "solidez_defensiva": 61.9,
+   "presion_alta": 37.6,
+   "intensidad_defensiva": 29.2,
+   "verticalidad": 51.9,
+   "posesion_pct_real": 52.4,
+   "posesion": 65.6,
+   "uso_transiciones": 47.7,
+   "flexibilidad_tactica": 27.5
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Granada CF",
+     "Aston Villa",
+     "2022-2023"
+    ],
+    [
+     "Aston Villa",
+     "2023-2024"
+    ],
+    [
+     "Aston Villa",
      "2024-2025"
+    ],
+    [
+     "Villarreal CF",
+     "2021-2022"
     ]
    ],
    "requested": [
     [
-     "Granada CF",
+     "Aston Villa",
+     "2022-2023"
+    ],
+    [
+     "Aston Villa",
+     "2023-2024"
+    ],
+    [
+     "Aston Villa",
      "2024-2025"
+    ],
+    [
+     "Villarreal CF",
+     "2021-2022"
     ]
    ],
-   "n_rows": 1,
+   "n_rows": 4,
    "teams": [
-    "Granada CF"
+    "Aston Villa FC",
+    "Villarreal CF"
    ],
    "seasons": [
+    "2021-2022",
+    "2022-2023",
+    "2023-2024",
     "2024-2025"
    ]
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Fran Escribá",
-   "global_score": 57.9,
-   "score_10": 5.8,
+   "name": "Unai Emery",
+   "global_score": 51.4,
+   "score_10": 5.1,
    "subscores": {
-    "estilo": 86.1,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 82.0
-   },
-   "style_detail": {
-    "presion_alta": 92.8,
-    "posesion": 89.3,
-    "solidez_defensiva": 73.1,
-    "tendencia_ofensiva": 69.9,
-    "verticalidad": 84.5,
-    "intensidad_defensiva": 96.6,
-    "uso_transiciones": 97.0
-   },
-   "pros_auto": [
-    "Genera mucho peligro en transiciones rapidas.",
-    "Estilo compatible con el perfil de la plantilla actual."
-   ],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "bajo"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Gennaro Gattuso",
-  "age": 48,
-  "nationality": "Italia",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio",
-   "Dominio de balon"
-  ],
-  "description_auto": "Equipos con una posesion media del 52.0% (percentil 71 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 48.6,
-   "solidez_defensiva": 44.7,
-   "presion_alta": 60.0,
-   "intensidad_defensiva": 54.9,
-   "verticalidad": 41.8,
-   "posesion_pct_real": 52.0,
-   "posesion": 71.0,
-   "uso_transiciones": 39.3,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Valencia CF",
-     "2022-2023"
-    ]
-   ],
-   "requested": [
-    [
-     "Valencia CF",
-     "2022-2023"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Valencia CF"
-   ],
-   "seasons": [
-    "2022-2023"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Gennaro Gattuso",
-   "global_score": 57.6,
-   "score_10": 5.8,
-   "subscores": {
-    "estilo": 86.4,
+    "estilo": 68.9,
     "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 45.0
-   },
-   "style_detail": {
-    "presion_alta": 98.0,
-    "posesion": 81.0,
-    "solidez_defensiva": 79.7,
-    "tendencia_ofensiva": 93.6,
-    "verticalidad": 83.8,
-    "intensidad_defensiva": 92.9,
-    "uso_transiciones": 77.3
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas."
-   ],
-   "contras_auto": [
-    "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio-alto"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Robert Moreno",
-  "age": 48,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo"
-  ],
-  "description_auto": "Equipos con una posesion media del 44.0% (percentil 19 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 31.2,
-   "solidez_defensiva": 20.2,
-   "presion_alta": 53.3,
-   "intensidad_defensiva": 52.7,
-   "verticalidad": 43.6,
-   "posesion_pct_real": 44.0,
-   "posesion": 19.0,
-   "uso_transiciones": 52.3,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Granada CF",
-     "2021-2022"
-    ]
-   ],
-   "requested": [
-    [
-     "Granada CF",
-     "2021-2022"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Granada CF"
-   ],
-   "seasons": [
-    "2021-2022"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Robert Moreno",
-   "global_score": 57.6,
-   "score_10": 5.8,
-   "subscores": {
-    "estilo": 79.0,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
+    "encaje_presupuesto": 30.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 91.3,
-    "posesion": 67.0,
-    "solidez_defensiva": 55.2,
-    "tendencia_ofensiva": 76.2,
-    "verticalidad": 85.6,
-    "intensidad_defensiva": 90.7,
-    "uso_transiciones": 90.3
+    "presion_alta": 52.6,
+    "posesion": 97.3,
+    "solidez_defensiva": 96.4,
+    "tendencia_ofensiva": 66.0,
+    "verticalidad": 88.6,
+    "intensidad_defensiva": 67.5,
+    "uso_transiciones": 54.4
    },
-   "pros_auto": [],
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
+   ],
    "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+    "Salario por encima de la referencia del club.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
    ],
    "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
+    "deportivo": "medio",
+    "economico": "alto",
     "clausula": "medio",
     "adaptacion_laliga": "medio",
     "incompatibilidad_plantilla": "medio"
    },
    "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Pablo Machín",
-  "age": 51,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Presion alta",
-   "Sin balon / reactivo"
-  ],
-  "description_auto": "Equipos con una posesion media del 45.0% (percentil 25 de su liga). Intensidad de presion elevada y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 26.1,
-   "solidez_defensiva": 4.2,
-   "presion_alta": 69.7,
-   "intensidad_defensiva": 61.2,
-   "verticalidad": 53.4,
-   "posesion_pct_real": 45.0,
-   "posesion": 25.5,
-   "uso_transiciones": 54.3,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Elche CF",
-     "2022-2023"
-    ]
-   ],
-   "requested": [
-    [
-     "Elche CF",
-     "2022-2023"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Elche CF"
-   ],
-   "seasons": [
-    "2022-2023"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Pablo Machín",
-   "global_score": 57.3,
-   "score_10": 5.7,
-   "subscores": {
-    "estilo": 78.4,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 92.3,
-    "posesion": 73.5,
-    "solidez_defensiva": 39.2,
-    "tendencia_ofensiva": 71.1,
-    "verticalidad": 95.4,
-    "intensidad_defensiva": 99.2,
-    "uso_transiciones": 92.3
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "José Luis Mendilibar",
-  "age": 65,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 41.6% (percentil 10 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 8.9,
-   "solidez_defensiva": 10.1,
-   "presion_alta": 61.1,
-   "intensidad_defensiva": 68.6,
-   "verticalidad": 57.9,
-   "posesion_pct_real": 41.6,
-   "posesion": 10.0,
-   "uso_transiciones": 57.7,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Deportivo Alavés",
-     "2021-2022"
-    ]
-   ],
-   "requested": [
-    [
-     "Deportivo Alavés",
-     "2021-2022"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Deportivo Alavés"
-   ],
-   "seasons": [
-    "2021-2022"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "José Luis Mendilibar",
-   "global_score": 57.0,
-   "score_10": 5.7,
-   "subscores": {
-    "estilo": 77.6,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 99.1,
-    "posesion": 58.0,
-    "solidez_defensiva": 45.1,
-    "tendencia_ofensiva": 53.9,
-    "verticalidad": 99.9,
-    "intensidad_defensiva": 93.4,
-    "uso_transiciones": 95.7
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
+   "coverage_n": 4
   }
  },
  {
@@ -3630,6 +2806,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 1,
+  "segunda_seasons": 0,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -3649,6 +2826,7 @@
    "uso_transiciones": 38.7,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -3673,22 +2851,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Borja Jiménez",
-   "global_score": 56.3,
-   "score_10": 5.6,
+   "global_score": 48.8,
+   "score_10": 4.9,
    "subscores": {
-    "estilo": 76.3,
+    "estilo": 64.9,
     "experiencia_laliga": 25.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 94.5,
-    "posesion": 60.0,
-    "solidez_defensiva": 74.6,
-    "tendencia_ofensiva": 58.2,
-    "verticalidad": 61.3,
-    "intensidad_defensiva": 95.4,
-    "uso_transiciones": 76.7
+    "presion_alta": 71.5,
+    "posesion": 43.7,
+    "solidez_defensiva": 81.3,
+    "tendencia_ofensiva": 89.9,
+    "verticalidad": 56.0,
+    "intensidad_defensiva": 95.1,
+    "uso_transiciones": 45.4
    },
    "pros_auto": [],
    "contras_auto": [
@@ -3708,134 +2886,48 @@
   }
  },
  {
-  "name": "Veljko Paunović",
-  "age": 49,
-  "nationality": "Serbia",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
+  "name": "Claudio Giráldez",
+  "age": 38,
+  "nationality": "Española (Galicia)",
+  "current_club": "Real Club Celta de Vigo",
+  "last_club": "Real Club Celta de Vigo",
+  "available": false,
+  "contract_status": "Contrato vigente Celta de Vigo",
+  "salary_estimate_eur": 1000000,
   "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Bloque medio / Equilibrado",
+  "formation_preferred": "4-3-3 / 4-2-3-1",
+  "laliga_seasons": 1,
+  "segunda_seasons": 0,
+  "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio-bajo",
-   "Solidez defensiva"
-  ],
-  "description_auto": "Equipos con una posesion media del 51.6% (percentil 64 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de prioridad defensiva y orden.",
-  "axes": {
-   "tendencia_ofensiva": 54.3,
-   "solidez_defensiva": 73.0,
-   "presion_alta": 30.5,
-   "intensidad_defensiva": 44.1,
-   "verticalidad": 53.0,
-   "posesion_pct_real": 51.6,
-   "posesion": 64.5,
-   "uso_transiciones": 48.0,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Real Oviedo",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Real Oviedo",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Real Oviedo"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Veljko Paunović",
-   "global_score": 56.3,
-   "score_10": 5.6,
-   "subscores": {
-    "estilo": 86.2,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 68.5,
-    "posesion": 87.5,
-    "solidez_defensiva": 92.0,
-    "tendencia_ofensiva": 99.3,
-    "verticalidad": 95.0,
-    "intensidad_defensiva": 82.1,
-    "uso_transiciones": 86.0
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
-   ],
-   "contras_auto": [
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Rafael Benítez",
-  "age": 66,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo",
+   "Dominio de balon",
    "Juego elaborado"
   ],
-  "description_auto": "Equipos con una posesion media del 46.0% (percentil 30 de su liga). Intensidad de presion media y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "description_auto": "Equipos con una posesion media del 53.6% (percentil 78 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
   "axes": {
-   "tendencia_ofensiva": 53.6,
-   "solidez_defensiva": 21.0,
-   "presion_alta": 43.5,
-   "intensidad_defensiva": 38.5,
-   "verticalidad": 24.0,
-   "posesion_pct_real": 46.0,
-   "posesion": 30.5,
-   "uso_transiciones": 43.6,
+   "tendencia_ofensiva": 65.2,
+   "solidez_defensiva": 26.2,
+   "presion_alta": 23.8,
+   "intensidad_defensiva": 18.7,
+   "verticalidad": 36.2,
+   "posesion_pct_real": 53.6,
+   "posesion": 78.0,
+   "uso_transiciones": 37.7,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
      "Real Club Celta de Vigo",
-     "2023-2024"
+     "2024-2025"
     ]
    ],
    "requested": [
     [
      "Real Club Celta de Vigo",
-     "2023-2024"
+     "2024-2025"
     ]
    ],
    "n_rows": 1,
@@ -3843,486 +2935,37 @@
     "Real Club Celta de Vigo"
    ],
    "seasons": [
-    "2023-2024"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Rafael Benítez",
-   "global_score": 56.2,
-   "score_10": 5.6,
-   "subscores": {
-    "estilo": 76.0,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 81.5,
-    "posesion": 78.5,
-    "solidez_defensiva": 56.0,
-    "tendencia_ofensiva": 98.6,
-    "verticalidad": 66.0,
-    "intensidad_defensiva": 76.5,
-    "uso_transiciones": 81.6
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Paco López",
-  "age": 58,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo"
-  ],
-  "description_auto": "Equipos con una posesion media del 45.0% (percentil 25 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 21.3,
-   "solidez_defensiva": 1.2,
-   "presion_alta": 52.4,
-   "intensidad_defensiva": 55.4,
-   "verticalidad": 47.5,
-   "posesion_pct_real": 45.0,
-   "posesion": 25.5,
-   "uso_transiciones": 50.4,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Granada CF",
-     "2023-2024"
-    ]
-   ],
-   "requested": [
-    [
-     "Granada CF",
-     "2023-2024"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Granada CF"
-   ],
-   "seasons": [
-    "2023-2024"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Paco López",
-   "global_score": 55.8,
-   "score_10": 5.6,
-   "subscores": {
-    "estilo": 74.9,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 90.4,
-    "posesion": 73.5,
-    "solidez_defensiva": 36.2,
-    "tendencia_ofensiva": 66.3,
-    "verticalidad": 89.5,
-    "intensidad_defensiva": 93.4,
-    "uso_transiciones": 88.4
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Jon Pérez Bolo",
-  "age": 50,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Sin balon / reactivo",
-   "Juego elaborado"
-  ],
-  "description_auto": "Equipos con una posesion media del 48.7% (percentil 39 de su liga). Intensidad de presion media y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 15.9,
-   "solidez_defensiva": 60.8,
-   "presion_alta": 47.6,
-   "intensidad_defensiva": 62.5,
-   "verticalidad": 35.9,
-   "posesion_pct_real": 48.7,
-   "posesion": 39.1,
-   "uso_transiciones": 39.4,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Burgos CF",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Burgos CF",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Burgos CF"
-   ],
-   "seasons": [
     "2024-2025"
    ]
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Jon Pérez Bolo",
-   "global_score": 55.4,
-   "score_10": 5.5,
+   "name": "Claudio Giráldez",
+   "global_score": 47.6,
+   "score_10": 4.8,
    "subscores": {
-    "estilo": 84.2,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 85.6,
-    "posesion": 87.1,
-    "solidez_defensiva": 95.8,
-    "tendencia_ofensiva": 60.9,
-    "verticalidad": 77.9,
-    "intensidad_defensiva": 99.5,
-    "uso_transiciones": 77.4
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
-   ],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Rubén Albés",
-  "age": 42,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio",
-   "Juego elaborado",
-   "Vocacion ofensiva",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 49.9% (percentil 50 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida prioriza la elaboracion y el pase corto. Muestra un perfil de marcada vocacion ofensiva.",
-  "axes": {
-   "tendencia_ofensiva": 68.3,
-   "solidez_defensiva": 23.6,
-   "presion_alta": 62.6,
-   "intensidad_defensiva": 79.1,
-   "verticalidad": 27.2,
-   "posesion_pct_real": 49.9,
-   "posesion": 50.9,
-   "uso_transiciones": 42.0,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Real Sporting de Gijón",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Real Sporting de Gijón",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Real Sporting de Gijón"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Rubén Albés",
-   "global_score": 55.2,
-   "score_10": 5.5,
-   "subscores": {
-    "estilo": 81.2,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 78.0
-   },
-   "style_detail": {
-    "presion_alta": 99.4,
-    "posesion": 98.9,
-    "solidez_defensiva": 58.6,
-    "tendencia_ofensiva": 86.7,
-    "verticalidad": 69.2,
-    "intensidad_defensiva": 82.9,
-    "uso_transiciones": 80.0
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Estilo compatible con el perfil de la plantilla actual."
-   ],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "bajo"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Jorge Sampaoli",
-  "age": 64,
-  "nationality": "Argentina / España",
-  "current_club": "Stade Rennais",
-  "last_club": "Stade Rennais",
-  "available": false,
-  "contract_status": "Contrato vigente Rennes",
-  "salary_estimate_eur": 2500000,
-  "release_clause_eur": null,
-  "formation_preferred": "3-1-4-2 / 4-3-3",
-  "laliga_seasons": 1,
-  "style_main": "Presion alta / Posicional",
-  "style_tags": [
-   "Presion alta",
-   "Dominio de balon",
-   "Juego directo / vertical",
-   "Vocacion ofensiva",
-   "Alta intensidad"
-  ],
-  "description_auto": "Equipos con una posesion media del 53.0% (percentil 74 de su liga). Intensidad de presion elevada y intensidad defensiva elevada. En salida tiende al juego directo y vertical. Muestra un perfil de marcada vocacion ofensiva.",
-  "axes": {
-   "tendencia_ofensiva": 74.1,
-   "solidez_defensiva": 30.0,
-   "presion_alta": 86.4,
-   "intensidad_defensiva": 74.4,
-   "verticalidad": 80.4,
-   "posesion_pct_real": 53.0,
-   "posesion": 74.0,
-   "uso_transiciones": 62.8,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Sevilla FC",
-     "2022-2023"
-    ]
-   ],
-   "requested": [
-    [
-     "Sevilla FC",
-     "2022-2023"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Sevilla FC"
-   ],
-   "seasons": [
-    "2022-2023"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Jorge Sampaoli",
-   "global_score": 55.0,
-   "score_10": 5.5,
-   "subscores": {
-    "estilo": 80.2,
+    "estilo": 56.7,
     "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 50.0,
-    "compatibilidad_plantilla": 57.0
-   },
-   "style_detail": {
-    "presion_alta": 75.6,
-    "posesion": 78.0,
-    "solidez_defensiva": 65.0,
-    "tendencia_ofensiva": 80.9,
-    "verticalidad": 77.6,
-    "intensidad_defensiva": 87.6,
-    "uso_transiciones": 99.2
-   },
-   "pros_auto": [
-    "Presion alta e intensa, identidad afin a Vallecas.",
-    "Genera mucho peligro en transiciones rapidas."
-   ],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Salario por encima de la referencia del club.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable.",
-    "Bajo contrato: requeriria negociacion/indemnizacion."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "medio",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Julen Lopetegui",
-  "age": 59,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio",
-   "Dominio de balon",
-   "Juego directo / vertical",
-   "Solidez defensiva"
-  ],
-  "description_auto": "Equipos con una posesion media del 60.0% (percentil 92 de su liga). Intensidad de presion media y intensidad defensiva reducida. En salida tiende al juego directo y vertical. Muestra un perfil de prioridad defensiva y orden.",
-  "axes": {
-   "tendencia_ofensiva": 62.8,
-   "solidez_defensiva": 95.5,
-   "presion_alta": 47.4,
-   "intensidad_defensiva": 34.8,
-   "verticalidad": 86.0,
-   "posesion_pct_real": 60.0,
-   "posesion": 92.0,
-   "uso_transiciones": 58.0,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Sevilla FC",
-     "2021-2022"
-    ]
-   ],
-   "requested": [
-    [
-     "Sevilla FC",
-     "2021-2022"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Sevilla FC"
-   ],
-   "seasons": [
-    "2021-2022"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Julen Lopetegui",
-   "global_score": 54.5,
-   "score_10": 5.5,
-   "subscores": {
-    "estilo": 79.6,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
+    "encaje_presupuesto": 100.0,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 85.4,
-    "posesion": 60.0,
-    "solidez_defensiva": 69.5,
-    "tendencia_ofensiva": 92.2,
-    "verticalidad": 72.0,
-    "intensidad_defensiva": 72.8,
-    "uso_transiciones": 96.0
+    "presion_alta": 38.8,
+    "posesion": 90.3,
+    "solidez_defensiva": 67.9,
+    "tendencia_ofensiva": 58.1,
+    "verticalidad": 72.9,
+    "intensidad_defensiva": 57.0,
+    "uso_transiciones": 44.4
    },
    "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
+    "Coste salarial compatible con la masa salarial reducida del club."
    ],
    "contras_auto": [
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
     "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
    ],
    "risks": {
     "deportivo": "medio-alto",
@@ -4336,8 +2979,8 @@
   }
  },
  {
-  "name": "Víctor Fernández",
-  "age": 65,
+  "name": "Fran Escribá",
+  "age": 61,
   "nationality": "España",
   "current_club": null,
   "last_club": null,
@@ -4347,39 +2990,42 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
-  "style_main": "Bloque medio / Equilibrado",
+  "segunda_seasons": 1,
+  "style_main": "Juego directo / Transiciones",
   "style_tags": [
    "Bloque medio",
+   "Juego directo / vertical",
    "Vocacion ofensiva"
   ],
-  "description_auto": "Equipos con una posesion media del 50.9% (percentil 56 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de marcada vocacion ofensiva.",
+  "description_auto": "Equipos con una posesion media del 51.4% (percentil 62 de su liga). Intensidad de presion media y intensidad defensiva media. En salida tiende al juego directo y vertical. Muestra un perfil de marcada vocacion ofensiva.",
   "axes": {
-   "tendencia_ofensiva": 78.1,
-   "solidez_defensiva": 9.9,
-   "presion_alta": 43.6,
-   "intensidad_defensiva": 57.9,
-   "verticalidad": 47.3,
-   "posesion_pct_real": 50.9,
-   "posesion": 56.4,
-   "uso_transiciones": 52.4,
+   "tendencia_ofensiva": 85.1,
+   "solidez_defensiva": 38.1,
+   "presion_alta": 54.8,
+   "intensidad_defensiva": 65.4,
+   "verticalidad": 73.5,
+   "posesion_pct_real": 51.4,
+   "posesion": 62.7,
+   "uso_transiciones": 65.0,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Real Zaragoza",
+     "Granada CF",
      "2024-2025"
     ]
    ],
    "requested": [
     [
-     "Real Zaragoza",
+     "Granada CF",
      "2024-2025"
     ]
    ],
    "n_rows": 1,
    "teams": [
-    "Real Zaragoza"
+    "Granada CF"
    ],
    "seasons": [
     "2024-2025"
@@ -4387,25 +3033,26 @@
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Víctor Fernández",
-   "global_score": 54.3,
-   "score_10": 5.4,
+   "name": "Fran Escribá",
+   "global_score": 47.5,
+   "score_10": 4.8,
    "subscores": {
-    "estilo": 79.2,
+    "estilo": 73.2,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 78.0
+    "compatibilidad_plantilla": 82.0
    },
    "style_detail": {
-    "presion_alta": 81.6,
-    "posesion": 95.6,
-    "solidez_defensiva": 44.9,
-    "tendencia_ofensiva": 76.9,
-    "verticalidad": 89.3,
-    "intensidad_defensiva": 95.9,
-    "uso_transiciones": 90.4
+    "presion_alta": 69.8,
+    "posesion": 94.4,
+    "solidez_defensiva": 79.8,
+    "tendencia_ofensiva": 38.2,
+    "verticalidad": 89.8,
+    "intensidad_defensiva": 96.3,
+    "uso_transiciones": 71.7
    },
    "pros_auto": [
+    "Genera mucho peligro en transiciones rapidas.",
     "Estilo compatible con el perfil de la plantilla actual."
    ],
    "contras_auto": [
@@ -4436,6 +3083,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -4454,6 +3102,7 @@
    "uso_transiciones": 61.8,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -4478,22 +3127,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Guillermo Fernández Romo",
-   "global_score": 52.8,
-   "score_10": 5.3,
+   "global_score": 47.2,
+   "score_10": 4.7,
    "subscores": {
-    "estilo": 74.8,
+    "estilo": 72.4,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 82.0
    },
    "style_detail": {
-    "presion_alta": 98.3,
-    "posesion": 49.8,
-    "solidez_defensiva": 37.5,
-    "tendencia_ofensiva": 55.3,
-    "verticalidad": 97.5,
-    "intensidad_defensiva": 85.4,
-    "uso_transiciones": 99.8
+    "presion_alta": 75.3,
+    "posesion": 33.5,
+    "solidez_defensiva": 44.2,
+    "tendencia_ofensiva": 87.0,
+    "verticalidad": 97.2,
+    "intensidad_defensiva": 85.1,
+    "uso_transiciones": 68.5
    },
    "pros_auto": [
     "Presion alta e intensa, identidad afin a Vallecas.",
@@ -4518,6 +3167,460 @@
   }
  },
  {
+  "name": "Joseba Etxeberria",
+  "age": 48,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Solidez defensiva",
+   "Alta intensidad"
+  ],
+  "description_auto": "Equipos con una posesion media del 50.1% (percentil 54 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida alterna juego directo y elaboracion. Muestra un perfil de prioridad defensiva y orden.",
+  "axes": {
+   "tendencia_ofensiva": 52.1,
+   "solidez_defensiva": 71.6,
+   "presion_alta": 55.0,
+   "intensidad_defensiva": 70.1,
+   "verticalidad": 48.3,
+   "posesion_pct_real": 50.1,
+   "posesion": 54.5,
+   "uso_transiciones": 48.2,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "SD Eibar",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "SD Eibar",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "SD Eibar"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Joseba Etxeberria",
+   "global_score": 46.8,
+   "score_10": 4.7,
+   "subscores": {
+    "estilo": 72.8,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 78.0
+   },
+   "style_detail": {
+    "presion_alta": 70.0,
+    "posesion": 86.2,
+    "solidez_defensiva": 86.7,
+    "tendencia_ofensiva": 71.2,
+    "verticalidad": 85.0,
+    "intensidad_defensiva": 91.6,
+    "uso_transiciones": 54.9
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo).",
+    "Estilo compatible con el perfil de la plantilla actual."
+   ],
+   "contras_auto": [
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "bajo"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Jon Pérez Bolo",
+  "age": 50,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Sin balon / reactivo",
+   "Juego elaborado"
+  ],
+  "description_auto": "Equipos con una posesion media del 48.7% (percentil 39 de su liga). Intensidad de presion media y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 15.9,
+   "solidez_defensiva": 60.8,
+   "presion_alta": 47.6,
+   "intensidad_defensiva": 62.5,
+   "verticalidad": 35.9,
+   "posesion_pct_real": 48.7,
+   "posesion": 39.1,
+   "uso_transiciones": 39.4,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Burgos CF",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Burgos CF",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "Burgos CF"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Jon Pérez Bolo",
+   "global_score": 44.7,
+   "score_10": 4.5,
+   "subscores": {
+    "estilo": 70.3,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 62.6,
+    "posesion": 70.8,
+    "solidez_defensiva": 97.5,
+    "tendencia_ofensiva": 92.6,
+    "verticalidad": 72.6,
+    "intensidad_defensiva": 99.2,
+    "uso_transiciones": 46.1
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
+   ],
+   "contras_auto": [
+    "Produccion ofensiva baja en sus equipos; poca generacion.",
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Manolo González",
+  "age": 52,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 1,
+  "segunda_seasons": 0,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Sin balon / reactivo",
+   "Juego elaborado"
+  ],
+  "description_auto": "Equipos con una posesion media del 39.3% (percentil 2 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 6.8,
+   "solidez_defensiva": 38.0,
+   "presion_alta": 34.6,
+   "intensidad_defensiva": 42.5,
+   "verticalidad": 3.5,
+   "posesion_pct_real": 39.3,
+   "posesion": 2.5,
+   "uso_transiciones": 32.4,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Reial Club Deportiu Espanyol de Barcelona",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Reial Club Deportiu Espanyol de Barcelona",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "Reial Club Deportiu Espanyol de Barcelona"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Manolo González",
+   "global_score": 44.4,
+   "score_10": 4.4,
+   "subscores": {
+    "estilo": 53.5,
+    "experiencia_laliga": 25.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 49.6,
+    "posesion": 34.2,
+    "solidez_defensiva": 79.7,
+    "tendencia_ofensiva": 83.5,
+    "verticalidad": 40.2,
+    "intensidad_defensiva": 80.8,
+    "uso_transiciones": 39.1
+   },
+   "pros_auto": [],
+   "contras_auto": [
+    "Produccion ofensiva baja en sus equipos; poca generacion.",
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "medio",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Paulo Pezzolano",
+  "age": 43,
+  "nationality": "Uruguay",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 1,
+  "segunda_seasons": 0,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Sin balon / reactivo",
+   "Juego elaborado"
+  ],
+  "description_auto": "Equipos con una posesion media del 43.0% (percentil 14 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 3.4,
+   "solidez_defensiva": 3.6,
+   "presion_alta": 23.5,
+   "intensidad_defensiva": 40.2,
+   "verticalidad": 20.8,
+   "posesion_pct_real": 43.0,
+   "posesion": 14.5,
+   "uso_transiciones": 36.7,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Real Valladolid CF",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Real Valladolid CF",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "Real Valladolid CF"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Paulo Pezzolano",
+   "global_score": 44.1,
+   "score_10": 4.4,
+   "subscores": {
+    "estilo": 52.9,
+    "experiencia_laliga": 25.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 38.5,
+    "posesion": 46.2,
+    "solidez_defensiva": 45.3,
+    "tendencia_ofensiva": 80.1,
+    "verticalidad": 57.5,
+    "intensidad_defensiva": 78.5,
+    "uso_transiciones": 43.4
+   },
+   "pros_auto": [],
+   "contras_auto": [
+    "Produccion ofensiva baja en sus equipos; poca generacion.",
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "medio",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Veljko Paunović",
+  "age": 49,
+  "nationality": "Serbia",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Solidez defensiva"
+  ],
+  "description_auto": "Equipos con una posesion media del 51.6% (percentil 64 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de prioridad defensiva y orden.",
+  "axes": {
+   "tendencia_ofensiva": 54.3,
+   "solidez_defensiva": 73.0,
+   "presion_alta": 30.5,
+   "intensidad_defensiva": 44.1,
+   "verticalidad": 53.0,
+   "posesion_pct_real": 51.6,
+   "posesion": 64.5,
+   "uso_transiciones": 48.0,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Real Oviedo",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Real Oviedo",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "Real Oviedo"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Veljko Paunović",
+   "global_score": 44.0,
+   "score_10": 4.4,
+   "subscores": {
+    "estilo": 68.3,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 45.5,
+    "posesion": 96.2,
+    "solidez_defensiva": 85.3,
+    "tendencia_ofensiva": 69.0,
+    "verticalidad": 89.7,
+    "intensidad_defensiva": 82.4,
+    "uso_transiciones": 54.7
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
+   ],
+   "contras_auto": [
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
   "name": "Sergio Pellicer",
   "age": 51,
   "nationality": "España",
@@ -4529,6 +3632,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio",
@@ -4548,6 +3652,7 @@
    "uso_transiciones": 47.8,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -4572,22 +3677,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Sergio Pellicer",
-   "global_score": 52.7,
-   "score_10": 5.3,
+   "global_score": 43.9,
+   "score_10": 4.4,
    "subscores": {
-    "estilo": 85.8,
+    "estilo": 76.9,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 81.9,
-    "posesion": 78.4,
-    "solidez_defensiva": 95.0,
-    "tendencia_ofensiva": 71.5,
-    "verticalidad": 88.9,
-    "intensidad_defensiva": 94.0,
-    "uso_transiciones": 85.8
+    "presion_alta": 58.9,
+    "posesion": 94.7,
+    "solidez_defensiva": 88.3,
+    "tendencia_ofensiva": 96.8,
+    "verticalidad": 94.2,
+    "intensidad_defensiva": 94.3,
+    "uso_transiciones": 54.5
    },
    "pros_auto": [
     "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
@@ -4610,8 +3715,8 @@
   }
  },
  {
-  "name": "Julián Calero",
-  "age": 54,
+  "name": "Víctor Fernández",
+  "age": 65,
   "nationality": "España",
   "current_club": null,
   "last_club": null,
@@ -4621,39 +3726,41 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
-   "Bloque medio-bajo",
+   "Bloque medio",
    "Vocacion ofensiva"
   ],
-  "description_auto": "Equipos con una posesion media del 49.2% (percentil 49 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de marcada vocacion ofensiva.",
+  "description_auto": "Equipos con una posesion media del 50.9% (percentil 56 de su liga). Intensidad de presion media y intensidad defensiva media. En salida alterna juego directo y elaboracion. Muestra un perfil de marcada vocacion ofensiva.",
   "axes": {
-   "tendencia_ofensiva": 70.9,
-   "solidez_defensiva": 56.9,
-   "presion_alta": 4.3,
-   "intensidad_defensiva": 3.7,
-   "verticalidad": 43.3,
-   "posesion_pct_real": 49.2,
-   "posesion": 49.1,
-   "uso_transiciones": 51.1,
+   "tendencia_ofensiva": 78.1,
+   "solidez_defensiva": 9.9,
+   "presion_alta": 43.6,
+   "intensidad_defensiva": 57.9,
+   "verticalidad": 47.3,
+   "posesion_pct_real": 50.9,
+   "posesion": 56.4,
+   "uso_transiciones": 52.4,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Levante UD",
+     "Real Zaragoza",
      "2024-2025"
     ]
    ],
    "requested": [
     [
-     "Levante UD",
+     "Real Zaragoza",
      "2024-2025"
     ]
    ],
    "n_rows": 1,
    "teams": [
-    "Levante UD"
+    "Real Zaragoza"
    ],
    "seasons": [
     "2024-2025"
@@ -4661,28 +3768,29 @@
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Julián Calero",
-   "global_score": 52.6,
-   "score_10": 5.3,
+   "name": "Víctor Fernández",
+   "global_score": 43.9,
+   "score_10": 4.4,
    "subscores": {
-    "estilo": 75.4,
+    "estilo": 65.4,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 78.0
    },
    "style_detail": {
-    "presion_alta": 42.3,
-    "posesion": 97.1,
-    "solidez_defensiva": 91.9,
-    "tendencia_ofensiva": 84.1,
-    "verticalidad": 85.3,
-    "intensidad_defensiva": 41.7,
-    "uso_transiciones": 89.1
+    "presion_alta": 58.6,
+    "posesion": 88.1,
+    "solidez_defensiva": 51.6,
+    "tendencia_ofensiva": 45.2,
+    "verticalidad": 84.0,
+    "intensidad_defensiva": 96.2,
+    "uso_transiciones": 59.1
    },
    "pros_auto": [
     "Estilo compatible con el perfil de la plantilla actual."
    ],
    "contras_auto": [
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
     "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
     "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
    ],
@@ -4709,6 +3817,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio",
@@ -4728,6 +3837,7 @@
    "uso_transiciones": 35.7,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -4752,22 +3862,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Pepe Mel",
-   "global_score": 52.4,
-   "score_10": 5.2,
+   "global_score": 43.8,
+   "score_10": 4.4,
    "subscores": {
-    "estilo": 77.5,
+    "estilo": 67.9,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 97.5,
-    "posesion": 84.4,
-    "solidez_defensiva": 63.6,
-    "tendencia_ofensiva": 58.6,
-    "verticalidad": 69.8,
-    "intensidad_defensiva": 95.9,
-    "uso_transiciones": 73.7
+    "presion_alta": 74.5,
+    "posesion": 68.1,
+    "solidez_defensiva": 70.3,
+    "tendencia_ofensiva": 90.3,
+    "verticalidad": 64.5,
+    "intensidad_defensiva": 95.6,
+    "uso_transiciones": 42.4
    },
    "pros_auto": [],
    "contras_auto": [
@@ -4788,6 +3898,100 @@
   }
  },
  {
+  "name": "Rubén Albés",
+  "age": 42,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio",
+   "Juego elaborado",
+   "Vocacion ofensiva",
+   "Alta intensidad"
+  ],
+  "description_auto": "Equipos con una posesion media del 49.9% (percentil 50 de su liga). Intensidad de presion media y intensidad defensiva elevada. En salida prioriza la elaboracion y el pase corto. Muestra un perfil de marcada vocacion ofensiva.",
+  "axes": {
+   "tendencia_ofensiva": 68.3,
+   "solidez_defensiva": 23.6,
+   "presion_alta": 62.6,
+   "intensidad_defensiva": 79.1,
+   "verticalidad": 27.2,
+   "posesion_pct_real": 49.9,
+   "posesion": 50.9,
+   "uso_transiciones": 42.0,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Real Sporting de Gijón",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Real Sporting de Gijón",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "Real Sporting de Gijón"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Rubén Albés",
+   "global_score": 43.7,
+   "score_10": 4.4,
+   "subscores": {
+    "estilo": 64.8,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 78.0
+   },
+   "style_detail": {
+    "presion_alta": 77.6,
+    "posesion": 82.6,
+    "solidez_defensiva": 65.3,
+    "tendencia_ofensiva": 55.0,
+    "verticalidad": 63.9,
+    "intensidad_defensiva": 82.6,
+    "uso_transiciones": 48.7
+   },
+   "pros_auto": [
+    "Presion alta e intensa, identidad afin a Vallecas.",
+    "Estilo compatible con el perfil de la plantilla actual."
+   ],
+   "contras_auto": [
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "bajo"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
   "name": "Alberto González",
   "age": 45,
   "nationality": "España",
@@ -4799,6 +4003,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio-bajo",
@@ -4816,6 +4021,7 @@
    "uso_transiciones": 64.8,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -4840,22 +4046,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Alberto González",
-   "global_score": 52.0,
-   "score_10": 5.2,
+   "global_score": 42.4,
+   "score_10": 4.2,
    "subscores": {
-    "estilo": 73.0,
+    "estilo": 60.0,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 82.0
    },
    "style_detail": {
-    "presion_alta": 59.8,
-    "posesion": 59.8,
-    "solidez_defensiva": 60.0,
-    "tendencia_ofensiva": 89.6,
-    "verticalidad": 92.5,
-    "intensidad_defensiva": 56.6,
-    "uso_transiciones": 97.2
+    "presion_alta": 36.8,
+    "posesion": 43.5,
+    "solidez_defensiva": 66.7,
+    "tendencia_ofensiva": 57.9,
+    "verticalidad": 87.2,
+    "intensidad_defensiva": 56.9,
+    "uso_transiciones": 71.5
    },
    "pros_auto": [
     "Genera mucho peligro en transiciones rapidas.",
@@ -4878,96 +4084,8 @@
   }
  },
  {
-  "name": "Manolo González",
-  "age": 52,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Sin balon / reactivo",
-   "Juego elaborado"
-  ],
-  "description_auto": "Equipos con una posesion media del 39.3% (percentil 2 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 6.8,
-   "solidez_defensiva": 38.0,
-   "presion_alta": 34.6,
-   "intensidad_defensiva": 42.5,
-   "verticalidad": 3.5,
-   "posesion_pct_real": 39.3,
-   "posesion": 2.5,
-   "uso_transiciones": 32.4,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Reial Club Deportiu Espanyol de Barcelona",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Reial Club Deportiu Espanyol de Barcelona",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Reial Club Deportiu Espanyol de Barcelona"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Manolo González",
-   "global_score": 51.7,
-   "score_10": 5.2,
-   "subscores": {
-    "estilo": 65.8,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 72.6,
-    "posesion": 50.5,
-    "solidez_defensiva": 73.0,
-    "tendencia_ofensiva": 51.8,
-    "verticalidad": 45.5,
-    "intensidad_defensiva": 80.5,
-    "uso_transiciones": 70.4
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "José Alberto López",
-  "age": 47,
+  "name": "Julián Calero",
+  "age": 54,
   "nationality": "España",
   "current_club": null,
   "last_club": null,
@@ -4977,40 +4095,41 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio-bajo",
-   "Juego elaborado",
    "Vocacion ofensiva"
   ],
-  "description_auto": "Equipos con una posesion media del 51.6% (percentil 64 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil de marcada vocacion ofensiva.",
+  "description_auto": "Equipos con una posesion media del 49.2% (percentil 49 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de marcada vocacion ofensiva.",
   "axes": {
-   "tendencia_ofensiva": 74.8,
-   "solidez_defensiva": 32.8,
-   "presion_alta": 31.9,
-   "intensidad_defensiva": 39.5,
-   "verticalidad": 22.9,
-   "posesion_pct_real": 51.6,
-   "posesion": 64.5,
-   "uso_transiciones": 37.1,
+   "tendencia_ofensiva": 70.9,
+   "solidez_defensiva": 56.9,
+   "presion_alta": 4.3,
+   "intensidad_defensiva": 3.7,
+   "verticalidad": 43.3,
+   "posesion_pct_real": 49.2,
+   "posesion": 49.1,
+   "uso_transiciones": 51.1,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Real Racing Club",
+     "Levante UD",
      "2024-2025"
     ]
    ],
    "requested": [
     [
-     "Real Racing Club",
+     "Levante UD",
      "2024-2025"
     ]
    ],
    "n_rows": 1,
    "teams": [
-    "Real Racing Club"
+    "Levante UD"
    ],
    "seasons": [
     "2024-2025"
@@ -5018,293 +4137,28 @@
   },
   "data_partial": false,
   "evaluation": {
-   "name": "José Alberto López",
-   "global_score": 50.8,
-   "score_10": 5.1,
+   "name": "Julián Calero",
+   "global_score": 40.4,
+   "score_10": 4.0,
    "subscores": {
-    "estilo": 73.8,
+    "estilo": 56.3,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
+    "compatibilidad_plantilla": 78.0
    },
    "style_detail": {
-    "presion_alta": 69.9,
-    "posesion": 87.5,
-    "solidez_defensiva": 67.8,
-    "tendencia_ofensiva": 80.2,
-    "verticalidad": 64.9,
-    "intensidad_defensiva": 77.5,
-    "uso_transiciones": 75.1
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Claudio Giráldez",
-  "age": 38,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Dominio de balon",
-   "Juego elaborado"
-  ],
-  "description_auto": "Equipos con una posesion media del 53.6% (percentil 78 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 65.2,
-   "solidez_defensiva": 26.2,
-   "presion_alta": 23.8,
-   "intensidad_defensiva": 18.7,
-   "verticalidad": 36.2,
-   "posesion_pct_real": 53.6,
-   "posesion": 78.0,
-   "uso_transiciones": 37.7,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Real Club Celta de Vigo",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Real Club Celta de Vigo",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Real Club Celta de Vigo"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Claudio Giráldez",
-   "global_score": 50.0,
-   "score_10": 5.0,
-   "subscores": {
-    "estilo": 69.8,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 45.0
-   },
-   "style_detail": {
-    "presion_alta": 61.8,
-    "posesion": 74.0,
-    "solidez_defensiva": 61.2,
-    "tendencia_ofensiva": 89.8,
-    "verticalidad": 78.2,
-    "intensidad_defensiva": 56.7,
-    "uso_transiciones": 75.7
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio-alto"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Hansi Flick",
-  "age": 61,
-  "nationality": "Alemania",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 1,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Dominio de balon",
-   "Vocacion ofensiva",
-   "Solidez defensiva"
-  ],
-  "description_auto": "Equipos con una posesion media del 68.7% (percentil 100 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
-  "axes": {
-   "tendencia_ofensiva": 97.0,
-   "solidez_defensiva": 79.1,
-   "presion_alta": 16.8,
-   "intensidad_defensiva": 8.8,
-   "verticalidad": 54.8,
-   "posesion_pct_real": 68.7,
-   "posesion": 100.0,
-   "uso_transiciones": 46.8,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "FC Barcelona",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "FC Barcelona",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "FC Barcelona"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Hansi Flick",
-   "global_score": 50.0,
-   "score_10": 5.0,
-   "subscores": {
-    "estilo": 69.8,
-    "experiencia_laliga": 25.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 45.0
-   },
-   "style_detail": {
-    "presion_alta": 54.8,
-    "posesion": 52.0,
-    "solidez_defensiva": 85.9,
-    "tendencia_ofensiva": 58.0,
-    "verticalidad": 96.8,
-    "intensidad_defensiva": 46.8,
-    "uso_transiciones": 84.8
+    "presion_alta": 19.3,
+    "posesion": 80.8,
+    "solidez_defensiva": 98.6,
+    "tendencia_ofensiva": 52.4,
+    "verticalidad": 80.0,
+    "intensidad_defensiva": 42.0,
+    "uso_transiciones": 57.8
    },
    "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
+    "Estilo compatible con el perfil de la plantilla actual."
    ],
    "contras_auto": [
-    "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "medio",
-    "incompatibilidad_plantilla": "medio-alto"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Fernando Estévez",
-  "age": 47,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Sin balon / reactivo",
-   "Juego elaborado"
-  ],
-  "description_auto": "Equipos con una posesion media del 45.6% (percentil 20 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 52.3,
-   "solidez_defensiva": 28.8,
-   "presion_alta": 21.6,
-   "intensidad_defensiva": 19.8,
-   "verticalidad": 23.2,
-   "posesion_pct_real": 45.6,
-   "posesion": 20.5,
-   "uso_transiciones": 45.9,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "CD Eldense",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "CD Eldense",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "CD Eldense"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Fernando Estévez",
-   "global_score": 49.3,
-   "score_10": 4.9,
-   "subscores": {
-    "estilo": 70.6,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 59.6,
-    "posesion": 68.5,
-    "solidez_defensiva": 63.8,
-    "tendencia_ofensiva": 97.3,
-    "verticalidad": 65.2,
-    "intensidad_defensiva": 57.8,
-    "uso_transiciones": 83.9
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
     "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
     "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
    ],
@@ -5313,7 +4167,7 @@
     "economico": "bajo",
     "clausula": "medio",
     "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio"
+    "incompatibilidad_plantilla": "bajo"
    },
    "data_partial": false,
    "coverage_n": 1
@@ -5331,6 +4185,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio",
@@ -5349,6 +4204,7 @@
    "uso_transiciones": 51.6,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -5373,22 +4229,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Iván Ania",
-   "global_score": 49.1,
-   "score_10": 4.9,
+   "global_score": 40.0,
+   "score_10": 4.0,
    "subscores": {
-    "estilo": 77.8,
+    "estilo": 66.7,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 91.4,
-    "posesion": 62.5,
-    "solidez_defensiva": 47.4,
-    "tendencia_ofensiva": 65.5,
-    "verticalidad": 96.8,
-    "intensidad_defensiva": 99.6,
-    "uso_transiciones": 89.6
+    "presion_alta": 68.4,
+    "posesion": 78.8,
+    "solidez_defensiva": 54.1,
+    "tendencia_ofensiva": 33.8,
+    "verticalidad": 97.9,
+    "intensidad_defensiva": 99.9,
+    "uso_transiciones": 58.3
    },
    "pros_auto": [],
    "contras_auto": [
@@ -5409,9 +4265,9 @@
   }
  },
  {
-  "name": "Paulo Pezzolano",
-  "age": 43,
-  "nationality": "Uruguay",
+  "name": "José Alberto López",
+  "age": 47,
+  "nationality": "España",
   "current_club": null,
   "last_club": null,
   "available": null,
@@ -5419,41 +4275,43 @@
   "salary_estimate_eur": null,
   "release_clause_eur": null,
   "formation_preferred": null,
-  "laliga_seasons": 1,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio-bajo",
-   "Sin balon / reactivo",
-   "Juego elaborado"
+   "Juego elaborado",
+   "Vocacion ofensiva"
   ],
-  "description_auto": "Equipos con una posesion media del 43.0% (percentil 14 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "description_auto": "Equipos con una posesion media del 51.6% (percentil 64 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil de marcada vocacion ofensiva.",
   "axes": {
-   "tendencia_ofensiva": 3.4,
-   "solidez_defensiva": 3.6,
-   "presion_alta": 23.5,
-   "intensidad_defensiva": 40.2,
-   "verticalidad": 20.8,
-   "posesion_pct_real": 43.0,
-   "posesion": 14.5,
-   "uso_transiciones": 36.7,
+   "tendencia_ofensiva": 74.8,
+   "solidez_defensiva": 32.8,
+   "presion_alta": 31.9,
+   "intensidad_defensiva": 39.5,
+   "verticalidad": 22.9,
+   "posesion_pct_real": 51.6,
+   "posesion": 64.5,
+   "uso_transiciones": 37.1,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
-     "Real Valladolid CF",
+     "Real Racing Club",
      "2024-2025"
     ]
    ],
    "requested": [
     [
-     "Real Valladolid CF",
+     "Real Racing Club",
      "2024-2025"
     ]
    ],
    "n_rows": 1,
    "teams": [
-    "Real Valladolid CF"
+    "Real Racing Club"
    ],
    "seasons": [
     "2024-2025"
@@ -5461,35 +4319,35 @@
   },
   "data_partial": false,
   "evaluation": {
-   "name": "Paulo Pezzolano",
-   "global_score": 49.1,
-   "score_10": 4.9,
+   "name": "José Alberto López",
+   "global_score": 39.8,
+   "score_10": 4.0,
    "subscores": {
-    "estilo": 60.0,
-    "experiencia_laliga": 25.0,
+    "estilo": 57.4,
+    "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 61.5,
-    "posesion": 62.5,
-    "solidez_defensiva": 38.6,
-    "tendencia_ofensiva": 48.4,
-    "verticalidad": 62.8,
-    "intensidad_defensiva": 78.2,
-    "uso_transiciones": 74.7
+    "presion_alta": 46.9,
+    "posesion": 96.2,
+    "solidez_defensiva": 74.5,
+    "tendencia_ofensiva": 48.5,
+    "verticalidad": 59.6,
+    "intensidad_defensiva": 77.8,
+    "uso_transiciones": 43.8
    },
    "pros_auto": [],
    "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
     "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
     "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
    ],
    "risks": {
     "deportivo": "medio-alto",
     "economico": "bajo",
     "clausula": "medio",
-    "adaptacion_laliga": "medio",
+    "adaptacion_laliga": "alto",
     "incompatibilidad_plantilla": "medio"
    },
    "data_partial": false,
@@ -5508,6 +4366,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Posicional / Dominio de balon",
   "style_tags": [
    "Bloque medio",
@@ -5526,6 +4385,7 @@
    "uso_transiciones": 47.9,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -5550,22 +4410,22 @@
   "data_partial": false,
   "evaluation": {
    "name": "Dick Schreuder",
-   "global_score": 48.7,
-   "score_10": 4.9,
+   "global_score": 39.3,
+   "score_10": 3.9,
    "subscores": {
-    "estilo": 76.8,
+    "estilo": 65.0,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 45.0
    },
    "style_detail": {
-    "presion_alta": 94.2,
-    "posesion": 59.3,
-    "solidez_defensiva": 44.9,
-    "tendencia_ofensiva": 65.9,
-    "verticalidad": 97.7,
-    "intensidad_defensiva": 97.9,
-    "uso_transiciones": 85.9
+    "presion_alta": 71.2,
+    "posesion": 75.6,
+    "solidez_defensiva": 51.6,
+    "tendencia_ofensiva": 34.2,
+    "verticalidad": 92.4,
+    "intensidad_defensiva": 97.6,
+    "uso_transiciones": 54.6
    },
    "pros_auto": [],
    "contras_auto": [
@@ -5597,6 +4457,7 @@
   "release_clause_eur": null,
   "formation_preferred": null,
   "laliga_seasons": 0,
+  "segunda_seasons": 1,
   "style_main": "Bloque medio / Equilibrado",
   "style_tags": [
    "Bloque medio-bajo",
@@ -5615,6 +4476,7 @@
    "uso_transiciones": 42.9,
    "flexibilidad_tactica": null
   },
+  "axes_source": "opta",
   "coverage": {
    "matched": [
     [
@@ -5639,307 +4501,23 @@
   "data_partial": false,
   "evaluation": {
    "name": "Antonio Hidalgo",
-   "global_score": 47.9,
-   "score_10": 4.8,
+   "global_score": 39.2,
+   "score_10": 3.9,
    "subscores": {
-    "estilo": 67.4,
+    "estilo": 55.8,
     "experiencia_laliga": 0.0,
     "encaje_presupuesto": 60.0,
     "compatibilidad_plantilla": 70.0
    },
    "style_detail": {
-    "presion_alta": 45.4,
-    "posesion": 65.3,
-    "solidez_defensiva": 82.6,
-    "tendencia_ofensiva": 72.3,
-    "verticalidad": 67.2,
-    "intensidad_defensiva": 51.7,
-    "uso_transiciones": 80.9
+    "presion_alta": 22.4,
+    "posesion": 49.0,
+    "solidez_defensiva": 89.3,
+    "tendencia_ofensiva": 96.0,
+    "verticalidad": 61.9,
+    "intensidad_defensiva": 52.0,
+    "uso_transiciones": 49.6
    },
    "pros_auto": [],
    "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Eder Sarabia",
-  "age": 46,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Dominio de balon",
-   "Vocacion ofensiva",
-   "Solidez defensiva"
-  ],
-  "description_auto": "Equipos con una posesion media del 61.7% (percentil 97 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
-  "axes": {
-   "tendencia_ofensiva": 85.9,
-   "solidez_defensiva": 93.1,
-   "presion_alta": 31.2,
-   "intensidad_defensiva": 35.2,
-   "verticalidad": 58.4,
-   "posesion_pct_real": 61.7,
-   "posesion": 97.3,
-   "uso_transiciones": 47.2,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Elche CF",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Elche CF",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Elche CF"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Eder Sarabia",
-   "global_score": 47.8,
-   "score_10": 4.8,
-   "subscores": {
-    "estilo": 74.7,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 45.0
-   },
-   "style_detail": {
-    "presion_alta": 69.2,
-    "posesion": 54.7,
-    "solidez_defensiva": 71.9,
-    "tendencia_ofensiva": 69.1,
-    "verticalidad": 99.6,
-    "intensidad_defensiva": 73.2,
-    "uso_transiciones": 85.2
-   },
-   "pros_auto": [
-    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
-   ],
-   "contras_auto": [
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio-alto"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Cristóbal Parralo",
-  "age": 58,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Bloque medio / Equilibrado",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Sin balon / reactivo",
-   "Juego elaborado"
-  ],
-  "description_auto": "Equipos con una posesion media del 47.7% (percentil 32 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 4.2,
-   "solidez_defensiva": 35.0,
-   "presion_alta": 28.2,
-   "intensidad_defensiva": 44.4,
-   "verticalidad": 12.5,
-   "posesion_pct_real": 47.7,
-   "posesion": 32.7,
-   "uso_transiciones": 27.3,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "Racing Club Ferrol",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "Racing Club Ferrol",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "Racing Club Ferrol"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Cristóbal Parralo",
-   "global_score": 47.7,
-   "score_10": 4.8,
-   "subscores": {
-    "estilo": 67.0,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 70.0
-   },
-   "style_detail": {
-    "presion_alta": 66.2,
-    "posesion": 80.7,
-    "solidez_defensiva": 70.0,
-    "tendencia_ofensiva": 49.2,
-    "verticalidad": 54.5,
-    "intensidad_defensiva": 82.4,
-    "uso_transiciones": 65.3
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Produccion ofensiva baja en sus equipos; poca generacion.",
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- },
- {
-  "name": "Imanol Idiakez",
-  "age": 52,
-  "nationality": "España",
-  "current_club": null,
-  "last_club": null,
-  "available": null,
-  "contract_status": null,
-  "salary_estimate_eur": null,
-  "release_clause_eur": null,
-  "formation_preferred": null,
-  "laliga_seasons": 0,
-  "style_main": "Posicional / Dominio de balon",
-  "style_tags": [
-   "Bloque medio-bajo",
-   "Dominio de balon",
-   "Juego elaborado"
-  ],
-  "description_auto": "Equipos con una posesion media del 53.8% (percentil 80 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
-  "axes": {
-   "tendencia_ofensiva": 49.3,
-   "solidez_defensiva": 39.9,
-   "presion_alta": 25.2,
-   "intensidad_defensiva": 31.1,
-   "verticalidad": 35.7,
-   "posesion_pct_real": 53.8,
-   "posesion": 80.0,
-   "uso_transiciones": 33.7,
-   "flexibilidad_tactica": null
-  },
-  "coverage": {
-   "matched": [
-    [
-     "RC Deportivo de La Coruña",
-     "2024-2025"
-    ]
-   ],
-   "requested": [
-    [
-     "RC Deportivo de La Coruña",
-     "2024-2025"
-    ]
-   ],
-   "n_rows": 1,
-   "teams": [
-    "RC Deportivo de La Coruña"
-   ],
-   "seasons": [
-    "2024-2025"
-   ]
-  },
-  "data_partial": false,
-  "evaluation": {
-   "name": "Imanol Idiakez",
-   "global_score": 47.3,
-   "score_10": 4.7,
-   "subscores": {
-    "estilo": 73.8,
-    "experiencia_laliga": 0.0,
-    "encaje_presupuesto": 60.0,
-    "compatibilidad_plantilla": 45.0
-   },
-   "style_detail": {
-    "presion_alta": 63.2,
-    "posesion": 72.0,
-    "solidez_defensiva": 74.9,
-    "tendencia_ofensiva": 94.3,
-    "verticalidad": 77.7,
-    "intensidad_defensiva": 69.1,
-    "uso_transiciones": 71.7
-   },
-   "pros_auto": [],
-   "contras_auto": [
-    "Sus equipos encajan con facilidad; riesgo defensivo.",
-    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
-    "Su estilo exige perfiles de los que la plantilla anda escasa.",
-    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
-   ],
-   "risks": {
-    "deportivo": "medio-alto",
-    "economico": "bajo",
-    "clausula": "medio",
-    "adaptacion_laliga": "alto",
-    "incompatibilidad_plantilla": "medio-alto"
-   },
-   "data_partial": false,
-   "coverage_n": 1
-  }
- }
-]
+    

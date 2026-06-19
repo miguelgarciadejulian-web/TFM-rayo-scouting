@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 comparador.py
 =============
@@ -250,12 +251,12 @@ def _run_comparison(n, ext_players, rayo_players):
 # ---------------------------------------------------------------------------
 
 RADAR_LABELS = {
-    "minutes":          "Minutos",
-    "goals":            "Goles",
-    "assists":          "Asistencias",
-    "shots_on_target":  "Disparos",
-    "tackles_won":      "Duelos",
-    "passes_completed": "Pases",
+    "goal_contrib_p90":    "G+A / 90",
+    "key_passes_p90":      "Creación",
+    "dribbles_p90":        "Regates",
+    "ball_recoveries_p90": "Recuperación",
+    "tackles_won_p90":     "Duelos",
+    "pass_accuracy":       "Precisión pase",
 }
 
 PLAYER_COLORS = [
@@ -274,20 +275,39 @@ def _radar_section(results) -> html.Div:
     keys   = list(RADAR_LABELS.keys())
     labels = [RADAR_LABELS[k] for k in keys] + [RADAR_LABELS[keys[0]]]
 
+    # Valores reales p90 para mostrar en el hover junto al percentil
+    _RAW_LABELS = {
+        "goal_contrib_p90":    ("G+A/90",   lambda r: f"{r.goal_contrib_p90:.2f}"),
+        "key_passes_p90":      ("KC/90",    lambda r: f"{r.key_passes_p90:.2f}"),
+        "dribbles_p90":        ("Reg/90",   lambda r: f"{r.dribbles_p90:.2f}"),
+        "ball_recoveries_p90": ("Rec/90",   lambda r: f"{r.ball_recoveries_p90:.2f}"),
+        "tackles_won_p90":     ("Duel/90",  lambda r: f"{r.tackles_won_p90:.2f}"),
+        "pass_accuracy":       ("Prec%",    lambda r: f"{r.pass_accuracy:.1f}%"),
+    }
+
     traces = []
     for i, r in enumerate(results):
         vals = [r.radar.get(k, 0) for k in keys]
         vals += [vals[0]]
         color = PLAYER_COLORS[i % len(PLAYER_COLORS)]
+        # Texto hover: "Etiqueta · percentil · valor real"
+        htexts = []
+        for k, label in zip(keys, [RADAR_LABELS[k] for k in keys]):
+            pct = r.radar.get(k, 0)
+            raw_lbl, raw_fn = _RAW_LABELS[k]
+            htexts.append(f"<b>{label}</b><br>Percentil: {pct:.0f}<br>{raw_lbl}: {raw_fn(r)}")
+        htexts += [htexts[0]]
         traces.append(
             go.Scatterpolar(
                 r=vals,
                 theta=labels,
                 fill="toself",
                 name=r.name,
-                line=dict(color=color, width=2),
-                fillcolor=_hex_to_rgba(color, 0.12),
-                opacity=0.85,
+                text=htexts,
+                hovertemplate="%{text}<extra></extra>",
+                line=dict(color=color, width=2.5),
+                fillcolor=_hex_to_rgba(color, 0.15),
+                opacity=0.9,
             )
         )
 
@@ -324,7 +344,11 @@ def _radar_section(results) -> html.Div:
 
     return html.Div(
         [
-            html.H6("Radar de Rendimiento", className="fw-bold mb-3"),
+            html.H6("Radar de Rendimiento", className="fw-bold mb-2"),
+            html.P(
+                "Percentil vs. jugadores de la misma posición (0 = peor, 100 = mejor de su grupo).",
+                style={"fontSize": "11px", "color": "#6B7280", "marginBottom": "8px"},
+            ),
             dcc.Graph(figure=fig, config={"displayModeBar": False}),
         ]
     )
@@ -431,12 +455,14 @@ def _cards_section(results) -> html.Div:
                                 bar,
                                 sub_scores,
                                 html.Hr(style={"margin": "8px 0"}),
-                                _stat_row("Minutos",     r.minutes),
-                                _stat_row("Goles",       r.goals),
-                                _stat_row("Asistencias", r.assists),
-                                _stat_row("Disparos",    r.shots_on_target),
-                                _stat_row("Duelos",      r.tackles_won),
-                                _stat_row("Pases",       r.passes_completed),
+                                _stat_row("Minutos",         r.minutes),
+                                _stat_row("G+A",             f"{r.goals}G / {r.assists}A"),
+                                _stat_row("G+A / 90",        f"{r.goal_contrib_p90:.2f}"),
+                                _stat_row("Pases clave/90",  f"{r.key_passes_p90:.2f}"),
+                                _stat_row("Regates/90",      f"{r.dribbles_p90:.2f}"),
+                                _stat_row("Recuperación/90", f"{r.ball_recoveries_p90:.2f}"),
+                                _stat_row("Duelos/90",       f"{r.tackles_won_p90:.2f}"),
+                                _stat_row("Precisión pase",  f"{r.pass_accuracy:.1f}%"),
                                 html.Hr(style={"margin": "8px 0"}),
                                 html.Small(
                                     f"Valor mercado: {_fmt_mv(r.market_value_eur)}",
@@ -467,15 +493,14 @@ def _cards_section(results) -> html.Div:
 def _table_section(results) -> html.Div:
     header = dbc.Row(
         [
-            dbc.Col(html.Small("Jugador",      className="fw-bold"), md=3),
+            dbc.Col(html.Small("Jugador",       className="fw-bold"), md=3),
             dbc.Col(html.Small("Fit",          className="fw-bold text-center"), md=1),
             dbc.Col(html.Small("Min",          className="fw-bold text-center"), md=1),
-            dbc.Col(html.Small("Goles",        className="fw-bold text-center"), md=1),
-            dbc.Col(html.Small("Asist.",       className="fw-bold text-center"), md=1),
-            dbc.Col(html.Small("Disparos",     className="fw-bold text-center"), md=1),
-            dbc.Col(html.Small("Duelos",       className="fw-bold text-center"), md=1),
-            dbc.Col(html.Small("Pases",        className="fw-bold text-center"), md=1),
-            dbc.Col(html.Small("V. Mercado",   className="fw-bold text-center"), md=2),
+            dbc.Col(html.Small("G+A",          className="fw-bold text-center"), md=1),
+            dbc.Col(html.Small("G+A/90",       className="fw-bold text-center"), md=1),
+            dbc.Col(html.Small("KC/90",        className="fw-bold text-center", title="Pases clave / 90"), md=1),
+            dbc.Col(html.Small("Rec/90",       className="fw-bold text-center", title="Recuperaciones / 90"), md=1),
+            dbc.Col(html.Small("V. Mercado",   className="fw-bold text-center"), md=3),
         ],
         className="px-2 py-1",
         style={"background": "#f3f4f6", "borderRadius": "4px"},
@@ -507,18 +532,16 @@ def _table_section(results) -> html.Div:
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
                     dbc.Col(html.Small(str(r.minutes)),
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
-                    dbc.Col(html.Small(str(r.goals)),
+                    dbc.Col(html.Small(f"{r.goals}G+{r.assists}A"),
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
-                    dbc.Col(html.Small(str(r.assists)),
+                    dbc.Col(html.Small(f"{r.goal_contrib_p90:.2f}"),
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
-                    dbc.Col(html.Small(str(r.shots_on_target)),
+                    dbc.Col(html.Small(f"{r.key_passes_p90:.2f}"),
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
-                    dbc.Col(html.Small(str(r.tackles_won)),
-                            md=1, className="text-center d-flex align-items-center justify-content-center"),
-                    dbc.Col(html.Small(str(r.passes_completed)),
+                    dbc.Col(html.Small(f"{r.ball_recoveries_p90:.2f}"),
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
                     dbc.Col(html.Small(_fmt_mv(r.market_value_eur)),
-                            md=2, className="text-center d-flex align-items-center justify-content-center"),
+                            md=3, className="text-center d-flex align-items-center justify-content-center"),
                 ],
                 className="px-2 py-2 border-bottom align-items-center",
             )

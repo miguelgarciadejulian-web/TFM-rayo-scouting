@@ -67,6 +67,7 @@ coaches:
   - name: "Beñat San José"
     age: 47
     nationality: "Española (Euskadi)"
+    force_include: true
     current_club: "SD Eibar"
     available: false
     last_club: "SD Eibar"
@@ -389,3 +390,531 @@ coaches:
     rayo_compatibility: 2
     rayo_notes: "Salario y perfil incompatibles. Con equipo. Referencia táctica de intensidad extrema."
     source: "Transfermarkt / conocimiento"
+
+  # ── REFERENTES / COMPLETAMENTE FUERA DEL PRESUPUESTO ─────────────────────────
+  # (Historial LaLiga en coach_tenures.csv pero salarios inviables para el Rayo.)
+
+  - name: "Carlo Ancelotti"
+    age: 66
+    nationality: "Italiana"
+    current_club: null
+    available: true
+    last_club: "Real Madrid CF"
+    contract_status: "Libre (salida Real Madrid jun-2025)"
+    salary_estimate_eur: 15000000
+    formation_preferred: "4-3-3 / 4-4-2"
+    style_main: "Pragmático / Gestión de estrellas"
+    style_tags: ["Gestión vestuario top", "Pragmatismo", "Champions", "Bloque medio", "Motivador"]
+    pressing_intensity: "Baja-media"
+    possession_pct: 52
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      4 Champions League como entrenador (Milan x2, Real Madrid x2). El técnico más laureado
+      de la historia moderna. Salario estimado ~€15M/año, completamente inaccesible para
+      el Rayo. Referencia táctica pura.
+    rayo_compatibility: 1
+    rayo_notes: "Inaccesible por salario (~x10 el máximo Rayo). Referencia táctica."
+    source: "Conocimiento general / Transfermarkt"
+
+  - name: "Diego Simeone"
+    age: 54
+    nationality: "Argentina"
+    current_club: "Club Atlético de Madrid"
+    available: false
+    last_club: "Club Atlético de Madrid"
+    contract_status: "Contrato vigente Atlético de Madrid"
+    salary_estimate_eur: 20000000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque bajo / Defensivo / Contraataque"
+    style_tags: ["Solidez defensiva máxima", "Bloque bajo", "Contraataque", "Intensidad", "Grandes logros"]
+    pressing_intensity: "Media en bloque"
+    possession_pct: 44
+    defensive_line: "Baja-media"
+    offensive_approach: "Contraataque"
+    description: >
+      El entrenador más exitoso en la historia del Atlético: 2 Ligas, Copa del Rey, Europa
+      League, 2 finales de Champions. Salario estimado ~€20M/año. Bajo contrato hasta 2027.
+      Completamente inaccesible para el Rayo en todos los sentidos.
+    rayo_compatibility: 1
+    rayo_notes: "Inaccesible: bajo contrato, salario x13 el target. Referencia defensiva."
+    source: "Conocimiento general / Transfermarkt"
+
+  - name: "Manuel Pellegrini"
+    age: 71
+    nationality: "Chile"
+    current_club: "Real Betis Balompié"
+    available: false
+    last_club: "Real Betis Balompié"
+    contract_status: "Contrato vigente Real Betis"
+    salary_estimate_eur: 5000000
+    formation_preferred: "4-2-3-1 / 4-3-3"
+    style_main: "Posicional / Elaborado"
+    style_tags: ["Posesión técnica", "Juego asociativo", "Premier League", "Veteranía", "Calidad de pase"]
+    pressing_intensity: "Media"
+    possession_pct: 56
+    defensive_line: "Media-alta"
+    offensive_approach: "Ataque"
+    description: >
+      Veterano chileno con palmarés extraordinario: Manchester City, Real Madrid, Málaga
+      en Champions. En el Betis desde 2020 con buen nivel. Salario ~€5M/año, muy por
+      encima del presupuesto del Rayo.
+    rayo_compatibility: 1
+    rayo_notes: "Bajo contrato en Betis, salario x3 el máximo Rayo."
+    source: "Conocimiento general / Transfermarkt"
+
+  - name: "Hansi Flick"
+    age: 59
+    nationality: "Alemana"
+    current_club: "FC Barcelona"
+    available: false
+    last_club: "FC Barcelona"
+    contract_status: "Contrato vigente FC Barcelona"
+    salary_estimate_eur: 10000000
+    formation_preferred: "4-2-3-1 / 4-3-3"
+    style_main: "Pressing alto / Gegenpressing"
+    style_tags: ["Gegenpressing", "Alta intensidad", "Posesión + presión", "Bayern", "Línea alta"]
+    pressing_intensity: "Muy alta"
+    possession_pct: 60
+    defensive_line: "Alta"
+    offensive_approach: "Ataque"
+    description: >
+      Triple Corona con el Bayern (2019-20). LaLiga y Copa en su primera temporada en el
+      Barça (2024-25). Salario ~€10M/año. Completamente inaccesible para el Rayo.
+    rayo_compatibility: 1
+    rayo_notes: "Bajo contrato en Barça, salario x6 el máximo. Referencia táctica."
+    source: "Conocimiento general / Transfermarkt"
+
+  - name: "Xavi Hernández"
+    age: 45
+    nationality: "Española (Cataluña)"
+    current_club: null
+    available: true
+    last_club: "FC Barcelona"
+    contract_status: "Libre (salida FC Barcelona enero 2024)"
+    salary_estimate_eur: 8000000
+    formation_preferred: "4-3-3"
+    style_main: "Posicional / Juego de posición total"
+    style_tags: ["Posesión total", "Pases cortos", "Pressing", "La Masia", "Identidad táctica rígida"]
+    pressing_intensity: "Alta"
+    possession_pct: 64
+    defensive_line: "Alta"
+    offensive_approach: "Ataque"
+    description: >
+      Leyenda del fútbol como jugador. Primer entrenador del Barça, logrando una Liga.
+      Salida por resultados. Estilo marcadamente posesional heredado de Guardiola.
+      Salario estimado ~€8M/año. Libre pero completamente fuera del alcance del Rayo.
+    rayo_compatibility: 1
+    rayo_notes: "Salario x5 el máximo Rayo. Estilo muy posesional ≠ ADN Rayo."
+    source: "Conocimiento general / Transfermarkt"
+
+  - name: "Julen Lopetegui"
+    age: 58
+    nationality: "Española (Euskadi)"
+    current_club: null
+    available: true
+    last_club: "West Ham United"
+    contract_status: "Libre (despedido West Ham dic-2024)"
+    salary_estimate_eur: 5000000
+    formation_preferred: "4-2-3-1 / 4-3-3"
+    style_main: "Posicional / Equilibrado"
+    style_tags: ["Organización", "Posesión", "Champions", "Selección España", "Gestión de grupos"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 55
+    defensive_line: "Media-alta"
+    offensive_approach: "Equilibrado"
+    description: >
+      Seleccionador de España (Rusia 2018), Real Madrid (breve), Sevilla (Europa League),
+      Wolves, West Ham. Libre desde dic-2024. Salario estimado ~€5M/año.
+    rayo_compatibility: 2
+    rayo_notes: "Libre pero salario x3 el máximo Rayo. Estilo más posesional que el ADN del Rayo."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Unai Emery"
+    age: 52
+    nationality: "Española (País Vasco)"
+    current_club: "Aston Villa FC"
+    available: false
+    last_club: "Aston Villa FC"
+    contract_status: "Contrato vigente Aston Villa"
+    salary_estimate_eur: 8000000
+    formation_preferred: "4-2-3-1 / 4-3-3"
+    style_main: "Alta intensidad / Presión / Europa"
+    style_tags: ["Alta presión", "Experiencia copas", "Trabajo defensivo", "Análisis táctico", "Europa League x4"]
+    pressing_intensity: "Alta"
+    possession_pct: 52
+    defensive_line: "Media-alta"
+    offensive_approach: "Equilibrado"
+    description: >
+      4 Europa Leagues (Sevilla x3, Villarreal). Aston Villa en Champions. Uno de los mejores
+      técnicos europeos actuales. Bajo contrato en Villa. Salario ~€8M/año.
+    rayo_compatibility: 1
+    rayo_notes: "Bajo contrato Aston Villa, salario x5 el máximo Rayo."
+    source: "Conocimiento general / Transfermarkt"
+
+  - name: "Rafael Benítez"
+    age: 64
+    nationality: "Española (Madrid)"
+    current_club: null
+    available: true
+    last_club: "Real Club Celta de Vigo"
+    contract_status: "Libre (despedido Celta 2024)"
+    salary_estimate_eur: 3000000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Organización defensiva / Control"
+    style_tags: ["Solidez defensiva", "Control del partido", "Champions", "LaLiga/Premier", "Veteranía"]
+    pressing_intensity: "Baja-media"
+    possession_pct: 50
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Champions con el Liverpool (2005). Liverpool, Real Madrid, Napoli, Newcastle, Celta.
+      Control y organización. Libre pero salario ~€3M/año sobre el máximo del Rayo.
+    rayo_compatibility: 2
+    rayo_notes: "Libre pero salario sobre el techo Rayo. Estilo defensivo-controlador, no ideal."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Marcelino García Toral"
+    age: 60
+    nationality: "Española (Asturias)"
+    current_club: "Villarreal CF"
+    available: false
+    last_club: "Villarreal CF"
+    contract_status: "Contrato vigente Villarreal CF"
+    salary_estimate_eur: 2500000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque medio / Disciplina táctica"
+    style_tags: ["Solidez defensiva", "Organización", "Transiciones", "Copa del Rey", "LaLiga media tabla"]
+    pressing_intensity: "Media"
+    possession_pct: 47
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Copa del Rey con Athletic Club (2023). Valencia, Villarreal, Athletic. Actualmente en
+      Villarreal (reemplazado por Íñigo Pérez). Estilo disciplinado y organizado.
+      Salario ~€2.5M/año, sobre el techo del Rayo.
+    rayo_compatibility: 2
+    rayo_notes: "Bajo contrato en Villarreal. Salario sobre el máximo del Rayo."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Gennaro Gattuso"
+    age: 47
+    nationality: "Italiana"
+    current_club: null
+    available: true
+    last_club: "Valencia CF"
+    contract_status: "Libre (despedido Valencia 2023)"
+    salary_estimate_eur: 2000000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Alta intensidad / Agresividad defensiva"
+    style_tags: ["Pressing agresivo", "Alta energía", "Disciplina táctica", "Carácter fuerte", "Directo"]
+    pressing_intensity: "Alta"
+    possession_pct: 48
+    defensive_line: "Media-alta"
+    offensive_approach: "Equilibrado"
+    description: >
+      Leyenda del AC Milan como jugador. Como entrenador: Napoli (Copa Italia), Fiorentina,
+      Valencia (caótico). Carácter intenso. Libre. Salario ~€2M/año sobre el target del Rayo.
+    rayo_compatibility: 3
+    rayo_notes: "Libre, salario algo sobre el target. Intensidad compatible, carácter conflictivo."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "José Luis Mendilibar"
+    age: 63
+    nationality: "Española (Euskadi)"
+    current_club: null
+    available: true
+    last_club: "Sevilla FC"
+    contract_status: "Libre"
+    salary_estimate_eur: 1500000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Directo / Físico / Organizado"
+    style_tags: ["Fútbol directo", "Intensidad física", "Eficiencia", "Salvaciones", "Europa League"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 46
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Ganó la Europa League con el Sevilla (2023) en su primera temporada. Historial de
+      salvaciones con presupuestos ajustados (Eibar, Osasuna, Alavés, Bilbao Athletic).
+      Estilo directo y eficiente. Salario ~€1.5M, al límite del target del Rayo.
+    rayo_compatibility: 6
+    rayo_notes: "Europa League con Sevilla. Estilo compatible, salario en el límite. Disponible."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Javier Aguirre"
+    age: 65
+    nationality: "México / España"
+    current_club: "Real Club Deportivo Mallorca"
+    available: false
+    last_club: "Real Club Deportivo Mallorca"
+    contract_status: "Contrato vigente Mallorca"
+    salary_estimate_eur: 2000000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque medio / Pragmático"
+    style_tags: ["Pragmatismo", "Solidez defensiva", "LaLiga", "Presupuesto ajustado", "Veteranía"]
+    pressing_intensity: "Media"
+    possession_pct: 44
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Técnico mexicano con larga trayectoria en LaLiga (Osasuna, Atlético, Zaragoza, Espanyol,
+      Mallorca). Experto en salvaciones. Con contrato en Mallorca. Salario ~€2M.
+    rayo_compatibility: 4
+    rayo_notes: "Bajo contrato Mallorca, salario sobre el target. Estilo más defensivo que el ADN."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Íñigo Pérez"
+    age: 38
+    nationality: "Española (Navarra)"
+    current_club: "Villarreal CF"
+    available: false
+    last_club: "Rayo Vallecano de Madrid"
+    contract_status: "Firmado con Villarreal CF (reemplaza a Marcelino)"
+    salary_estimate_eur: 1200000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Bloque medio-alto / Presión organizada"
+    style_tags: ["Organización", "Presión media-alta", "Jóvenes", "Salida desde atrás", "Conference League"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 48
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      El propio Íñigo Pérez, que dejó el Rayo para ir al Villarreal. Referencia directa del
+      estilo que el Rayo quiere mantener. 2 temporadas en Vallecas con Conference League.
+      No disponible.
+    rayo_compatibility: 10
+    rayo_notes: "Referente directo — firmado por Villarreal. Perfil ideal pero no disponible."
+    source: "LibertadDigital / TheObjective 4-jun-2026"
+
+  - name: "Carlos Carvalhal"
+    age: 58
+    nationality: "Portuguesa"
+    current_club: null
+    available: true
+    last_club: "RC Celta de Vigo"
+    contract_status: "Libre"
+    salary_estimate_eur: 1000000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Ofensivo / Posesión moderada"
+    style_tags: ["Juego ofensivo", "Pressing", "Creatividad", "Portugal / España", "Extranjero"]
+    pressing_intensity: "Alta"
+    possession_pct: 52
+    defensive_line: "Media-alta"
+    offensive_approach: "Ataque"
+    description: >
+      Técnico portugués con experiencia en España (Celta), Inglaterra y Portugal. Salario
+      razonable pero estilo más posesional que el perfil del Rayo.
+    rayo_compatibility: 5
+    rayo_notes: "Salario razonable. Estilo posesional no encaja perfectamente con el ADN del Rayo."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Sergio González"
+    age: 49
+    nationality: "Española (Cataluña)"
+    current_club: null
+    available: true
+    last_club: "Cádiz CF"
+    contract_status: "Libre (Cádiz descendido)"
+    salary_estimate_eur: 800000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque medio / Organizado"
+    style_tags: ["Organización defensiva", "Equilibrio", "Gestión de grupo", "LaLiga", "Presupuesto ajustado"]
+    pressing_intensity: "Media"
+    possession_pct: 44
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Mantuvo al Cádiz en LaLiga durante 3 temporadas con uno de los presupuestos más bajos.
+      Perfil organizado y resistente. Libre tras el descenso. Salario competitivo.
+    rayo_compatibility: 6
+    rayo_notes: "Experiencia sólida con presupuesto ajustado. Salario competitivo. Algo conservador."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Robert Moreno"
+    age: 47
+    nationality: "Española (Cataluña)"
+    current_club: null
+    available: true
+    last_club: "Granada CF"
+    contract_status: "Libre"
+    salary_estimate_eur: 700000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Posicional / Metodológico"
+    style_tags: ["Metodología moderna", "Posesión", "Pressing", "Luis Enrique escuela", "Selección España"]
+    pressing_intensity: "Alta"
+    possession_pct: 54
+    defensive_line: "Alta"
+    offensive_approach: "Ataque"
+    description: >
+      Seleccionador de España (interino tras Lopetegui). Paso por Mónaco y Granada.
+      Formado con Luis Enrique. Estilo posesional y pressing. Salario muy ajustado.
+    rayo_compatibility: 5
+    rayo_notes: "Salario competitivo. Estilo más posesional que el ADN defensivo del Rayo."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Claudio Giráldez"
+    age: 38
+    nationality: "Española (Galicia)"
+    current_club: "Real Club Celta de Vigo"
+    available: false
+    last_club: "Real Club Celta de Vigo"
+    contract_status: "Contrato vigente Celta de Vigo"
+    salary_estimate_eur: 1000000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Juego de posición / Ofensivo"
+    style_tags: ["Posesión técnica", "Ofensivo", "Joven promesa", "Celta cantera", "Moderno"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 55
+    defensive_line: "Media-alta"
+    offensive_approach: "Ataque"
+    description: >
+      El más joven de los técnicos de LaLiga (38 años). Promovido desde el Celta B.
+      Mantuvo al Celta en Primera con buen fútbol. Bajo contrato.
+    rayo_compatibility: 4
+    rayo_notes: "Bajo contrato en Celta. Estilo ofensivo-posesional ≠ ADN Rayo."
+    source: "Transfermarkt / conocimiento"
+
+  # ── NUEVOS CANDIDATOS — EXPERIENCIA 1ª/2ª DIVISIÓN ESPAÑOLA ──────────────────
+
+  - name: "Javier Calleja"
+    age: 51
+    nationality: "Española (Castilla-La Mancha)"
+    current_club: null
+    available: true
+    last_club: "Deportivo Alavés"
+    contract_status: "Libre"
+    salary_estimate_eur: 900000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Bloque medio / Transiciones"
+    style_tags: ["Organización táctica", "Transiciones rápidas", "Equilibrio", "LaLiga experiencia", "Gestión de grupos"]
+    pressing_intensity: "Media"
+    possession_pct: 46
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Técnico manchego con sólida experiencia en LaLiga: Villarreal B (ascenso a Segunda),
+      Getafe, Real Valladolid y Deportivo Alavés en Primera División. Estilo pragmático
+      y organizado, con buen manejo de plantillas de medio-bajo presupuesto. Libre y
+      disponible. Perfil compatible con el proyecto del Rayo.
+    rayo_compatibility: 7
+    rayo_notes: "Experiencia directa en LaLiga con presupuestos limitados. Estilo organizado y compatible."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Álvaro Cervera"
+    age: 57
+    nationality: "Española (Andalucía)"
+    force_include: true
+    current_club: null
+    available: true
+    last_club: "Cádiz CF"
+    contract_status: "Libre"
+    salary_estimate_eur: 700000
+    formation_preferred: "4-4-2 / 4-2-3-1"
+    style_main: "Bloque bajo / Defensivo / Supervivencia"
+    style_tags: ["Bloque bajo", "Solidez extrema", "Supervivencia", "Presupuesto mínimo", "Disciplina"]
+    pressing_intensity: "Baja"
+    possession_pct: 38
+    defensive_line: "Baja"
+    offensive_approach: "Defensivo"
+    description: >
+      Llevó al Cádiz de Segunda a Primera División por primera vez en 14 años (2020) y lo
+      mantuvo en LaLiga. Estilo ultradefensivo y de gestión de recursos muy ajustados.
+      Especialista en supervivencia. Precio muy competitivo, pero estilo
+      demasiado defensivo para la identidad del Rayo.
+    rayo_compatibility: 4
+    rayo_notes: "Superviviente nato con presupuesto mínimo, pero estilo demasiado conservador para el Rayo."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Asier Garitano"
+    age: 52
+    nationality: "Española (Euskadi)"
+    force_include: true
+    current_club: null
+    available: true
+    last_club: "SD Eibar"
+    contract_status: "Libre"
+    salary_estimate_eur: 800000
+    formation_preferred: "4-2-3-1 / 4-4-2"
+    style_main: "Bloque medio / Presión media"
+    style_tags: ["Organización defensiva", "Equilibrio", "Euskadi", "Presupuesto reducido", "LaLiga experiencia"]
+    pressing_intensity: "Media"
+    possession_pct: 46
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Técnico vasco con experiencia en LaLiga: CD Leganés (clasificación Europa) y SD Eibar
+      (Primera División). Estilo organizado y equilibrado, similar al de Arrasate pero con
+      menos renombre. Buena gestión de vestuarios y presupuestos ajustados. Disponible.
+    rayo_compatibility: 7
+    rayo_notes: "Perfil táctico compatible, precio competitivo. Menos renombre que Arrasate."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Fran Fernández"
+    age: 52
+    nationality: "Española (Almería)"
+    current_club: null
+    available: true
+    last_club: "UD Almería"
+    contract_status: "Libre"
+    salary_estimate_eur: 700000
+    formation_preferred: "4-2-3-1 / 4-3-3"
+    style_main: "Transiciones / Equilibrado"
+    style_tags: ["Transiciones", "Organización defensiva", "Trabajo con jóvenes", "Segunda División", "LaLiga"]
+    pressing_intensity: "Media"
+    possession_pct: 47
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Formado en la cantera del Almería, con varios ciclos en el club entre categorías.
+      Ha entrenado en LaLiga con la UD Almería (temporada 2022-23) y tiene experiencia
+      amplia en Segunda División. Estilo transicional y organizado. Precio muy asequible.
+    rayo_compatibility: 6
+    rayo_notes: "Perfil asequible y táctico compatible. Menos LaLiga top que otros candidatos."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Natxo González"
+    age: 54
+    nationality: "Española (País Vasco)"
+    current_club: null
+    available: true
+    last_club: "Real Oviedo"
+    contract_status: "Libre"
+    salary_estimate_eur: 600000
+    formation_preferred: "4-2-3-1 / 4-1-4-1"
+    style_main: "Posicional 2ª División / Elaborado"
+    style_tags: ["Posesión", "Organización", "Segunda División especialista", "Cantera", "Ascensos"]
+    pressing_intensity: "Media"
+    possession_pct: 53
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Técnico vasco especialista en Segunda División: Real Oviedo (varias temporadas),
+      SD Huesca (ascenso a Primera 2019-20), Deportivo Alavés. Buen trabajo con
+      presupuestos ajustados y equipos jóvenes. Sin experiencia reciente en Primera.
+      Salario muy competitivo.
+    rayo_compatibility: 5
+    rayo_notes: "Especialista 2ª División. Precio muy competitivo pero sin LaLiga reciente."
+    source: "Transfermarkt / conocimiento"
+
+  - name: "Óscar Cano"
+    age: 50
+    nationality: "Española (Andalucía)"
+    current_club: null
+    available: true
+    last_club: "Real Sporting de Gijón"
+    contract_status: "Libre"
+    salary_estimate_eur: 650000
+    formation_preferred: "4-3-3 / 4-2-3-1"
+    style_main: "Presión alta / Juego de posición moderno"
+    style_tags: ["Pressing activo", "Posesión media", "Desarrollo de jóvenes", "Andalucía", "Segunda División"]
+    pressing_intensity: "Media-alta"
+    possession_pct: 51
+    defensive_line: "Media"
+    offensive_approach: "Equilibrado"
+    description: >
+      Técnico granadino con paso por el Granada CF y el Sporting de Gijón en Segunda
+      División. Juego moderno con pressing activo y desarrollo de futbolistas jóvenes.
+      Sin experiencia en LaLiga Primera pero con buen trabajo en 2ª. Precio muy asequible.
+    rayo_compatibility: 5
+    rayo_notes: "Pressing moderno compatible con el ADN Rayo. Sin P

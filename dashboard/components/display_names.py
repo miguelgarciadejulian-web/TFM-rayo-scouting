@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Mapeo de nombres de columna técnicos → etiquetas legibles en español."""
 
 COL_LABELS = {
@@ -6,6 +7,8 @@ COL_LABELS = {
     "player_id":              "ID",
     "position_primary":       "Posición",
     "position_secondary":     "Posición 2ª",
+    "lateral_pos":            "Pos.",
+    "role_type":              "Tipo de jugador",
     "age":                    "Edad",
     "nationality":            "Nacionalidad",
     "foot":                   "Pie",

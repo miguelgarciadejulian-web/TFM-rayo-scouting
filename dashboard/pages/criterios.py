@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Criterios de puntuación — explica cómo se calculan los scores de jugadores y
 entrenadores. Las tablas se generan desde los pesos REALES del código

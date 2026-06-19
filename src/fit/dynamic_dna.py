@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 dynamic_dna.py
 ==============
@@ -177,92 +178,129 @@ def _load_coach_profiles() -> list[dict]:
 # ── Calculo ADN desde team_seasons.parquet ────────────────────────────────────
 def _compute_adn_axes(proc: Path) -> dict:
     """
-    Para cada eje del ADN Rayo:
-      1. Lee team_seasons.parquet.
-      2. Filtra filas del Rayo Vallecano, toma la temporada mas reciente.
-      3. Compara con todos los equipos de la misma liga y temporada.
-      4. Calcula percentil del Rayo (0-100):
-           - directas: % equipos con valor <= Rayo
-           - invertidas: 100 - % equipos con valor <= Rayo
-      5. Deriva los PESOS de cada eje segun la identidad del Rayo:
-           peso = desviacion absoluta del percentil respecto al centro (50)
-           cuanto mas extremo el Rayo en un eje, mas define su identidad
-           -> normalizado para que sumen 1.0
+    Calcula los ejes ADN del Rayo desde team_seasons.parquet.
+
+    Mejoras vs version anterior:
+      - Usa hasta las 3 ultimas temporadas con datos validos (no solo la ultima)
+        para evitar que un dato anomalo de una temporada distorsione el ideal.
+      - Filtra columnas con valor 0 o nulo (p.ej. ppda=0 en temporadas sin dato).
+      - El ideal es la media de percentiles de esas temporadas vs la liga.
+      - Los pesos se derivan de la CONSISTENCIA del extremismo: ejes en los que
+        el Rayo es extremo de forma sostenida (varias temporadas) pesan mas.
 
     Devuelve dict: eje -> {ideal, weight, valor_bruto, columna, invertida, descripcion}
     """
-    df = pd.read_parquet(proc / "team_seasons.parquet")
-    rayo = df[df["team"].str.contains("Rayo", case=False, na=False)]
+    PER_GAME_COLS = {"goals_conceded", "goals"}
+    N_SEASONS     = 3   # temporadas a promediar
+
+    df   = pd.read_parquet(proc / "team_seasons.parquet")
+    rayo = df[df["team"].str.contains("Rayo", case=False, na=False)].copy()
     if rayo.empty:
         return {}
 
-    latest = rayo.sort_values("season").iloc[-1]
-    liga   = df[(df["league"] == str(latest.get("league", ""))) &
-                (df["season"] == latest.get("season"))]
-    if len(liga) < 5:
-        liga = df
+    rayo = rayo.sort_values("season", ascending=False)
+    liga_ref = str(rayo.iloc[0].get("league", ""))
 
-    gp = float(latest.get("games_played") or 1)
+    # Seleccionar hasta N_SEASONS temporadas con datos en la liga principal
+    seasons_used = []
+    for _, row in rayo.iterrows():
+        if str(row.get("league", "")) != liga_ref:
+            continue
+        seasons_used.append(row)
+        if len(seasons_used) >= N_SEASONS:
+            break
 
-    def _pct(col, val, invert=False):
+    if not seasons_used:
+        seasons_used = [rayo.iloc[0]]
+
+    def _pct_one(col, rayo_row, invert=False):
+        """Percentil del Rayo en una temporada vs todos los equipos de esa liga+temp."""
+        season = rayo_row.get("season")
+        league = rayo_row.get("league")
+        liga   = df[(df["league"] == league) & (df["season"] == season)]
+        if len(liga) < 5:
+            liga = df[df["season"] == season]
+        gp = float(rayo_row.get("games_played") or 1)
         try:
-            vals = pd.to_numeric(liga[col], errors="coerce").dropna()
-            if vals.empty or pd.isna(val):
-                return 50.0
-            rank = (vals <= float(val)).mean() * 100
-            return round(100 - rank if invert else rank, 1)
-        except Exception:
-            return 50.0
-
-    def _raw(col, per_game=False):
-        try:
-            v = latest.get(col)
-            if v is None or pd.isna(v):
+            raw = rayo_row.get(col)
+            if raw is None or pd.isna(raw):
                 return None
-            return round(float(v) / gp, 2) if per_game else round(float(v), 2)
+            raw = float(raw)
+            if raw == 0:
+                return None                      # 0 = dato ausente en todas las columnas
+            if col in PER_GAME_COLS:
+                raw = raw / gp
+                vals = pd.to_numeric(liga[col], errors="coerce").dropna()
+                gps  = pd.to_numeric(liga["games_played"], errors="coerce").fillna(gp)
+                vals = vals / gps
+            else:
+                vals = pd.to_numeric(liga[col], errors="coerce").dropna()
+            if vals.empty:
+                return None
+            rank = (vals <= raw).mean() * 100
+            return round(100 - rank if invert else rank, 1)
         except Exception:
             return None
 
     result = {}
     for eje, col, invert, desc in ADN_AXES:
-        # Valor para calculo de percentil (goles/partido para algunos)
-        if col == "goals_conceded":
-            calc_val = float(latest.get(col) or 99) / gp
-        elif col == "goals":
-            calc_val = float(latest.get(col) or 0) / gp
-        else:
-            calc_val = latest.get(col)
+        pcts = []
+        for row in seasons_used:
+            p = _pct_one(col, row, invert=invert)
+            if p is not None:
+                pcts.append(p)
 
-        pct = _pct(col, calc_val, invert=invert)
-        raw = _raw(col, per_game=(col in ("goals_conceded", "goals")))
+        if not pcts:
+            pct_mean = 50.0
+        else:
+            pct_mean = round(sum(pcts) / len(pcts), 1)
+
+        # Valor bruto de la temporada mas reciente con dato valido
+        raw_val = None
+        for row in seasons_used:
+            v = row.get(col)
+            if v is not None and not pd.isna(v) and float(v) != 0:
+                gp = float(row.get("games_played") or 1)
+                raw_val = round(float(v) / gp, 2) if col in PER_GAME_COLS else round(float(v), 2)
+                break
 
         result[eje] = {
-            "ideal":       pct,
-            "percentil":   pct,
-            "valor_bruto": raw,
+            "ideal":       pct_mean,
+            "percentil":   pct_mean,
+            "valor_bruto": raw_val,
             "columna":     col,
             "invertida":   invert,
             "descripcion": desc,
+            "n_seasons":   len(pcts),
         }
 
-    # ── Pesos derivados: identidad = cuanto se aleja del centro ──────────────
-    # Un eje en el que el Rayo es muy extremo (percentil alto o bajo) define
-    # mas su identidad y merece mayor peso en el calculo de encaje.
-    deviations = {eje: abs(v["percentil"] - 50) for eje, v in result.items()}
-    total_dev  = sum(deviations.values()) or 1.0
-    for eje in result:
-        result[eje]["weight"] = round(deviations[eje] / total_dev, 4)
+    # ── Pesos: consistencia del extremismo ────────────────────────────────────
+    # Eje con desviacion grande Y sostenida en varias temporadas pesa mas.
+    # Usamos la desviacion media de todas las temporadas (no solo la ultima).
+    season_devs: dict[str, list[float]] = {eje: [] for eje, *_ in ADN_AXES}
+    for eje, col, invert, desc in ADN_AXES:
+        for row in seasons_used:
+            p = _pct_one(col, row, invert=invert)
+            if p is not None:
+                season_devs[eje].append(abs(p - 50))
 
-    # Si no hay desviacvion (todo en 50), peso igual
+    mean_devs = {eje: (sum(vs) / len(vs) if vs else 0.0)
+                 for eje, vs in season_devs.items()}
+    total_dev = sum(mean_devs.values()) or 1.0
+    for eje in result:
+        result[eje]["weight"] = round(mean_devs.get(eje, 0) / total_dev, 4)
+
     if total_dev == 0:
         w = round(1.0 / len(result), 4)
         for eje in result:
             result[eje]["weight"] = w
 
+    latest = seasons_used[0]
     result["_meta"] = {
-        "temporada":   str(latest.get("season", "?")),
-        "liga":        str(latest.get("league", "?")).replace("_", " "),
-        "n_equipos":   len(liga),
+        "temporadas":  [str(r.get("season", "?")) for r in seasons_used],
+        "liga":        liga_ref.replace("_", " "),
+        "n_equipos":   int(len(df[(df["league"] == liga_ref) &
+                                  (df["season"] == latest.get("season"))])),
         "equipo":      str(latest.get("team", "Rayo")),
     }
     return result
@@ -403,19 +441,21 @@ def build_dynamic_dna(proc: Path | None = None, config: Path | None = None) -> d
 
     meta = adn_raw.pop("_meta", {})
 
-    # Construir target_style compatible con rayo_dna.yaml
+    # Construir target_style desde datos reales (adn_raw).
+    # ideal y weight calculados por _compute_adn_axes desde team_seasons.parquet
+    # (media de las ultimas 3 temporadas con datos validos, pesos por consistencia).
     target_style = {}
     for eje, _, _, _ in ADN_AXES:
         data = adn_raw.get(eje, {})
         target_style[eje] = {
-            "ideal":       data.get("ideal", 50.0),
+            "ideal":       data.get("ideal",  50.0),
             "weight":      data.get("weight", round(1.0 / len(ADN_AXES), 4)),
-            # Extra para trazabilidad (no lo usa coach_fit.py pero si la UI)
             "valor_bruto": data.get("valor_bruto"),
             "columna":     data.get("columna", ""),
             "invertida":   data.get("invertida", False),
             "descripcion": data.get("descripcion", ""),
             "percentil":   data.get("percentil", 50.0),
+            "n_seasons":   data.get("n_seasons", 1),
         }
 
     # Pesos de contexto: porcentaje real de la masa salarial en riesgo por liga

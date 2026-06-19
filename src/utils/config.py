@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Carga de configuración YAML y rutas resueltas."""
 from __future__ import annotations
 import os

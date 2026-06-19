@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Parser de archivos OPTA JSON → DataFrame de eventos.
 
 Basado en `first class/A_opta event mapping_eng.ipynb`, modernizado.

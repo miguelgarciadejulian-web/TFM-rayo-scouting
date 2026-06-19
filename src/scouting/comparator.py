@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 comparator.py
 =============
@@ -25,16 +26,21 @@ from pathlib import Path
 
 import pandas as pd
 
+try:
+    from src.utils.market import get_value as _get_tm_value
+except Exception:
+    _get_tm_value = None  # type: ignore
+
 # ---------------------------------------------------------------------------
 # Métricas del radar — columnas en master_players.parquet
 # ---------------------------------------------------------------------------
 RADAR_METRICS = [
-    ("minutes",             "Minutos"),
-    ("goals",               "Goles"),
-    ("assists",             "Asistencias"),
-    ("shots_on_target",     "Disparos"),
-    ("tackles_won",         "Duelos"),
-    ("passes_completed",    "Pases"),
+    ("goal_contrib_p90",     "G+A / 90"),
+    ("key_passes_p90",       "Creación"),
+    ("dribbles_p90",         "Regates"),
+    ("ball_recoveries_p90",  "Recuperación"),
+    ("tackles_won_p90",      "Duelos"),
+    ("pass_accuracy",        "Precisión pase"),
 ]
 
 RADAR_COLORS = [
@@ -96,6 +102,14 @@ class PlayerComparison:
     score_economico:  float
     score_edad:       float
     score_disponibilidad: float
+
+    # Métricas p90 para radar (combinadas o normalizadas)
+    goal_contrib_p90:    float = 0.0   # goals_p90 + assists_p90
+    key_passes_p90:      float = 0.0
+    dribbles_p90:        float = 0.0
+    ball_recoveries_p90: float = 0.0
+    tackles_won_p90:     float = 0.0
+    pass_accuracy:       float = 0.0   # passes_completed_pct (0-100)
 
     # Estado en Rayo
     at_rayo:    bool  = False
@@ -234,6 +248,13 @@ class FitRayoScorer:
             age = 0.0
         if age == 0.0 and squad_entry:
             age = float(squad_entry.get("age", 0) or 0)
+        # Segundo fallback: TM market data
+        if age == 0.0 and _get_tm_value:
+            try:
+                _tm = _get_tm_value(name)
+                age = float(_tm.get("age") or 0)
+            except Exception:
+                pass
 
         # Económico
         mv = self._get_mv(name) or 0
@@ -254,6 +275,15 @@ class FitRayoScorer:
         s_d  = self._score_disponibilidad(cu, name, squad_entry=squad_entry)
 
         fit = round(0.35*s_r + 0.25*s_e + 0.20*s_a + 0.20*s_d, 1)
+
+        def _sf(v) -> float:
+            """Convierte a float de forma segura (NaN → 0)."""
+            try:
+                f = float(v) if v is not None else 0.0
+                return 0.0 if (f != f) else f
+            except (TypeError, ValueError):
+                return 0.0
+
         _pc = PlayerComparison(
             name=name, position=pos, age=age,
             team=str(row.get("team", "")),
@@ -265,6 +295,13 @@ class FitRayoScorer:
             shots_on_target=self._si(row.get("shots_on_target")),
             tackles_won=self._si(row.get("tackles_won")),
             passes_completed=self._si(row.get("passes_completed")),
+            # Métricas p90 para radar
+            goal_contrib_p90=round(_sf(row.get("goals_p90")) + _sf(row.get("assists_p90")), 3),
+            key_passes_p90=round(_sf(row.get("key_passes_p90")), 3),
+            dribbles_p90=round(_sf(row.get("dribbles_completed_p90")), 3),
+            ball_recoveries_p90=round(_sf(row.get("ball_recoveries_p90")), 3),
+            tackles_won_p90=round(_sf(row.get("tackles_won_p90")), 3),
+            pass_accuracy=round(_sf(row.get("passes_completed_pct")), 2),
             market_value_eur=mv if mv > 0 else None,
             contract_until=cu,
             fit_score=fit,
@@ -572,21 +609,77 @@ class FitRayoScorer:
     # ------------------------------------------------------------------ #
 
     def _normalize_radar(self, results: list[PlayerComparison]) -> None:
-        """Normaliza los 6 metrics de radar a 0-100 entre los jugadores comparados."""
-        raw_metrics = {
-            "minutes":          [r.minutes          for r in results],
-            "goals":            [r.goals             for r in results],
-            "assists":          [r.assists           for r in results],
-            "shots_on_target":  [r.shots_on_target   for r in results],
-            "tackles_won":      [r.tackles_won       for r in results],
-            "passes_completed": [r.passes_completed  for r in results],
+        """
+        Calcula percentil real de cada jugador vs. el universo del parquet,
+        filtrado por grupo posicional (DEF/MID/FWD/GK).
+
+        Métricas del radar (todas per-90 o ratios, para comparación justa):
+          - G+A / 90:      goals_p90 + assists_p90  →  goal_contrib_p90
+          - Creación:      key_passes_p90
+          - Regates:       dribbles_completed_p90   →  dribbles_p90
+          - Recuperación:  ball_recoveries_p90
+          - Duelos:        tackles_won_p90
+          - Precisión pase: passes_completed_pct    →  pass_accuracy
+        """
+        _POS_GROUP = {
+            "GK": "GK",
+            "CB": "DEF", "RB": "DEF", "LB": "DEF",
+            "DM": "MID", "CM": "MID", "AM": "MID",
+            "RW": "FWD", "LW": "FWD", "ST": "FWD",
         }
+
+        # (attr en PlayerComparison, columna(s) en parquet para construir el universo)
+        _METRICS: list[tuple[str, str | None]] = [
+            ("goal_contrib_p90",    None),               # calculada: goals_p90 + assists_p90
+            ("key_passes_p90",      "key_passes_p90"),
+            ("dribbles_p90",        "dribbles_completed_p90"),
+            ("ball_recoveries_p90", "ball_recoveries_p90"),
+            ("tackles_won_p90",     "tackles_won_p90"),
+            ("pass_accuracy",       "passes_completed_pct"),
+        ]
+
+        # Pre-calcular columna combinada en master una sola vez
+        df_master = self.master.copy()
+        if "goals_p90" in df_master.columns and "assists_p90" in df_master.columns:
+            df_master["_goal_contrib_p90"] = (
+                df_master["goals_p90"].fillna(0) + df_master["assists_p90"].fillna(0)
+            )
+        else:
+            df_master["_goal_contrib_p90"] = 0.0
+
         for r in results:
+            pos_short = (r.position or "").upper().split("/")[0].strip()
+            group = _POS_GROUP.get(pos_short)
+
+            # Universo de referencia: misma posición, mínimo de minutos jugados
+            if group and "position_primary" in df_master.columns:
+                def _grp(p):
+                    p2 = str(p).upper().split("/")[0].strip()
+                    return _POS_GROUP.get(p2, "OTHER")
+                mask = df_master["position_primary"].apply(_grp) == group
+                df_pos = df_master[mask] if mask.sum() >= 20 else df_master
+            else:
+                df_pos = df_master
+
+            # Excluir jugadores con muy pocos minutos (evita distorsión con ceros)
+            if "minutes" in df_pos.columns:
+                min_thresh = float(df_pos["minutes"].quantile(0.25))
+                df_pos = df_pos[df_pos["minutes"] >= max(min_thresh, 180)]
+
             radar = {}
-            for metric, values in raw_metrics.items():
-                mn, mx = min(values), max(values)
-                val = getattr(r, metric)
-                radar[metric] = round(100.0*(val-mn)/(mx-mn), 1) if mx > mn else 50.0
+            for attr, col in _METRICS:
+                val = float(getattr(r, attr, 0) or 0)
+                # Columna del universo: especial para goal_contrib
+                ref_col = "_goal_contrib_p90" if attr == "goal_contrib_p90" else col
+                if ref_col and ref_col in df_pos.columns:
+                    series = df_pos[ref_col].dropna().astype(float)
+                    if len(series) > 0:
+                        pct = (series < val).sum() / len(series) * 100.0
+                        radar[attr] = round(pct, 1)
+                    else:
+                        radar[attr] = 50.0
+                else:
+                    radar[attr] = 50.0
             r.radar = radar
 
     # ------------------------------------------------------------------ #

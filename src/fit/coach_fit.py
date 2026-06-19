@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 coach_fit.py
 ============
@@ -119,25 +120,69 @@ def evaluate_coach(name: str, profile: dict, context: dict, dna: dict,
 
 
 def _squad_compatibility(axes: dict, squad_summary: dict | None) -> float:
-    """La plantilla Rayo carece de central dominador/organizador (poca salida).
+    """Compatibilidad del estilo del técnico con la plantilla actual (0-100).
 
-    Un tecnico que EXIGE mucha posesion/elaboracion encaja peor; uno de
-    transicion/presion encaja mejor. Score 0-100.
+    Penalizaciones cuando el técnico exige perfiles de los que la plantilla carece:
+      - Alta posesión → necesita constructores (central dominador, organizador)
+      - Extremos asociativos → si faltan
+      - Alta presión → beneficia si hay recuperadores
+      - Juego directo/vertical → compatible con delanteros móviles
+    Bonificaciones cuando el estilo encaja con lo que hay disponible.
+
+    Plantilla de referencia: 25 jugadores (SQUAD_CAP de needs.py).
     """
     if not squad_summary:
         return 60.0
-    poss = axes.get("posesion")
-    trans = axes.get("uso_transiciones")
-    missing = set(squad_summary.get("missing", []))
-    base = 70.0
-    # si faltan perfiles de salida y el tecnico exige posesion alta -> penaliza
-    needs_buildup = ("Central dominador" in missing) or ("Mediocentro organizador" in missing)
+
+    poss   = axes.get("posesion")
+    trans  = axes.get("uso_transiciones")
+    press  = axes.get("presion_alta")
+    vert   = axes.get("verticalidad")
+    off    = axes.get("tendencia_ofensiva")
+
+    missing  = set(squad_summary.get("missing", []))
+    reinforce = set(squad_summary.get("reinforce", []))
+    gap_roles = missing | reinforce  # roles con carencia total o parcial
+
+    base = 68.0
+
+    # ── Penalizaciones por desajuste estilo ↔ carencias ──────────────────────
+    # Posesión alta → necesita central dominador + organizador para la salida
+    needs_buildup = bool(
+        {"Central dominador", "Mediocentro organizador"} & gap_roles
+    )
     if needs_buildup and pd.notna(poss) and poss >= 66:
-        base -= 25
+        base -= 20
+    elif needs_buildup and pd.notna(poss) and poss >= 55:
+        base -= 10
+
+    # Extremos asociativos: si el técnico los exige (posesión alta + baja verticalidad)
+    needs_assoc_wide = "Extremo asociativo" in gap_roles
+    if needs_assoc_wide and pd.notna(poss) and poss >= 60 and (vert is None or vert < 55):
+        base -= 8
+
+    # Pocas llegadas desde segunda línea (interior) y técnico ofensivo
+    needs_interior = "Interior llegador" in gap_roles
+    if needs_interior and pd.notna(off) and off >= 65:
+        base -= 8
+
+    # ── Bonificaciones por compatibilidad ────────────────────────────────────
+    # Transiciones y presión → aprovecha recuperadores que sí hay
+    has_recovery = "Mediocentro recuperador" not in gap_roles
+    if has_recovery and pd.notna(press) and press >= 60:
+        base += 10
     if pd.notna(trans) and trans >= 60:
-        base += 12
-    if pd.notna(poss) and 45 <= poss <= 60:
+        base += 10
+
+    # Posesión media (45-60): encaja con perfil de plantilla equilibrada
+    if pd.notna(poss) and 45 <= poss <= 62:
         base += 8
+
+    # Juego vertical → compatible con delantero móvil que suele haber
+    has_mobile_fw = "Delantero móvil" not in gap_roles
+    if has_mobile_fw and pd.notna(vert) and vert >= 58:
+        base += 6
+
     return float(np.clip(base, 0, 100))
 
 

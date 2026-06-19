@@ -244,20 +244,26 @@ def parse_tm_response(data: dict, tm_id: str) -> dict:
     """
     Extrae los campos relevantes del JSON de respuesta de la API TM.
 
-    Estructura esperada (ejemplo real):
-      data.marketValueDetails.current.value
-      data.attributes.contractUntil
-      data.attributes.height
-      data.attributes.preferredFoot.name
-      data.attributes.position.name
-      data.lifeDates.age
-      data.nationalityDetails.nationalities[0].name
-      data.portraitUrl
-      data.clubAssignments[0].shirtNumber
+    Estructura real confirmada:
+      data.marketValueDetails.current.value          → market_value_eur
+      data.marketValueDetails.previous.value         → market_value_prev
+      data.marketValueDetails.highest.value          → market_value_highest
+      data.attributes.contractUntil                  → contract_until
+      data.attributes.height                         → height
+      data.attributes.preferredFoot.name             → foot
+      data.attributes.position.name                  → position_tm
+      data.attributes.firstSidePosition.name         → alt_position_1
+      data.attributes.secondSidePosition.name        → alt_position_2
+      data.lifeDates.age                             → age
+      data.lifeDates.dateOfBirth                     → dob  (string "YYYY-MM-DD")
+      data.birthPlaceDetails.placeOfBirth            → birthplace
+      data.portraitUrl                               → photo_url
+      data.clubAssignments[type=current].shirtNumber → shirt_number
+      data.clubAssignments[type=current].isCaptain   → is_captain
     """
     d = data.get("data", data)  # algunos endpoints devuelven directamente
 
-    # Valor de mercado
+    # Valor de mercado actual
     mv = None
     try:
         mv_raw = (
@@ -267,6 +273,24 @@ def parse_tm_response(data: dict, tm_id: str) -> dict:
         )
         if mv_raw is not None:
             mv = float(mv_raw)
+    except (TypeError, ValueError):
+        pass
+
+    # Valor de mercado anterior
+    mv_prev = None
+    try:
+        vp = d.get("marketValueDetails", {}).get("previous", {}).get("value")
+        if vp is not None:
+            mv_prev = float(vp)
+    except (TypeError, ValueError):
+        pass
+
+    # Valor de mercado histórico máximo
+    mv_highest = None
+    try:
+        vh = d.get("marketValueDetails", {}).get("highest", {}).get("value")
+        if vh is not None:
+            mv_highest = float(vh)
     except (TypeError, ValueError):
         pass
 
@@ -299,12 +323,34 @@ def parse_tm_response(data: dict, tm_id: str) -> dict:
     except (TypeError, AttributeError):
         pass
 
-    # Posición
+    # Posición principal
     position_tm = None
     try:
         position_tm = (
             d.get("attributes", {})
             .get("position", {})
+            .get("name")
+        )
+    except (TypeError, AttributeError):
+        pass
+
+    # Posición alternativa 1
+    alt_position_1 = None
+    try:
+        alt_position_1 = (
+            d.get("attributes", {})
+            .get("firstSidePosition", {})
+            .get("name")
+        )
+    except (TypeError, AttributeError):
+        pass
+
+    # Posición alternativa 2
+    alt_position_2 = None
+    try:
+        alt_position_2 = (
+            d.get("attributes", {})
+            .get("secondSidePosition", {})
             .get("name")
         )
     except (TypeError, AttributeError):
@@ -319,26 +365,31 @@ def parse_tm_response(data: dict, tm_id: str) -> dict:
     except (TypeError, ValueError):
         pass
 
-    # Fecha de nacimiento
+    # Fecha de nacimiento — es un string "YYYY-MM-DD", no un dict
     dob = None
     try:
-        dob = d.get("lifeDates", {}).get("dateOfBirth", {}).get("date")
-        if dob:
-            dob = str(dob)[:10]
+        dob_raw = d.get("lifeDates", {}).get("dateOfBirth")
+        if dob_raw and isinstance(dob_raw, str):
+            dob = dob_raw[:10]
+        elif dob_raw and isinstance(dob_raw, dict):
+            dob = str(dob_raw.get("date", ""))[:10] or None
     except (TypeError, AttributeError):
         pass
 
-    # Nacionalidad(es)
+    # Lugar de nacimiento
+    birthplace = None
+    try:
+        birthplace = d.get("birthPlaceDetails", {}).get("placeOfBirth") or None
+    except (TypeError, AttributeError):
+        pass
+
+    # Nacionalidad — nationalities es un dict {nationalityId, secondNationalityId}, sin nombres
+    # Usamos passportName como proxy (puede estar en idioma local)
     nationality = None
     try:
-        nats = (
-            d.get("nationalityDetails", {})
-            .get("nationalities", [])
-        )
-        if nats:
-            nationality = ", ".join(
-                n["name"] for n in nats if n.get("name")
-            )
+        pn = d.get("nationalityDetails", {}).get("passportName")
+        if pn and str(pn).strip():
+            nationality = str(pn).strip()
     except (TypeError, AttributeError):
         pass
 
@@ -351,19 +402,24 @@ def parse_tm_response(data: dict, tm_id: str) -> dict:
     except (TypeError, AttributeError):
         pass
 
-    # Club actual
-    club = None
+    # Club actual + dorsal + capitán (de clubAssignments)
+    club_id = None
+    shirt_number = None
+    is_captain = None
     try:
         ca = d.get("clubAssignments", [])
         if ca and isinstance(ca, list):
-            club = ca[0].get("club", {}).get("name")
-    except (TypeError, AttributeError, IndexError):
+            current = next((x for x in ca if x.get("type") == "current"), ca[0])
+            club_id      = current.get("clubId")
+            shirt_number = current.get("shirtNumber")
+            is_captain   = bool(current.get("isCaptain", False))
+    except (TypeError, AttributeError, IndexError, StopIteration):
         pass
 
     # Nombre canónico desde TM
     tm_name = None
     try:
-        tm_name = d.get("attributes", {}).get("name") or d.get("name")
+        tm_name = d.get("name") or d.get("shortName") or d.get("displayName")
     except (TypeError, AttributeError):
         pass
 
@@ -377,19 +433,26 @@ def parse_tm_response(data: dict, tm_id: str) -> dict:
         pass
 
     return {
-        "tm_id":               tm_id,
-        "tm_name":             tm_name,
-        "market_value_eur":    mv,
-        "contract_until":      contract_until,
-        "height":              height,
-        "foot":                foot,
-        "position_tm":         position_tm,
-        "age":                 age,
-        "dob":                 dob,
-        "nationality":         nationality,
-        "photo_url":           photo_url,
-        "club_tm":             club,
-        "release_clause_eur":  release_clause,
+        "tm_id":                tm_id,
+        "tm_name":              tm_name,
+        "market_value_eur":     mv,
+        "market_value_prev":    mv_prev,
+        "market_value_highest": mv_highest,
+        "contract_until":       contract_until,
+        "height":               height,
+        "foot":                 foot,
+        "position_tm":          position_tm,
+        "alt_position_1":       alt_position_1,
+        "alt_position_2":       alt_position_2,
+        "age":                  age,
+        "dob":                  dob,
+        "birthplace":           birthplace,
+        "nationality":          nationality,
+        "photo_url":            photo_url,
+        "club_id_tm":           club_id,
+        "shirt_number":         shirt_number,
+        "is_captain":           is_captain,
+        "release_clause_eur":   release_clause,
     }
 
 
@@ -418,26 +481,33 @@ def build_economic_parquet(
         econ = economic_by_opta.get(opta_id, {})
 
         records.append({
-            "opta_id":           opta_id,
-            "canonical_name":    _norm(name),
-            "display_name":      name,
-            "market_value_eur":  econ.get("market_value_eur"),
-            "contract_until":    econ.get("contract_until"),
-            "release_clause_eur": econ.get("release_clause_eur"),
-            "salary_eur_year":   None,   # no disponible en TM API
-            "club":              econ.get("club_tm"),
-            "nationality":       econ.get("nationality"),
-            "age":               econ.get("age"),
-            "position_tm":       econ.get("position_tm"),
-            "height":            econ.get("height"),
-            "foot":              econ.get("foot"),
-            "dob":               econ.get("dob"),
-            "tm_id":             econ.get("tm_id"),
-            "photo_url":         econ.get("photo_url"),
-            "match_method":      econ.get("match_method"),
-            "match_confidence":  econ.get("match_confidence"),
-            "data_source":       "transfermarkt_api" if econ.get("tm_id") else None,
-            "last_updated":      econ.get("last_updated"),
+            "opta_id":              opta_id,
+            "canonical_name":       _norm(name),
+            "display_name":         name,
+            "market_value_eur":     econ.get("market_value_eur"),
+            "market_value_prev":    econ.get("market_value_prev"),
+            "market_value_highest": econ.get("market_value_highest"),
+            "contract_until":       econ.get("contract_until"),
+            "release_clause_eur":   econ.get("release_clause_eur"),
+            "salary_eur_year":      None,   # no disponible en TM API
+            "nationality":          econ.get("nationality"),
+            "age":                  econ.get("age"),
+            "position_tm":          econ.get("position_tm"),
+            "alt_position_1":       econ.get("alt_position_1"),
+            "alt_position_2":       econ.get("alt_position_2"),
+            "height":               econ.get("height"),
+            "foot":                 econ.get("foot"),
+            "dob":                  econ.get("dob"),
+            "birthplace":           econ.get("birthplace"),
+            "shirt_number":         econ.get("shirt_number"),
+            "is_captain":           econ.get("is_captain"),
+            "tm_id":                econ.get("tm_id"),
+            "club_id_tm":           econ.get("club_id_tm"),
+            "photo_url":            econ.get("photo_url"),
+            "match_method":         econ.get("match_method"),
+            "match_confidence":     econ.get("match_confidence"),
+            "data_source":          "transfermarkt_api" if econ.get("tm_id") else None,
+            "last_updated":         econ.get("last_updated"),
         })
 
     new_df = pd.DataFrame(records)
@@ -535,10 +605,24 @@ def main():
     # ---- Construir índice de matching ----
     match_idx = build_match_index(mv)
 
+    # ---- Cargar entity_map para lookup directo opta_id → tm_id ----
+    em_lookup: dict = {}  # opta_id → (tm_id_str, match_type)
+    entity_map_df = load_entity_map()
+    if entity_map_df is not None:
+        em_has_tid = entity_map_df[entity_map_df["tm_id"].notna()]
+        for _, r in em_has_tid.iterrows():
+            oid = str(r["opta_id"]).strip()
+            tid = str(r["tm_id"]).replace(".0", "").strip()
+            mtype = str(r.get("match_type", "entity_map")).strip()
+            if oid and tid.isdigit():
+                em_lookup[oid] = (tid, mtype)
+        print(f"[INFO] entity_map: {len(em_lookup):,} opta_id con tm_id cargados")
+
     # ---- Hacer match de jugadores OPTA → tm_id ----
     print("\n[INFO] Haciendo match OPTA → tm_id ...")
     matched_count  = 0
     no_match_count = 0
+    em_used        = 0
 
     players_to_fetch: list[dict] = []
 
@@ -546,8 +630,18 @@ def main():
         opta_id = str(row.get("player_id", "")).strip()
         name    = str(row.get("name", "")).strip()
 
-        tm_id, method = match_opta_to_tid(name, match_idx)
-        confidence = {"exact": 1.00, "initial_surname": 0.85, "surname": 0.80}.get(method, 0.0)
+        # 1. Lookup directo en entity_map (más fiable que name-matching)
+        if opta_id in em_lookup:
+            tm_id, method = em_lookup[opta_id]
+            em_used += 1
+        else:
+            tm_id, method = match_opta_to_tid(name, match_idx)
+
+        confidence = {
+            "exact": 1.00, "exact_name": 1.00,
+            "initial_surname": 0.85, "exact_surname": 0.80,
+            "surname": 0.80, "search_web": 0.75,
+        }.get(method, 0.70)
 
         if tm_id:
             matched_count += 1
@@ -578,9 +672,11 @@ def main():
 
     print(f"  Jugadores con tm_id:     {total_matched:,} / {len(players_to_fetch):,} "
           f"({100*total_matched/len(players_to_fetch):.1f}%)")
-    print(f"  Match exacto:            {sum(1 for p in players_to_fetch if p['method']=='exact'):,}")
-    print(f"  Match inicial+apellido:  {sum(1 for p in players_to_fetch if p['method']=='initial_surname'):,}")
+    print(f"  Via entity_map:          {em_used:,}")
+    print(f"  Match exacto:            {sum(1 for p in players_to_fetch if p['method'] in ('exact','exact_name')):,}")
+    print(f"  Match inicial+apellido:  {sum(1 for p in players_to_fetch if p['method'] in ('initial_surname','exact_surname')):,}")
     print(f"  Match apellido:          {sum(1 for p in players_to_fetch if p['method']=='surname'):,}")
+    print(f"  Via web search:          {sum(1 for p in players_to_fetch if p['method']=='search_web'):,}")
     print(f"  Sin match:               {no_match_count:,}")
     print(f"  A fetchear de API:       {total_to_fetch:,}")
 
@@ -625,10 +721,10 @@ def main():
         raw = fetch_tm_player(tm_id, session)
 
         if raw:
-            raw["_fetched_at"] = datetime.utcnow().isoformat()
-            raw["_opta_id"]    = player["opta_id"]
-            raw["_match_method"] = player["method"]
-            raw_cache[tm_id]   = raw
+            raw["_fetched_at"]    = datetime.utcnow().isoformat()
+            raw["_opta_id"]       = player["opta_id"]
+            raw["_match_method"]  = player["method"]
+            raw_cache[tm_id]      = raw
             ok_count += 1
             print("OK")
         else:
@@ -663,9 +759,9 @@ def main():
             continue
 
         parsed = parse_tm_response(raw, tm_id)
-        parsed["match_method"]    = player["method"]
+        parsed["match_method"]     = player["method"]
         parsed["match_confidence"] = player["confidence"]
-        parsed["last_updated"]    = raw.get("_fetched_at", "")[:10]
+        parsed["last_updated"]     = raw.get("_fetched_at", "")[:10]
 
         economic_by_opta[opta_id] = parsed
 

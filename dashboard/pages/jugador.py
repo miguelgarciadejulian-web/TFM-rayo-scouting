@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Perfil completo de un jugador: foto, percentiles, evolución, radar, encaje y notas."""
 from __future__ import annotations
 import json
@@ -15,6 +16,7 @@ from src.utils.config import settings  # noqa: E402
 from dashboard.components.player_detail import build_detail, player_options  # noqa: E402
 from dashboard.components.criteria_block import criteria_accordion  # noqa: E402
 from src.fit.clause_risk import evaluate_clause_risk, RISK_COLORS  # noqa: E402
+from src.utils.lateral_position import LATERAL_LABELS, ROLE_TYPE_LABELS, LATERAL_TO_ROLES  # noqa: E402
 
 dash.register_page(__name__, path="/jugador", name="Perfil Jugador")
 
@@ -227,6 +229,8 @@ def _notes_box(key, notes, photos, overrides):
         "foot": ov_entry.get("foot") or _cv.get("foot") or None,
         "height": (float(ov_entry["height"]) if ov_entry.get("height") else
                    float(_cv["height"]) if _cv.get("height") else None),
+        "lateral_pos": ov_entry.get("lateral_pos"),
+        "role_type": ov_entry.get("role_type"),
     }
     return html.Div([
         html.P("Notas de scouting (se guardan)", style={
@@ -318,6 +322,45 @@ def _notes_box(key, notes, photos, overrides):
                 "fontWeight": "600", "cursor": "pointer", "marginTop": "8px",
             }),
             html.Span(id="market-status", style={
+                "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
+            }),
+        ]),
+        html.Hr(style={"margin": "14px 0", "borderColor": "#F3F4F6"}),
+        html.P("Posición y tipología (override manual)", style={
+            "fontSize": "11px", "fontWeight": "700", "color": "#9CA3AF",
+            "textTransform": "uppercase", "margin": "0 0 6px",
+        }),
+        dbc.Row([
+            dbc.Col([
+                html.Span("Posición lateral", style={"fontSize": "10px", "color": "#6B7280"}),
+                dcc.Dropdown(
+                    id="mkt-lateral-pos",
+                    options=[{"label": v, "value": k} for k, v in LATERAL_LABELS.items()],
+                    value=_mk.get("lateral_pos"),
+                    placeholder="Inferida automáticamente",
+                    clearable=True,
+                    style={"fontSize": "12px"},
+                ),
+            ], md=4),
+            dbc.Col([
+                html.Span("Tipo de jugador", style={"fontSize": "10px", "color": "#6B7280"}),
+                dcc.Dropdown(
+                    id="mkt-role-type",
+                    options=[{"label": v, "value": k} for k, v in ROLE_TYPE_LABELS.items()],
+                    value=_mk.get("role_type"),
+                    placeholder="Inferido automáticamente",
+                    clearable=True,
+                    style={"fontSize": "12px"},
+                ),
+            ], md=4),
+        ], className="g-2"),
+        html.Div([
+            html.Button("Guardar posición y tipología", id="save-lateral", n_clicks=0, style={
+                "background": "#1A1A2E", "color": "#fff", "border": "none",
+                "borderRadius": "8px", "padding": "7px 16px", "fontSize": "12px",
+                "fontWeight": "600", "cursor": "pointer", "marginTop": "8px",
+            }),
+            html.Span(id="lateral-status", style={
                 "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
             }),
         ]),
@@ -459,7 +502,16 @@ def _fit_rayo_card(name: str) -> html.Div:
             if row_data is not None:
                 rend_bd = scorer.score_rendimiento_breakdown(row_data)
                 eco_bd  = scorer.score_economico_breakdown(r.market_value_eur or 0)
-                edad_bd = scorer.score_edad_breakdown(r.age, r.position)
+                # Edad: fallback a TM/overrides si OPTA no tiene el dato
+                _age_for_fit = r.age or 0
+                if not _age_for_fit:
+                    _cv_age = get_value(r.name)
+                    _ov_age = _load_overrides().get(
+                        __import__("unicodedata").normalize("NFKD", r.name.lower())
+                        .encode("ascii", "ignore").decode().strip(), {}
+                    ).get("age")
+                    _age_for_fit = float(_ov_age or _cv_age.get("age") or 0)
+                edad_bd = scorer.score_edad_breakdown(_age_for_fit, r.position)
                 disp_bd = scorer.score_disponibilidad_breakdown(
                     r.contract_until, r.name,
                     loan_from=r.loan_from,
@@ -669,6 +721,7 @@ def layout(**_params):
                           "marginRight": "8px"}),
                 dcc.Dropdown(id="jugador-search", options=[],
                              placeholder="Escribe un nombre...",
+                             search_value="",
                              style={"width": "360px", "fontSize": "13px"}),
                 html.Button([
                     html.I(className="ti ti-file-download", style={"marginRight": "6px"}),
@@ -680,6 +733,7 @@ def layout(**_params):
                 }),
                 dcc.Download(id="dl-pdf"),
                 dcc.Store(id="current-player"),
+                dcc.Store(id="jugador-picked-store"),
             ], style={"display": "flex", "alignItems": "center", "marginTop": "6px"}),
             html.Div(id="pdf-error-msg", style={"marginTop": "6px"}),
         ], className="page-header"),
@@ -688,13 +742,22 @@ def layout(**_params):
     ])
 
 
-@callback(Output("jugador-search", "options"), Input("jugador-loc", "pathname"))
-def _fill_search(_):
-    return player_options()
+@callback(Output("jugador-search", "options"), Input("jugador-search", "search_value"))
+def _fill_search(search):
+    return player_options(search or "")
+
+
+@callback(Output("jugador-picked-store", "data"),
+          Input("jugador-search", "value"),
+          prevent_initial_call=True)
+def _save_pick(val):
+    if val and "|||" in val:
+        return val
+    return no_update
 
 
 @callback(Output("jugador-content", "children"),
-          Input("jugador-loc", "search"), Input("jugador-search", "value"))
+          Input("jugador-loc", "search"), Input("jugador-picked-store", "data"))
 def render_player(search, picked):
     name, team = "", ""
     if picked and "|||" in picked:
@@ -758,20 +821,23 @@ _BTN_STYLE_LOADING = {
 @callback(
     Output("dl-pdf", "data"),
     Output("pdf-error-msg", "children"),
-    Output("dl-pdf-btn", "disabled"),
-    Output("dl-pdf-btn", "children"),
-    Output("dl-pdf-btn", "style"),
     Input("dl-pdf-btn", "n_clicks"),
     State("current-player", "data"),
     State("jugador-loc", "search"),
     State("jugador-search", "value"),
+    background=True,
+    running=[
+        (Output("dl-pdf-btn", "disabled"), True, False),
+        (Output("dl-pdf-btn", "children"), _PDF_BTN_LOADING, _PDF_BTN_DEFAULT),
+        (Output("dl-pdf-btn", "style"),    _BTN_STYLE_LOADING, _BTN_STYLE_DEFAULT),
+    ],
     prevent_initial_call=True,
 )
 def _download_pdf(n, cur, search, picked):
     if not n:
-        return no_update, no_update, no_update, no_update, no_update
+        return no_update, no_update
 
-    # Resolve player name: store (fast path) → dropdown → URL (fallback for race condition)
+    # Resolver nombre: store → dropdown → URL
     name, team = "", ""
     if cur and cur.get("name"):
         name, team = cur["name"], cur.get("team") or ""
@@ -790,12 +856,12 @@ def _download_pdf(n, cur, search, picked):
             html.Span("Selecciona un jugador primero",
                       style={"fontSize": "11px", "color": "#92400E"}),
         ], style={"display": "flex", "alignItems": "center"})
-        return no_update, err, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
+        return no_update, err
 
     from src.reports.player_dossier import build_player_dossier
     try:
         fname, data = build_player_dossier(name, team=team or None)
-        return dcc.send_bytes(data, fname), "", False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
+        return dcc.send_bytes(data, fname), ""
     except Exception as exc:
         import traceback
         traceback.print_exc()
@@ -807,7 +873,7 @@ def _download_pdf(n, cur, search, picked):
             html.Span(" — Vuelve a intentarlo",
                       style={"fontSize": "11px", "color": "#6B7280"}),
         ], style={"display": "flex", "alignItems": "center"})
-        return no_update, err_msg, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
+        return no_update, err_msg
 
 
 @callback(Output("note-status", "children"),
@@ -862,3 +928,22 @@ def save_market(n, value_m, clause_m, contract, foot, height, key):
     ov[_norm(name)] = entry
     _save_overrides(ov)
     return "Guardado — recarga la pagina para verlo"
+
+
+@callback(Output("lateral-status", "children"),
+          Input("save-lateral", "n_clicks"),
+          State("mkt-lateral-pos", "value"),
+          State("mkt-role-type", "value"),
+          State("player-note-key", "data"),
+          prevent_initial_call=True)
+def save_lateral(n, lateral_pos, role_type, key):
+    if not n or not key:
+        return no_update
+    name = key.split("|")[0]
+    ov = _load_overrides()
+    entry = ov.get(_norm(name), {})
+    if lateral_pos:
+        entry["lateral_pos"] = lateral_pos
+    elif "lateral_pos" in entry:
+        del entry["lateral_pos"]   # borrar override → vuelve al inferido
+   

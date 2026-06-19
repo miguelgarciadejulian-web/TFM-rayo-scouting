@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Casting de Entrenadores - Rayo 2026/27.
 
@@ -323,6 +324,115 @@ def _calc_adn_detail() -> dict | None:
         return None
 
 
+def _needs_panel() -> html.Div:
+    """Panel de necesidades de plantilla siempre visible en la página de entrenadores."""
+    needs = _load_needs()
+    if not needs:
+        return html.Span()
+
+    squad_p = PROC / "squad_profile.json"
+    n_total = 0
+    if squad_p.exists():
+        try:
+            n_total = len(json.load(open(squad_p, encoding="utf-8")).get("squad", []))
+        except Exception:
+            pass
+
+    cap        = needs.get("squad_cap", 25)
+    n_profiled = needs.get("n_profiled", n_total)
+    missing    = needs.get("missing", [])
+    reinforce  = needs.get("reinforce", [])
+    aging      = needs.get("aging_or_expiring", [])
+    formation  = needs.get("formation_used", "4-2-3-1")
+    slots_free = cap - n_total
+
+    def _chip(label, bg, fg, icon=""):
+        return html.Span(
+            [html.Span(icon + " ", style={"marginRight": "2px"}) if icon else "", label],
+            style={"fontSize": "10px", "fontWeight": "600", "padding": "2px 8px",
+                   "borderRadius": "99px", "background": bg, "color": fg,
+                   "marginRight": "4px", "marginBottom": "4px", "display": "inline-block"},
+        )
+
+    pct_full = min(n_total / cap * 100, 100)
+    bar_color = "#E30613" if slots_free > 3 else "#F59E0B" if slots_free > 0 else "#10B981"
+
+    return html.Div([
+        # Cabecera con ocupación
+        html.Div([
+            html.Div([
+                html.I(className="ti ti-users-group",
+                       style={"fontSize": "14px", "color": "#E30613", "marginRight": "6px"}),
+                html.Strong("Plantilla 2025/26 — análisis de necesidades",
+                            style={"fontSize": "12px", "color": "#1A1A2E"}),
+                html.Span(f"  formación base: {formation}",
+                          style={"fontSize": "10px", "color": "#9CA3AF", "marginLeft": "8px"}),
+            ], style={"display": "flex", "alignItems": "center", "marginBottom": "6px"}),
+
+            html.Div([
+                # Barra de ocupación
+                html.Div([
+                    html.Div(style={"height": "6px", "borderRadius": "99px",
+                                    "width": f"{pct_full:.0f}%", "background": bar_color}),
+                ], style={"flex": "1", "height": "6px", "background": "#F3F4F6",
+                          "borderRadius": "99px", "overflow": "hidden", "alignSelf": "center"}),
+                html.Span(
+                    f"{n_total} / {cap} jugadores  ·  {slots_free} hueco{'s' if slots_free != 1 else ''} libre{'s' if slots_free != 1 else ''}",
+                    style={"fontSize": "11px", "fontWeight": "700",
+                           "color": bar_color, "marginLeft": "10px", "whiteSpace": "nowrap"},
+                ),
+            ], style={"display": "flex", "alignItems": "center", "gap": "8px",
+                      "marginBottom": "10px"}),
+        ]),
+
+        dbc.Row([
+            dbc.Col([
+                html.Div("Sin cobertura",
+                         style={"fontSize": "10px", "fontWeight": "700", "color": "#991B1B",
+                                "marginBottom": "4px"}),
+                html.Div(
+                    [_chip(r, "#FEE2E2", "#991B1B", "●") for r in missing]
+                    or [html.Span("Ninguna", style={"fontSize": "10px", "color": "#9CA3AF"})],
+                    style={"display": "flex", "flexWrap": "wrap"},
+                ),
+            ], md=4),
+            dbc.Col([
+                html.Div("A reforzar",
+                         style={"fontSize": "10px", "fontWeight": "700", "color": "#92400E",
+                                "marginBottom": "4px"}),
+                html.Div(
+                    [_chip(r, "#FEF3C7", "#92400E", "▲") for r in reinforce]
+                    or [html.Span("Ninguna", style={"fontSize": "10px", "color": "#9CA3AF"})],
+                    style={"display": "flex", "flexWrap": "wrap"},
+                ),
+            ], md=4),
+            dbc.Col([
+                html.Div("Veteranos / fin contrato 2026",
+                         style={"fontSize": "10px", "fontWeight": "700", "color": "#1E40AF",
+                                "marginBottom": "4px"}),
+                html.Div(
+                    [_chip(
+                        f"{a['name'].split()[-1]} ({a.get('role_label', a.get('role', '?'))})",
+                        "#EFF6FF", "#1E40AF"
+                    ) for a in aging[:5]]
+                    or [html.Span("Ninguno", style={"fontSize": "10px", "color": "#9CA3AF"})],
+                    style={"display": "flex", "flexWrap": "wrap"},
+                ),
+            ], md=4),
+        ], className="g-2"),
+
+        html.P(
+            f"Plantilla objetivo ({cap} jugadores) derivada automáticamente de la formación base. "
+            "La compatibilidad de cada técnico se pondera contra estas carencias.",
+            style={"fontSize": "9px", "color": "#9CA3AF", "margin": "8px 0 0",
+                   "fontStyle": "italic"},
+        ),
+    ], style={
+        "background": "#FFFBEB", "border": "1px solid #FDE68A", "borderRadius": "10px",
+        "padding": "12px 16px", "marginBottom": "14px",
+    })
+
+
 def _fmt_salary(v):
     if not v:
         return "Sin dato"
@@ -496,6 +606,278 @@ def _chip_list(items, color_bg, color_fg, removable_type=None):
     return children
 
 
+_AXIS_LABELS_ES = {
+    "presion_alta":         "Presión alta",
+    "posesion":             "Posesión",
+    "solidez_defensiva":    "Solidez defensiva",
+    "tendencia_ofensiva":   "Tendencia ofensiva",
+    "verticalidad":         "Verticalidad",
+    "intensidad_defensiva": "Intensidad defensiva",
+    "uso_transiciones":     "Uso de transiciones",
+}
+
+
+def _score_breakdown(ev: dict, c: dict, dna: dict) -> html.Details:
+    """
+    Panel colapsable que muestra de dónde sale cada número de la puntuación final.
+    Abierto por defecto para que el usuario lo vea sin tener que expandirlo.
+    """
+    sub = ev.get("subscores", {})
+    style_detail = ev.get("style_detail", {})
+    axes = c.get("axes", {})
+    target = dna.get("target_style", {})
+    cw = dna.get("context_weights", {})
+    eco = dna.get("economics", {})
+
+    # Pesos reales
+    laliga_w  = cw.get("laliga_experience", 0.2)
+    budget_w  = cw.get("budget_fit", 0.15)
+    squad_w   = cw.get("squad_compatibility", 0.15)
+    style_w   = round(1.0 - laliga_w - budget_w - squad_w, 4)
+
+    s_style  = sub.get("estilo") or 0
+    s_laliga = sub.get("experiencia_laliga") or 0
+    s_budget = sub.get("encaje_presupuesto") or 0
+    s_squad  = sub.get("compatibilidad_plantilla") or 0
+    score_10 = ev.get("score_10", "n/d")
+    global_  = ev.get("global_score") or 0
+
+    _th_s = {"fontSize": "9px", "fontWeight": "700", "color": "#6B7280",
+             "padding": "3px 6px", "borderBottom": "1px solid #E5E7EB",
+             "textAlign": "left", "background": "#F9FAFB"}
+    _td_s = {"fontSize": "10px", "padding": "3px 6px", "color": "#374151",
+             "borderBottom": "1px solid #F3F4F6"}
+    _td_r = {**_td_s, "textAlign": "right"}
+
+    def _cls_color(v):
+        if v is None: return "#9CA3AF"
+        if v >= 75:   return "#15803D"
+        if v >= 55:   return "#B45309"
+        return "#991B1B"
+
+    def _badge(txt, bg, fg):
+        return html.Span(txt, style={"fontSize": "8px", "fontWeight": "700",
+            "padding": "1px 5px", "borderRadius": "99px",
+            "background": bg, "color": fg, "marginLeft": "4px"})
+
+    # ── 1. Fórmula global ────────────────────────────────────────────────────
+    formula_row = html.Div([
+        html.Span("Fórmula: ", style={"fontSize": "10px", "fontWeight": "700",
+                                       "color": "#374151"}),
+        html.Code(
+            f"({s_style:.1f}×{style_w:.0%}) + ({s_laliga:.0f}×{laliga_w:.0%}) + "
+            f"({s_budget:.0f}×{budget_w:.0%}) + ({s_squad:.0f}×{squad_w:.0%})"
+            f" = {global_:.1f}  →  {score_10}/10",
+            style={"fontSize": "10px", "background": "#F3F4F6", "padding": "4px 8px",
+                   "borderRadius": "4px", "display": "inline-block", "marginLeft": "4px"},
+        ),
+    ], style={"marginBottom": "10px"})
+
+    # ── 2. Desglose estilo (eje a eje) ───────────────────────────────────────
+    total_w = sum(sp.get("weight", 0) for sp in target.values()) or 1.0
+    axis_rows = []
+    for axis, spec in sorted(target.items(), key=lambda x: x[1].get("weight", 0), reverse=True):
+        label    = _AXIS_LABELS_ES.get(axis, axis)
+        ideal    = spec.get("ideal")
+        w        = spec.get("weight", 0)
+        coach_v  = axes.get(axis)
+        close_v  = style_detail.get(axis)
+        descrip  = spec.get("descripcion", "")
+        src_col  = spec.get("columna", "")
+
+        def _fmt(v): return f"{v:.1f}" if isinstance(v, (int, float)) else "—"
+
+        if close_v is not None:
+            close_color = _cls_color(close_v)
+            contib_txt  = f"{w/total_w*close_v:.1f}"
+        else:
+            close_color = "#9CA3AF"
+            contib_txt  = "—"
+
+        # Tooltip-like: fuente del dato
+        src_note = (f" [{src_col}]" if src_col else "")
+        axis_rows.append(html.Tr([
+            html.Td([
+                html.Span(label, style={"fontWeight": "600"}),
+                html.Br(),
+                html.Span(f"OPTA{src_note}", style={"fontSize": "8px", "color": "#9CA3AF"}),
+            ], style=_td_s),
+            html.Td(_fmt(w * 100) + "%", style=_td_r),
+            html.Td(_fmt(ideal),          style=_td_r),
+            html.Td(_fmt(coach_v),        style=_td_r),
+            html.Td(
+                _fmt(close_v),
+                style={**_td_r, "fontWeight": "700", "color": close_color},
+            ),
+            html.Td(contib_txt, style={**_td_r, "color": "#6B7280"}),
+        ]))
+
+    style_section = html.Div([
+        html.P([
+            html.Span(f"① Estilo de juego — {s_style:.1f}/100",
+                      style={"fontWeight": "700", "fontSize": "11px"}),
+            html.Span(f" (peso {style_w:.0%} del total)",
+                      style={"fontSize": "10px", "color": "#6B7280"}),
+            _badge("datos OPTA", "#EFF6FF", "#1D4ED8"),
+        ], style={"margin": "0 0 4px"}),
+        html.P(
+            "Cercanía del estilo del entrenador al ADN objetivo del Rayo. "
+            "Cada eje = 100 − |valor_coach − ideal_Rayo|, ponderado por peso del eje.",
+            style={"fontSize": "9px", "color": "#9CA3AF", "margin": "0 0 6px"}
+        ),
+        html.Table([
+            html.Thead(html.Tr([
+                html.Th("Eje",          style=_th_s),
+                html.Th("Peso",         style={**_th_s, "textAlign": "right"}),
+                html.Th("Ideal Rayo",   style={**_th_s, "textAlign": "right"}),
+                html.Th("Coach",        style={**_th_s, "textAlign": "right"}),
+                html.Th("Cercanía",     style={**_th_s, "textAlign": "right"}),
+                html.Th("Contribución", style={**_th_s, "textAlign": "right"}),
+            ])),
+            html.Tbody(axis_rows),
+        ], style={"width": "100%", "borderCollapse": "collapse", "marginBottom": "4px"}),
+        html.P(
+            f"Score estilo = Σ(Contribución) / Σ(Pesos) = {s_style:.1f}",
+            style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic", "margin": "0"},
+        ),
+    ], style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
+               "borderRadius": "6px", "padding": "8px 10px", "marginBottom": "8px"})
+
+    # ── 3. Exp. LaLiga ───────────────────────────────────────────────────────
+    laliga_seasons = int(c.get("laliga_seasons") or 0)
+    laliga_section = html.Div([
+        html.P([
+            html.Span(f"② Experiencia LaLiga — {s_laliga:.0f}/100",
+                      style={"fontWeight": "700", "fontSize": "11px"}),
+            html.Span(f" (peso {laliga_w:.0%})",
+                      style={"fontSize": "10px", "color": "#6B7280"}),
+            _badge("datos OPTA", "#EFF6FF", "#1D4ED8"),
+        ], style={"margin": "0 0 4px"}),
+        html.P([
+            html.Span(f"{laliga_seasons} temporadas LaLiga en el dataset. ",
+                      style={"fontSize": "10px", "color": "#374151"}),
+            html.Span(f"Fórmula: min({laliga_seasons}/4 × 100, 100) = {s_laliga:.0f}.",
+                      style={"fontSize": "10px", "color": "#6B7280"}),
+        ], style={"margin": "0"}),
+        html.P(
+            "Equipos y temporadas cubiertos: " +
+            "; ".join(f"{t} ({s})" for t, s in c.get("coverage", {}).get("matched", [])),
+            style={"fontSize": "9px", "color": "#9CA3AF", "margin": "4px 0 0"},
+        ),
+    ], style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
+               "borderRadius": "6px", "padding": "8px 10px", "marginBottom": "8px"})
+
+    # ── 4. Presupuesto ───────────────────────────────────────────────────────
+    salary = c.get("salary_estimate_eur") or 0
+    target_sal = eco.get("target_salary_eur", 1_500_000)
+    max_sal = eco.get("max_salary_eur", 2_500_000)
+    def _fmt_eur(v): return f"{v/1e6:.1f}M€" if v >= 1e6 else (f"{v:,.0f}€" if v else "N/D")
+    if salary <= 0:
+        budget_logic = "Salario no disponible → puntuación neutra (60/100)."
+    elif salary <= target_sal:
+        budget_logic = f"Salario estimado {_fmt_eur(salary)} ≤ objetivo Rayo {_fmt_eur(target_sal)} → 100/100."
+    elif salary <= max_sal:
+        budget_logic = (f"Salario {_fmt_eur(salary)} entre objetivo ({_fmt_eur(target_sal)}) "
+                        f"y máximo ({_fmt_eur(max_sal)}) → penalización proporcional.")
+    else:
+        budget_logic = f"Salario {_fmt_eur(salary)} supera el máximo {_fmt_eur(max_sal)} → 30/100."
+
+    budget_section = html.Div([
+        html.P([
+            html.Span(f"③ Encaje presupuesto — {s_budget:.0f}/100",
+                      style={"fontWeight": "700", "fontSize": "11px"}),
+            html.Span(f" (peso {budget_w:.0%})",
+                      style={"fontSize": "10px", "color": "#6B7280"}),
+            _badge("coaches.yaml", "#FEF9C3", "#92400E"),
+        ], style={"margin": "0 0 4px"}),
+        html.P(budget_logic, style={"fontSize": "10px", "color": "#374151", "margin": "0"}),
+    ], style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
+               "borderRadius": "6px", "padding": "8px 10px", "marginBottom": "8px"})
+
+    # ── 5. Compatibilidad plantilla ──────────────────────────────────────────
+    needs = _load_needs()
+    missing_roles  = set(needs.get("missing", []))
+    reinforce_roles = set(needs.get("reinforce", []))
+    gap_roles      = missing_roles | reinforce_roles
+    cap            = needs.get("squad_cap", 25)
+    n_profiled     = needs.get("n_profiled", 0)
+
+    poss_v  = axes.get("posesion")
+    trans_v = axes.get("uso_transiciones")
+    press_v = axes.get("presion_alta")
+    vert_v  = axes.get("verticalidad")
+
+    def _fmt_ax(v): return f"{v:.0f}" if v is not None else "n/d"
+
+    # Calcular qué penaliza y qué bonifica específicamente
+    issues, goods = [], []
+    if {"Central dominador", "Mediocentro organizador"} & gap_roles and poss_v and poss_v >= 55:
+        issues.append(f"Posesión alta ({_fmt_ax(poss_v)}) sin constructores (faltan centrales/organizadores)")
+    if "Extremo asociativo" in gap_roles and poss_v and poss_v >= 60 and (vert_v is None or vert_v < 55):
+        issues.append("Exige extremos asociativos (carencia en plantilla)")
+    if "Interior llegador" in gap_roles and axes.get("tendencia_ofensiva", 0) >= 65:
+        issues.append("Tendencia ofensiva alta sin interiores llegadores")
+    if "Mediocentro recuperador" not in gap_roles and press_v and press_v >= 60:
+        goods.append(f"Presión alta ({_fmt_ax(press_v)}) compatible con recuperadores disponibles")
+    if trans_v and trans_v >= 60:
+        goods.append(f"Transiciones ({_fmt_ax(trans_v)}) encajan con el perfil de la plantilla")
+    if poss_v and 45 <= poss_v <= 62:
+        goods.append(f"Posesión equilibrada ({_fmt_ax(poss_v)}) — no exige constructores especializados")
+    if "Delantero móvil" not in gap_roles and vert_v and vert_v >= 58:
+        goods.append(f"Juego vertical ({_fmt_ax(vert_v)}) aprovecha delanteros móviles disponibles")
+
+    def _mini_chip(txt, bg, fg):
+        return html.Span(txt, style={"fontSize": "9px", "padding": "2px 7px", "borderRadius": "99px",
+                                     "background": bg, "color": fg, "marginRight": "4px",
+                                     "marginBottom": "3px", "display": "inline-block"})
+
+    squad_section = html.Div([
+        html.P([
+            html.Span(f"④ Compatibilidad con la plantilla — {s_squad:.0f}/100",
+                      style={"fontWeight": "700", "fontSize": "11px"}),
+            html.Span(f" (peso {squad_w:.0%})",
+                      style={"fontSize": "10px", "color": "#6B7280"}),
+            _badge("squad_profile.json", "#EFF6FF", "#1D4ED8"),
+        ], style={"margin": "0 0 4px"}),
+        html.P(
+            f"Plantilla de {cap} jugadores — {n_profiled} perfilados con datos OPTA. "
+            "Penaliza si el estilo exige perfiles con carencia; bonifica si el estilo aprovecha lo disponible.",
+            style={"fontSize": "10px", "color": "#374151", "margin": "0 0 6px"}
+        ),
+        # Tensiones
+        html.Div(
+            [_mini_chip(f"⚠ {t}", "#FEF2F2", "#991B1B") for t in issues]
+            + [_mini_chip(f"✓ {g}", "#F0FDF4", "#166534") for g in goods]
+            or [html.Span("Sin señales claras de desajuste o sintonía.", style={"fontSize": "9px", "color": "#9CA3AF"})],
+            style={"display": "flex", "flexWrap": "wrap", "marginBottom": "4px"},
+        ),
+        # Roles faltantes en contexto
+        html.Div([
+            html.Span("Sin cobertura: ", style={"fontSize": "9px", "color": "#991B1B", "fontWeight": "700"}),
+            html.Span(", ".join(sorted(missing_roles)) or "—", style={"fontSize": "9px", "color": "#374151"}),
+            html.Span("  ·  A reforzar: ", style={"fontSize": "9px", "color": "#92400E", "fontWeight": "700", "marginLeft": "6px"}),
+            html.Span(", ".join(sorted(reinforce_roles)) or "—", style={"fontSize": "9px", "color": "#374151"}),
+        ], style={"marginTop": "2px"}),
+    ], style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
+               "borderRadius": "6px", "padding": "8px 10px", "marginBottom": "4px"})
+
+    return html.Details([
+        html.Summary(
+            [html.I(className="ti ti-math-function",
+                    style={"marginRight": "5px", "color": "#E30613"}),
+             "¿Cómo se calcula la puntuación? — desglose completo"],
+            style={"fontSize": "11px", "fontWeight": "700", "color": "#1D4ED8",
+                   "cursor": "pointer", "userSelect": "none", "marginBottom": "8px"},
+        ),
+        formula_row,
+        style_section,
+        laliga_section,
+        budget_section,
+        squad_section,
+    ], open=True, style={"background": "#fff", "border": "1px solid #DBEAFE",
+                          "borderRadius": "8px", "padding": "10px 12px", "marginBottom": "12px"})
+
+
 def _detail_panel(c, manual):
     if not c:
         return html.Div("Selecciona un entrenador para ver el analisis completo.",
@@ -565,6 +947,9 @@ def _detail_panel(c, manual):
                    "lineHeight": "1.6", "margin": "4px 0 0"}),
         ], style={"background": "#F9FAFB", "borderRadius": "8px", "padding": "10px 12px",
                   "marginBottom": "12px"}),
+
+        # ── Desglose del score ──────────────────────────────────────────────
+        _score_breakdown(ev, c, _load_dna()),
 
         dbc.Row([
             dbc.Col([
@@ -672,6 +1057,9 @@ def layout(**_params):
                 html.P("Banquillo", className="kpi-value"),
                 html.P("sucesor de I. Perez", className="kpi-sub")], className="kpi-modern"), md=3),
         ], className="g-3 mb-3"),
+
+        # Panel de necesidades de la plantilla (siempre visible)
+        _needs_panel(),
 
         # Panel de ADN editable
         html.Div([
@@ -934,7 +1322,6 @@ def _suggest_adn_from_data(n):
 
     current = _load_dna()["target_style"]
 
-    # Tabla detallada con valor bruto + percentil + comparativa vs slider actual
     header_row = html.Tr([
         html.Th("Eje ADN",           style=_th),
         html.Th("Métrica OPTA",      style=_th),

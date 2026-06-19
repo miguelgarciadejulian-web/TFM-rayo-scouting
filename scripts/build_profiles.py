@@ -29,6 +29,7 @@ from src.profiling.player_profile import rank_players_for_role, ROLE_LABELS  # n
 from src.fit.coach_fit import evaluate_coach  # noqa: E402
 
 SPAIN_TOP = "Spain_Primera_Division"
+SPAIN_SEC = "Spain_Segunda_Division"
 
 
 def _clean(o):
@@ -60,14 +61,36 @@ def laliga_seasons_for(team_seasons: pd.DataFrame, history_entry: dict) -> int:
     return len(seasons)
 
 
+def segunda_seasons_for(team_seasons: pd.DataFrame, history_entry: dict) -> int:
+    seasons = set()
+    for st in history_entry.get("stints", []):
+        tm = st.get("team_match")
+        for s in st.get("seasons", []):
+            hit = team_seasons[
+                (team_seasons["league"] == SPAIN_SEC)
+                & (team_seasons["team"].str.contains(tm, case=False, na=False))
+                & (team_seasons["season"].astype(str) == str(s))
+            ]
+            if not hit.empty:
+                seasons.add(str(s))
+    return len(seasons)
+
+
 def main():
     S = settings()
     proc = Path(S["paths"]["data_processed"])
     ts = pd.read_parquet(proc / "team_seasons.parquet")
     enr = pd.read_parquet(proc / "player_seasons_enriched.parquet")
     cp = club_profile()
-    dna = yaml.safe_load(open(ROOT / "config" / "rayo_dna.yaml"))
-    coaches_cfg = yaml.safe_load(open(ROOT / "config" / "coaches.yaml"))
+    # DNA dinamico desde datos reales del Rayo (fallback al YAML estatico)
+    try:
+        from src.fit.dynamic_dna import build_dynamic_dna
+        dna = build_dynamic_dna()
+        print("  DNA: calculado desde datos reales del Rayo (dynamic_dna)")
+    except Exception as _e:
+        dna = yaml.safe_load(open(ROOT / "config" / "rayo_dna.yaml"))
+        print(f"  DNA: fallback a YAML estatico ({_e})")
+    coaches_cfg = yaml.safe_load(open(ROOT / "config" / "coaches.yaml", encoding="utf-8"))
     ctx_by_name = {c["name"]: c for c in coaches_cfg.get("coaches", [])}
 
     # Stints por entrenador desde el CSV de tenencias (editable por el usuario)
@@ -83,7 +106,7 @@ def main():
         for team, g2 in grp.groupby("team"):
             stints.append({"team_match": team, "seasons": sorted(g2["season"].astype(str).tolist())})
         history_coaches.append({"name": coach, "stints": stints})
-    # añadir entrenadores del shortlist manual que no esten en el CSV (con su historial yaml si existe)
+    # anadir entrenadores del shortlist manual que no esten en el CSV
     try:
         legacy = yaml.safe_load(open(ROOT / "config" / "coach_history.yaml")).get("coaches", [])
     except Exception:
@@ -99,7 +122,7 @@ def main():
     needs = squad_needs(sq)
     squad_records = _clean(sq.to_dict("records"))
     json.dump({"squad": squad_records, "needs": _clean(needs)},
-              open(proc / "squad_profile.json", "w"), ensure_ascii=False, indent=1)
+              open(proc / "squad_profile.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"  {len(squad_records)} jugadores | faltan: {needs['missing']} | sobran: {needs['over_represented']}")
 
     print("Generando shortlists de fichaje por rol ...", flush=True)
@@ -115,19 +138,77 @@ def main():
             continue
         rk = rank_players_for_role(enr, role, top_n=8, leagues=target_leagues)
         shortlists[role_label] = _clean(rk.to_dict("records")) if not rk.empty else []
-    json.dump(shortlists, open(proc / "signing_shortlists.json", "w"),
+    json.dump(shortlists, open(proc / "signing_shortlists.json", "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
     print(f"  shortlists para: {list(shortlists.keys())}")
+
+    # -------------------------------------------------------------------------
+    # Criterios de inclusión (calculados desde coach_tenures.csv):
+    #   1. Entrenado en 1ª española en las últimas 2 temporadas
+    #   2. Entrenado en 2ª española en la última temporada
+    #   3. Entrenador español activo en cualquier liga del scope (fuera de España)
+    # -------------------------------------------------------------------------
+    SCOPE_LEAGUES = {
+        "Argentina_Liga_Profesional", "Belgium_First_Division_A", "Denmark_Superliga",
+        "England_Championship", "England_Premier_League", "France_Ligue_1", "France_Ligue_2",
+        "Germany_2_Bundesliga", "Germany_Bundesliga", "Italy_Serie_A", "Mexico_Liga_MX",
+        "Netherlands_Eredivisie", "Portugal_Primeira_Liga", "Spain_Primera_Division",
+        "Spain_Segunda_Division", "Türkiye_Süper_Lig",
+    }
+    SCOPE_NO_SPAIN = SCOPE_LEAGUES - {SPAIN_TOP, SPAIN_SEC}
+    RECENT_2 = {"2024-2025", "2025-2026"}   # últimas 2 temporadas
+    RECENT_1 = {"2024-2025", "2025-2026"}   # último año (incl. actual)
+
+    coaches_cfg_by_name = {c["name"]: c for c in yaml.safe_load(
+        open(ROOT / "config" / "coaches.yaml", encoding="utf-8"))["coaches"]}
+
+    def _is_spanish(name: str) -> bool:
+        nat = (coaches_cfg_by_name.get(name, {}).get("nationality") or "").lower()
+        return "españ" in nat
+
+    def _eligible(name: str) -> tuple[bool, str]:
+        # Criterio 0: inclusión manual forzada en coaches.yaml
+        if coaches_cfg_by_name.get(name, {}).get("force_include", False):
+            return True, "incluido manualmente"
+        rows = tenures[tenures["coach"] == name]
+        # Criterio 1: 1ª española últimas 2 temporadas
+        if not rows[(rows["league"] == SPAIN_TOP) & (rows["season"].isin(RECENT_2))].empty:
+            return True, "1ª española reciente"
+        # Criterio 2: 2ª española última temporada
+        if not rows[(rows["league"] == SPAIN_SEC) & (rows["season"].isin(RECENT_1))].empty:
+            return True, "2ª española reciente"
+        # Criterio 3: español en scope fuera de España
+        if _is_spanish(name):
+            if not rows[(rows["league"].isin(SCOPE_NO_SPAIN)) & (rows["season"].isin(RECENT_2))].empty:
+                return True, "español en scope"
+        return False, ""
+
+    # Conteo para laliga_seasons y segunda_seasons (incluye pre-parquet)
+    primera_raw = tenures[tenures["league"] == SPAIN_TOP].groupby("coach")["season"].nunique().to_dict()
+    segunda_raw  = tenures[tenures["league"] == SPAIN_SEC].groupby("coach")["season"].nunique().to_dict()
 
     print("Perfilando entrenadores ...", flush=True)
     ref = build_reference(ts)
     out = []
+    skipped = []
     for c in history.get("coaches", []):
         name = c["name"]
-        prof = profile_coach(ref, c)
-        ll = laliga_seasons_for(ts, c)
+
+        eligible, reason = _eligible(name)
+        if not eligible:
+            skipped.append(name)
+            continue
+
         ctx = dict(ctx_by_name.get(name, {}))
-        ctx["laliga_seasons"] = ll
+        prof = profile_coach(ref, c, yaml_ctx=ctx)  # yaml_ctx como fallback si no hay OPTA
+        ll = laliga_seasons_for(ts, c)
+        s2 = segunda_seasons_for(ts, c)
+        ll_raw = primera_raw.get(name, 0)
+        s2_raw = segunda_raw.get(name, 0)
+        # Usar el máximo entre parquet-validado y CSV-raw (parquet solo cubre desde 2021-22)
+        ll_total = max(ll, ll_raw)
+        s2_total = max(s2, s2_raw)
+        ctx["laliga_seasons"] = ll_total
         meta = meta_by_name.get(name)
         if meta is not None:
             if not ctx.get("age") and pd.notna(meta.get("age")):
@@ -146,11 +227,13 @@ def main():
             "salary_estimate_eur": ctx.get("salary_estimate_eur"),
             "release_clause_eur": ctx.get("release_clause_eur"),
             "formation_preferred": ctx.get("formation_preferred"),
-            "laliga_seasons": ll,
+            "laliga_seasons": ll_total,
+            "segunda_seasons": s2_total,
             "style_main": prof.get("style_main"),
             "style_tags": prof.get("style_tags"),
             "description_auto": prof.get("description_auto"),
             "axes": prof.get("axes", {}),
+            "axes_source": prof.get("axes_source", "opta"),
             "coverage": prof.get("coverage", {}),
             "data_partial": prof.get("data_partial", False),
             "evaluation": ev,
@@ -158,13 +241,6 @@ def main():
         out.append(rec)
 
     out.sort(key=lambda r: (r["evaluation"].get("global_score") or 0), reverse=True)
-    json.dump(_clean(out), open(proc / "coach_profiles.json", "w"),
+    json.dump(_clean(out), open(proc / "coach_profiles.json", "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
-    print(f"  {len(out)} entrenadores. Top-5 por encaje:")
-    for r in out[:5]:
-        ev = r["evaluation"]
-        print(f"   {ev.get('score_10')}/10  {r['name']:24s} | {r['style_main']}")
-
-
-if __name__ == "__main__":
-    main()
+    print(f"  {len(out)} entrenadores incluidos | {len(skipped)} eliminados (sin 1ª/2ª española):")

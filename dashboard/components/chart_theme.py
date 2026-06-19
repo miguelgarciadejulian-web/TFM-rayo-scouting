@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 chart_theme.py
 ==============

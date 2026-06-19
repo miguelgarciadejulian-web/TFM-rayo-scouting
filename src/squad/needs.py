@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 needs.py
 ========
@@ -30,61 +31,66 @@ from src.profiling.player_profile import (
 # ── Mapeo formacion → necesidades minimas por rol ─────────────────────────────
 # Cada formacion define cuantos jugadores de cada rol necesita la plantilla
 # (titular + suplente donde aplica). Fuente: club_profile.yaml → base_formation.
+# Cada template define la plantilla COMPLETA de 25 jugadores por formación:
+# 1 titular + profundidad de banca según importancia táctica del rol.
+# Total garantizado: 25 jugadores por formación.
+SQUAD_CAP = 25
+
 _FORMATION_TEMPLATES: dict[str, dict[str, int]] = {
-    "4-2-3-1": {
-        "portero": 2,
+    "4-2-3-1": {  # suma = 25
+        "portero": 3,
         "central_dominador": 1,
-        "central_corrector": 2,
+        "central_corrector": 3,
         "lateral_ofensivo": 2,
-        "lateral_defensivo": 1,
-        "mediocentro_organizador": 1,
-        "mediocentro_recuperador": 2,
-        "interior_llegador": 1,
-        "extremo_vertical": 1,
-        "extremo_asociativo": 1,
-        "delantero_rematador": 1,
-        "delantero_movil": 1,
-    },
-    "4-3-3": {
-        "portero": 2,
-        "central_dominador": 1,
-        "central_corrector": 2,
-        "lateral_ofensivo": 2,
-        "lateral_defensivo": 1,
-        "mediocentro_organizador": 1,
+        "lateral_defensivo": 2,
+        "mediocentro_organizador": 2,
         "mediocentro_recuperador": 2,
         "interior_llegador": 2,
         "extremo_vertical": 2,
-        "extremo_asociativo": 1,
-        "delantero_rematador": 1,
-        "delantero_movil": 1,
-    },
-    "4-4-2": {
-        "portero": 2,
-        "central_dominador": 1,
-        "central_corrector": 2,
-        "lateral_ofensivo": 2,
-        "lateral_defensivo": 1,
-        "mediocentro_organizador": 1,
-        "mediocentro_recuperador": 2,
-        "interior_llegador": 1,
-        "extremo_vertical": 2,
-        "extremo_asociativo": 1,
-        "delantero_rematador": 1,
+        "extremo_asociativo": 2,
+        "delantero_rematador": 2,
         "delantero_movil": 2,
     },
-    "3-5-2": {
-        "portero": 2,
-        "central_dominador": 2,
-        "central_corrector": 2,
+    "4-3-3": {  # suma = 25
+        "portero": 3,
+        "central_dominador": 1,
+        "central_corrector": 3,
         "lateral_ofensivo": 2,
-        "lateral_defensivo": 1,
-        "mediocentro_organizador": 1,
+        "lateral_defensivo": 2,
+        "mediocentro_organizador": 2,
+        "mediocentro_recuperador": 2,
+        "interior_llegador": 3,
+        "extremo_vertical": 3,
+        "extremo_asociativo": 2,
+        "delantero_rematador": 1,
+        "delantero_movil": 1,
+    },
+    "4-4-2": {  # suma = 25
+        "portero": 3,
+        "central_dominador": 1,
+        "central_corrector": 3,
+        "lateral_ofensivo": 2,
+        "lateral_defensivo": 2,
+        "mediocentro_organizador": 2,
         "mediocentro_recuperador": 2,
         "interior_llegador": 2,
-        "extremo_vertical": 1,
-        "extremo_asociativo": 1,
-        "delantero_rematador": 1,
+        "extremo_vertical": 2,
+        "extremo_asociativo": 2,
+        "delantero_rematador": 2,
+        "delantero_movil": 2,
+    },
+    "3-5-2": {  # suma = 25
+        "portero": 3,
+        "central_dominador": 2,
+        "central_corrector": 3,
+        "lateral_ofensivo": 2,
+        "lateral_defensivo": 1,
+        "mediocentro_organizador": 2,
+        "mediocentro_recuperador": 2,
+        "interior_llegador": 2,
+        "extremo_vertical": 2,
+        "extremo_asociativo": 2,
+        "delantero_rematador": 2,
         "delantero_movil": 2,
     },
 }
@@ -268,6 +274,7 @@ def squad_needs(squad_profile: pd.DataFrame, club_profile: dict | None = None) -
                           "role_label": ROLE_LABELS.get(role, role),
                           "age": age, "contract_end": end[:10]})
 
+    n_players = sum(counts.values())
     return {
         "role_counts": {ROLE_LABELS.get(k, k): v for k, v in sorted(counts.items())},
         "present": present,
@@ -278,4 +285,6 @@ def squad_needs(squad_profile: pd.DataFrame, club_profile: dict | None = None) -
         # Metadatos para transparencia / UI
         "formation_used": formation_used,
         "target_template": {ROLE_LABELS.get(k, k): v for k, v in target.items()},
+        "squad_cap": SQUAD_CAP,
+        "n_profiled": n_players,
     }

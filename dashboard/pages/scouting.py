@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Página de scouting — filtros modernos, tabla y navegación a perfil."""
 from __future__ import annotations
 import sys, time, urllib.parse, unicodedata
@@ -11,6 +12,11 @@ from src.utils.config import settings
 from dashboard.components.display_names import label
 from dashboard.components.criteria_block import criteria_accordion  # noqa: E402
 from src.utils.leagues import league_name as _league_name
+from src.utils.lateral_position import (
+    build_lateral_map, LATERAL_LABELS, ROLE_TYPE_LABELS, LATERAL_TO_ROLES,
+    lateral_pos_label, role_type_label,
+)
+from dashboard.data_cache import get_master, get_economic
 
 dash.register_page(__name__, path="/scouting", name="Scouting")
 
@@ -24,9 +30,10 @@ S        = settings()
 PROC     = Path(S["paths"]["data_processed"])
 MASTER   = PROC / "master_players.parquet"
 ECONOMIC = PROC / "player_economic.parquet"
+ENRICHED = PROC / "player_seasons_enriched.parquet"
 
 DISPLAY_COLS = [
-    "name", "position_primary", "foot", "age", "team", "league",
+    "name", "lateral_pos", "role_type", "foot", "age", "team", "league",
     "minutes", "goals", "assists", "shots_on_target",
     "tackles_won", "interceptions", "passes_completed_pct",
     "market_value_eur", "contract_until",
@@ -53,15 +60,15 @@ def _load() -> pd.DataFrame:
     if _CACHE["df"] is not None and time.time() - _CACHE["t"] < _CACHE_TTL:
         return _CACHE["df"]
 
-    if not MASTER.exists():
+    # Usar caché global (ya filtrado a temporada actual)
+    df = get_master()
+    if df is None or df.empty:
         return pd.DataFrame()
 
-    df = pd.read_parquet(MASTER)
-
     # ---- Enriquecer con datos económicos ----
-    if ECONOMIC.exists():
+    eco = get_economic()
+    if eco is not None:
         try:
-            eco = pd.read_parquet(ECONOMIC)
             _eco_want = ["opta_id", "canonical_name", "market_value_eur", "contract_until", "foot"]
             eco = eco[[c for c in _eco_want if c in eco.columns]]
 
@@ -106,9 +113,9 @@ def _load() -> pd.DataFrame:
 
         except Exception:
             pass
-    else:
-        if "contract_until"   not in df.columns: df["contract_until"]   = None
-        if "market_value_eur" not in df.columns: df["market_value_eur"] = None
+
+    if "contract_until"   not in df.columns: df["contract_until"]   = None
+    if "market_value_eur" not in df.columns: df["market_value_eur"] = None
 
     # ---- Deduplicar: quedarse con la temporada más reciente por jugador ----
     # Esto se hace UNA vez aquí, no en cada callback de filtro
@@ -116,6 +123,27 @@ def _load() -> pd.DataFrame:
         df["_o"] = df["season"].map(SEASON_ORDER_SC).fillna(0)
         maxo = df.groupby("name")["_o"].transform("max")
         df = df[df["_o"] == maxo].drop_duplicates("name").drop(columns=["_o"])
+
+    # ---- Enriquecer con posicion lateral y tipologia ----
+    if ENRICHED.exists() and MASTER.exists():
+        try:
+            lat_map = build_lateral_map(ENRICHED, MASTER)
+            df = df.merge(lat_map[["name", "lateral_pos", "role_type"]],
+                          on="name", how="left")
+            # Etiquetas legibles para las columnas de display
+            df["lateral_pos"] = df["lateral_pos"].map(
+                lambda x: x if pd.isna(x) else x)   # keep code (LI/LD/…)
+            df["role_type"] = df["role_type"].fillna("")
+        except Exception:
+            if "lateral_pos" not in df.columns:
+                df["lateral_pos"] = None
+            if "role_type" not in df.columns:
+                df["role_type"] = None
+    else:
+        if "lateral_pos" not in df.columns:
+            df["lateral_pos"] = None
+        if "role_type" not in df.columns:
+            df["role_type"] = None
 
     # Precalcular numéricas para filtrado rápido
     def _num(col):
@@ -151,13 +179,20 @@ def layout(**_params):
                 for v in sorted(str(v) for v in df["league"].unique()
                                 if pd.notna(v) and str(v) != "nan")]
                if not df.empty else [])
-    pos_opt    = _opts(df["position_primary"].unique()) if not df.empty else []
     player_opt = ([{"label": str(v), "value": str(v)}
                    for v in sorted(df["name"].dropna().unique())]
                   if not df.empty else [])
     foot_opt = ([{"label": str(v), "value": str(v)}
                  for v in sorted(df["foot"].dropna().unique()) if str(v) not in ("nan","")]
                 if not df.empty and "foot" in df.columns else [])
+    # Filtro posicion lateral
+    lat_order = ["LI","LD","DC","MC","MI","MD","EI","ED","DL","PO"]
+    lat_present = (set(df["lateral_pos"].dropna().unique())
+                   if "lateral_pos" in df.columns else set())
+    lat_opt = [{"label": LATERAL_LABELS.get(k, k), "value": k}
+               for k in lat_order if k in lat_present]
+    # Tipo de jugador (se actualiza via callback)
+    role_opt = [{"label": v, "value": k} for k, v in ROLE_TYPE_LABELS.items()]
 
     return html.Div([
         # Store para navegación — clientside callback navega con window.location.href
@@ -172,11 +207,12 @@ def layout(**_params):
         html.Div([
             html.P("Filtros", className="card-modern-title"),
             dbc.Row([
-                dbc.Col(_filter_chip("f-player",  "Jugador",       "Todos",  player_opt, multi=False), md=2),
-                dbc.Col(_filter_chip("f-pos",     "Posición",      "Todas",  pos_opt),                 md=2),
-                dbc.Col(_filter_chip("f-league",  "Liga",          "Todas",  leagues),                 md=2),
-                dbc.Col(_filter_chip("f-team",    "Equipo",        "Todos",  []),                      md=2),
-                dbc.Col(_filter_chip("f-foot",    "Pie dominante", "Todos",  foot_opt, multi=False),   md=2),
+                dbc.Col(_filter_chip("f-player",   "Jugador",          "Todos",  player_opt, multi=False), md=2),
+                dbc.Col(_filter_chip("f-lateral",  "Posición",         "Todas",  lat_opt,    multi=True),  md=2),
+                dbc.Col(_filter_chip("f-role-type","Tipo de jugador",  "Todos",  role_opt,   multi=True),  md=2),
+                dbc.Col(_filter_chip("f-league",   "Liga",             "Todas",  leagues),                 md=2),
+                dbc.Col(_filter_chip("f-team",     "Equipo",           "Todos",  []),                      md=2),
+                dbc.Col(_filter_chip("f-foot",     "Pie dominante",    "Todos",  foot_opt, multi=False),   md=2),
                 dbc.Col(html.Div([
                     html.Span("Edad máx.", className="filter-label"),
                     dcc.Slider(16, 40, 1, value=30, id="f-age",
@@ -293,19 +329,36 @@ def _fuzzy_filter(df: pd.DataFrame, query: str) -> pd.DataFrame:
 
 
 @callback(
+    Output("f-role-type", "options"),
+    Input("f-lateral", "value"),
+)
+def update_role_options(lat_values):
+    """Actualiza las opciones de tipologia segun la posicion lateral seleccionada."""
+    if not lat_values:
+        return [{"label": v, "value": k} for k, v in ROLE_TYPE_LABELS.items()]
+    # Mostrar solo roles compatibles con las posiciones seleccionadas
+    allowed: set[str] = set()
+    for lv in (lat_values if isinstance(lat_values, list) else [lat_values]):
+        allowed.update(LATERAL_TO_ROLES.get(lv, []))
+    return [{"label": ROLE_TYPE_LABELS[k], "value": k}
+            for k in ROLE_TYPE_LABELS if k in allowed]
+
+
+@callback(
     Output("scouting-table", "data"),
     Output("scouting-table", "columns"),
     Output("scouting-count", "children"),
-    Input("f-player", "value"),
-    Input("f-pos",    "value"),
-    Input("f-league", "value"),
-    Input("f-team",   "value"),
-    Input("f-foot",   "value"),
-    Input("f-age",    "value"),
-    Input("f-mv",     "value"),
-    Input("f-min",    "value"),
+    Input("f-player",    "value"),
+    Input("f-lateral",   "value"),
+    Input("f-role-type", "value"),
+    Input("f-league",    "value"),
+    Input("f-team",      "value"),
+    Input("f-foot",      "value"),
+    Input("f-age",       "value"),
+    Input("f-mv",        "value"),
+    Input("f-min",       "value"),
 )
-def filter_table(player, pos, leagues, teams, foot, age_max, mv_max_m, min_min):
+def filter_table(player, lat_pos, role_types, leagues, teams, foot, age_max, mv_max_m, min_min):
     df = _load()
     if df.empty:
         return [], [], "Sin datos — ejecuta el ETL primero"
@@ -314,7 +367,12 @@ def filter_table(player, pos, leagues, teams, foot, age_max, mv_max_m, min_min):
     if player:
         df = df[df["name"] == player]
     else:
-        if pos:     df = df[df["position_primary"].isin(pos)]
+        if lat_pos and "lateral_pos" in df.columns:
+            lats = lat_pos if isinstance(lat_pos, list) else [lat_pos]
+            df = df[df["lateral_pos"].isin(lats)]
+        if role_types and "role_type" in df.columns:
+            rts = role_types if isinstance(role_types, list) else [role_types]
+            df = df[df["role_type"].isin(rts)]
         if leagues: df = df[df["league"].isin(leagues)]
         if teams:   df = df[df["team"].isin(teams)]
         if foot and "foot" in df.columns:
@@ -328,6 +386,12 @@ def filter_table(player, pos, leagues, teams, foot, age_max, mv_max_m, min_min):
     extra_cols = [c for c in ("player_id", "player_id_src")
                   if c in df.columns and c not in cols_show]
     df_show = df[cols_show + extra_cols].copy().head(500)
+
+    # Traducir role_type (clave interna → etiqueta legible)
+    if "role_type" in df_show.columns:
+        df_show["role_type"] = df_show["role_type"].apply(
+            lambda x: ROLE_TYPE_LABELS.get(x, x) if x else x
+        )
 
     if "market_value_eur" in df_show.columns:
         df_show["market_value_eur"] = df_show["market_value_eur"].apply(
@@ -381,6 +445,6 @@ clientside_callback(
     }
     """,
     Output("scouting-nav-url", "data", allow_duplicate=True),
-    Input("scouting-nav-url", "data"),
+       Input("scouting-nav-url", "data"),
     prevent_initial_call=True,
 )

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Página de plantilla actual del Rayo — diseño moderno con visualizaciones."""
 import urllib.parse
 import yaml
