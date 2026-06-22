@@ -673,55 +673,15 @@ def _download(n, names_json):
     from pathlib import Path as _P
     sys.path.insert(0, str(_P(__file__).resolve().parents[2]))
     try:
-        names = json.loads(names_json)
-        scorer = _scorer()
+        names   = json.loads(names_json)
+        scorer  = _scorer()
         results = scorer.compare(names)
         if not results:
             raise ValueError("No hay datos para los jugadores seleccionados")
 
-        # Build percentile map for each player
-        from src.profiling.player_profile import career_aggregate, add_role_percentiles
-        enr_path = _PROC / "player_seasons_enriched.parquet"
-        pct_map: dict = {}
-        if enr_path.exists():
-            enr_all = pd.read_parquet(enr_path)
-            for r in results:
-                try:
-                    agg = career_aggregate(enr_all, r.name)
-                    if agg is not None and not agg.empty:
-                        grp = str(getattr(r, "position_group", "") or "MID")
-                        pool = enr_all[enr_all["position_group"] == grp].copy()
-                        pool_agg = pool.groupby("name").agg({
-                            c: "sum" for c in pool.select_dtypes("number").columns
-                        }).reset_index()
-                        pm: dict = {}
-                        for col in pool_agg.select_dtypes("number").columns:
-                            if col + "_p90" in enr_all.columns or col.endswith("_p90"):
-                                continue
-                            vals = pool_agg[col].dropna()
-                            player_v = pool_agg.loc[pool_agg["name"] == r.name, col]
-                            if len(player_v) > 0 and len(vals) > 5:
-                                rank = (vals < float(player_v.iloc[0])).sum() / len(vals) * 100
-                                pm[col] = round(rank, 1)
-                        # also try _p90 cols from enriched directly
-                        p90_cols = [c for c in enr_all.columns if c.endswith("_p90")]
-                        latest = enr_all[enr_all["name"] == r.name].sort_values("season",
-                                         ascending=False).head(1)
-                        if not latest.empty:
-                            for col in p90_cols:
-                                v = latest.iloc[0].get(col)
-                                if v is not None and not pd.isna(v):
-                                    pool_col = enr_all.loc[
-                                        enr_all["position_group"] == grp, col].dropna()
-                                    if len(pool_col) > 5:
-                                        pm[col] = round(
-                                            (pool_col < float(v)).sum() / len(pool_col) * 100, 1)
-                        pct_map[r.name] = pm
-                except Exception:
-                    pct_map[r.name] = {}
-
+        # pct_map built automatically from r.radar inside build_comparador_dossier
         from src.reports.comparador_dossier import build_comparador_dossier
-        fname, data = build_comparador_dossier(results, pct_map=pct_map)
+        fname, data = build_comparador_dossier(results, pct_map=None)
         return dcc.send_bytes(data, fname), ""
     except Exception as exc:
         import traceback; traceback.print_exc()
@@ -841,3 +801,4 @@ def _fmt_mv(v) -> str:
     if v >= 1_000:
         return f"€{v/1_000:.0f}K"
     return f"€{v:.0f}"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
