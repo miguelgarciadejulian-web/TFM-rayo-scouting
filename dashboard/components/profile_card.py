@@ -101,7 +101,7 @@ def player_profile_section(name, team=None, league=None, age=None, coach_style="
                        "marginBottom": "6px"}),
                 html.Div([
                     html.Span(f"{fit['global_fit_10']}", style={"fontSize": "30px", "fontWeight": "700",
-                              "color": "#E30613", "lineHeight": "1"}),
+                              "color": "#B8960C", "lineHeight": "1"}),
                     html.Span("/10 encaje global", style={"fontSize": "12px", "color": "#6B7280",
                               "marginLeft": "6px"}),
                 ], style={"marginBottom": "10px"}),

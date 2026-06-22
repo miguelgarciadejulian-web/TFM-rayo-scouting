@@ -302,7 +302,7 @@ def layout(**_params):
              "backgroundColor": "#FAFAFA"},
             {"if": {"state": "selected"},
              "backgroundColor": "#FDE8E8",
-             "borderLeft": "3px solid #E30613"},
+             "borderLeft": "3px solid #FFD600"},
         ],
         style_filter={"fontSize": "12px", "padding": "4px 8px"},
         page_action="native",

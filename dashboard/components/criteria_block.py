@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 _TH = {
     "fontSize": "10px", "fontWeight": "700", "color": "#9CA3AF",
     "textTransform": "uppercase", "padding": "4px 10px", "textAlign": "left",
-    "borderBottom": "2px solid #E30613",
+    "borderBottom": "2px solid #FFD600",
 }
 _TD = {
     "fontSize": "11px", "padding": "4px 10px", "color": "#374151",
@@ -362,7 +362,7 @@ def criteria_accordion(section: str) -> dbc.Accordion:
             html.Div(content),
             title=[
                 html.I(className="ti ti-info-circle",
-                       style={"color": "#E30613", "marginRight": "8px", "fontSize": "14px"}),
+                       style={"color": "#B8960C", "marginRight": "8px", "fontSize": "14px"}),
                 html.Span("¿Cómo se calcula esto?",
                            style={"fontSize": "12px", "fontWeight": "600", "color": "#374151"}),
             ],

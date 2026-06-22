@@ -17,22 +17,23 @@ import plotly.graph_objects as go
 import plotly.io as pio
 
 # ── Paleta de colores ────────────────────────────────────────────────────────
-RAYO_RED     = "#E30613"
-RAYO_DARK    = "#1A1A2E"
+RAYO_YELLOW  = "#FFD600"   # amarillo corporativo Rayo Vallecano
+RAYO_RED     = "#FFD600"   # alias para compatibilidad con código existente
+RAYO_DARK    = "#0D0D0D"   # negro corporativo
 RAYO_GRAY    = "#6B7280"
 RAYO_LIGHT   = "#F3F4F6"
 RAYO_WHITE   = "#FFFFFF"
 
 C_POSITIVE   = "#059669"   # verde esmeralda
 C_WARNING    = "#F59E0B"   # ámbar
-C_DANGER     = "#DC2626"   # rojo puro
+C_DANGER     = "#DC2626"   # rojo (solo para alertas/errores reales)
 C_NEUTRAL    = "#9CA3AF"   # gris neutro
 C_BLUE       = "#3B82F6"   # azul referencia
 C_PURPLE     = "#7C3AED"   # púrpura acento
 
 # Paleta para series múltiples (orden de prioridad visual)
 SERIES_COLORS = [
-    RAYO_RED, RAYO_DARK, C_BLUE, C_POSITIVE, C_WARNING, C_PURPLE,
+    RAYO_YELLOW, RAYO_DARK, C_BLUE, C_POSITIVE, C_WARNING, C_PURPLE,
     "#F97316", "#06B6D4", "#8B5CF6", "#10B981",
 ]
 
@@ -77,7 +78,7 @@ _TEMPLATE = go.layout.Template(
         ),
         margin=dict(l=48, r=24, t=48, b=40),
         colorscale=dict(
-            sequential=[[0, "#FEE2E2"], [0.5, RAYO_RED], [1, RAYO_DARK]],
+            sequential=[[0, "#FFFDE7"], [0.5, RAYO_YELLOW], [1, RAYO_DARK]],
         ),
     )
 )
@@ -137,9 +138,8 @@ def score_color(value: float, scale: float = 100.0) -> str:
 
 
 def sequential_reds(n: int) -> list[str]:
-    """n colores desde rojo claro (#FECACA) a rojo Rayo (#E30613)."""
-    import colorsys
-    base = (227/255, 6/255, 19/255)      # E30613 en RGB [0,1]
+    """n colores desde amarillo claro (#FFFDE7) a amarillo Rayo (#FFD600)."""
+    base = (255/255, 214/255, 0/255)      # FFD600 en RGB [0,1]
     result = []
     for i in range(n):
         t = i / max(n - 1, 1)
@@ -163,11 +163,4 @@ GRAPH_CONFIG = {
     "modeBarButtonsToRemove": [
         "zoom2d", "pan2d", "select2d", "lasso2d",
         "zoomIn2d", "zoomOut2d", "autoScale2d",
-        "hoverClosestCartesian", "hoverCompareCartesian",
-        "toggleSpikelines",
-    ],
-    "displaylogo": False,
-    "responsive": True,
-}
-
-GRAPH_CONFIG_SIMPLE = {"displayModeBar": False, "responsive": True}
+        "hoverClosestCartesian", "hoverCompareCart

@@ -121,7 +121,7 @@ def _clause_risk_card(name: str, overrides: dict) -> html.Div:
 
     def _pct_bar(label, score):
         bar_color = (
-            "#E30613" if score >= 75 else
+            "#F59E0B" if score >= 75 else
             "#F97316" if score >= 55 else
             "#EAB308" if score >= 30 else
             "#22C55E"
@@ -244,7 +244,7 @@ def _notes_box(key, notes, photos, overrides):
                             "borderRadius": "8px"}),
         html.Div([
             html.Button("Guardar nota", id="save-note", n_clicks=0, style={
-                "background": "#E30613", "color": "#fff", "border": "none",
+                "background": "#FFD600", "color": "#0D0D0D", "border": "none",
                 "borderRadius": "8px", "padding": "7px 16px",
                 "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
                 "marginTop": "8px",
@@ -455,7 +455,7 @@ def _fit_rayo_card(name: str) -> html.Div:
         narrative_items.append(html.Div([
             html.Div([
                 html.I(className=f"ti {ICONS.get(key,'ti-info-circle')}",
-                       style={"color": "#E30613", "marginRight": "5px", "fontSize": "11px"}),
+                       style={"color": "#B8960C", "marginRight": "5px", "fontSize": "11px"}),
                 html.Span(LABELS.get(key, key), style={
                     "fontWeight": "700", "fontSize": "11px", "color": "#1A1A2E",
                 }),
@@ -524,7 +524,7 @@ def _fit_rayo_card(name: str) -> html.Div:
         return html.Details([
             html.Summary([
                 html.I(className=f"ti {icon}",
-                       style={"fontSize": "11px", "marginRight": "5px", "color": "#E30613"}),
+                       style={"fontSize": "11px", "marginRight": "5px", "color": "#B8960C"}),
                 html.Span(title, style={"fontSize": "10px", "fontWeight": "700",
                                         "color": "#374151", "cursor": "pointer"}),
             ], style={"listStyle": "none", "display": "flex", "alignItems": "center",
@@ -690,7 +690,7 @@ def _fit_rayo_card(name: str) -> html.Div:
     return html.Div([
         html.Div([
             html.I(className="ti ti-heart-rate-monitor me-2",
-                   style={"color": "#E30613", "fontSize": "14px"}),
+                   style={"color": "#B8960C", "fontSize": "14px"}),
             html.Span("Fit Rayo Vallecano", style={
                 "fontSize": "11px", "fontWeight": "700",
                 "color": "#9CA3AF", "textTransform": "uppercase",
@@ -759,13 +759,13 @@ def layout(**_params):
                         "fontSize": "13px", "fontWeight": "600", "cursor": "pointer",
                     }),
                     dcc.Download(id="dl-pdf"),
-                ], style={"marginLeft": "12px"}), type="circle", color="#E30613"),
+                ], style={"marginLeft": "12px"}), type="circle", color="#FFD600"),
                 dcc.Store(id="current-player"),
                 dcc.Store(id="jugador-picked-store"),
             ], style={"display": "flex", "alignItems": "center", "marginTop": "6px"}),
             html.Div(id="pdf-error-msg", style={"marginTop": "6px"}),
         ], className="page-header"),
-        dcc.Loading(html.Div(id="jugador-content"), type="circle", color="#E30613"),
+        dcc.Loading(html.Div(id="jugador-content"), type="circle", color="#FFD600"),
         criteria_accordion("jugador"),
     ])
 
@@ -892,9 +892,9 @@ def _download_pdf(n, cur, search, picked):
         traceback.print_exc()
         err_msg = html.Div([
             html.I(className="ti ti-alert-circle",
-                   style={"color": "#E30613", "marginRight": "6px"}),
+                   style={"color": "#B8960C", "marginRight": "6px"}),
             html.Span(f"Error generando PDF: {exc}",
-                      style={"fontSize": "11px", "color": "#E30613"}),
+                      style={"fontSize": "11px", "color": "#B8960C"}),
             html.Span(" — Vuelve a intentarlo",
                       style={"fontSize": "11px", "color": "#6B7280"}),
         ], style={"display": "flex", "alignItems": "center"})

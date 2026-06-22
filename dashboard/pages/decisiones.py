@@ -339,7 +339,7 @@ def layout(**_params):
             ], className="g-2", style={"marginTop": "4px"}),
 
             dcc.Loading(html.Div(id="exp-results", style={"marginTop": "12px"}),
-                        type="dot", color="#E30613"),
+                        type="dot", color="#FFD600"),
         ], style={"background": "#fff", "border": "1px solid #E5E7EB",
                   "borderRadius": "12px", "padding": "18px 20px"}),
     ])
@@ -351,7 +351,7 @@ def layout(**_params):
             "Umbrales: Renovar (>=70) · Negociar (50-70) · Valorar salida (35-50) · No renovar (<35)."
         ),
         html.Div([
-            html.I(className="ti ti-contract", style={"fontSize": "18px", "color": "#E30613",
+            html.I(className="ti ti-contract", style={"fontSize": "18px", "color": "#B8960C",
                    "marginRight": "10px", "verticalAlign": "middle"}),
             html.Span("Sistema de decision de renovaciones",
                       style={"fontSize": "14px", "fontWeight": "700", "color": "#1A1A2E"}),
@@ -380,7 +380,7 @@ def layout(**_params):
             ),
         ], className="g-2"),
         dcc.Loading(html.Div(id="renewal-results", style={"marginTop": "16px"}),
-                    type="dot", color="#E30613"),
+                    type="dot", color="#FFD600"),
     ], style={"background": "#fff", "border": "1px solid #E5E7EB",
               "borderRadius": "12px", "padding": "18px 20px"})
 
@@ -398,7 +398,7 @@ def layout(**_params):
                 html.Div([
                     html.Strong(c["name"], style={"fontSize": "13px"}),
                     html.Span(f"{c['evaluation'].get('score_10')}/10",
-                              style={"float": "right", "fontWeight": "700", "color": "#E30613"}),
+                              style={"float": "right", "fontWeight": "700", "color": "#B8960C"}),
                 ]),
                 html.P(c.get("style_main", ""), style={"fontSize": "11px", "color": "#1D4ED8",
                        "margin": "2px 0"}),
@@ -704,7 +704,7 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
                            "fontStyle": "italic"}),
             html.Td(html.Span((str(contract)[:4] if contract else "n/d"),
                     style={"fontWeight": "700" if exp else "400",
-                           "color": "#E30613" if exp else "#6B7280"}),
+                           "color": "#DC2626" if exp else "#6B7280"}),
                     style={"fontSize": "11px", "padding": "5px 10px"}),
             fit_cell,
         ], style={"borderTop": "1px solid #F3F4F6"}))

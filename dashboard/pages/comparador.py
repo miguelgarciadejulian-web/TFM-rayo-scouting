@@ -324,7 +324,7 @@ RADAR_LABELS = {
 }
 
 PLAYER_COLORS = [
-    "#E30613", "#1D4ED8", "#166534", "#92400E", "#6B21A8", "#0E7490",
+    "#FFD600", "#1D4ED8", "#166534", "#92400E", "#6B21A8", "#0E7490",
 ]
 
 
@@ -633,7 +633,7 @@ def _export_section(results) -> html.Div:
     return html.Div([
         html.Div([
             html.I(className="ti ti-file-description",
-                   style={"fontSize":"16px","color":"#E30613","marginRight":"8px"}),
+                   style={"fontSize":"16px","color":"#B8960C","marginRight":"8px"}),
             html.Span("Exportar comparativa",
                       style={"fontSize":"13px","fontWeight":"700","color":"#1A1A2E"}),
         ], style={"display":"flex","alignItems":"center","marginBottom":"10px"}),
@@ -648,7 +648,7 @@ def _export_section(results) -> html.Div:
                 "fontSize":"13px","fontWeight":"600","cursor":"pointer",
             }),
             dcc.Download(id="comp-download"),
-        ]), type="circle", color="#E30613"),
+        ]), type="circle", color="#FFD600"),
         dcc.Store(id="comp-export-data", data=names_json),
         html.Div(id="comp-export-error", style={"marginTop":"6px"}),
     ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px",
@@ -687,9 +687,9 @@ def _download(n, names_json):
         import traceback; traceback.print_exc()
         err = html.Div([
             html.I(className="ti ti-alert-circle",
-                   style={"color":"#E30613","marginRight":"6px"}),
+                   style={"color":"#DC2626","marginRight":"6px"}),
             html.Span(f"Error: {exc}",
-                      style={"fontSize":"11px","color":"#E30613"}),
+                      style={"fontSize":"11px","color":"#DC2626"}),
         ], style={"display":"flex","alignItems":"center"})
         return no_update, err
 
@@ -727,7 +727,7 @@ def _narrative_block(narrative: dict) -> html.Div:
                     html.Div(
                         [
                             html.I(className=f"ti {icon}",
-                                   style={"marginRight": "5px", "color": "#E30613"}),
+                                   style={"marginRight": "5px", "color": "#B8960C"}),
                             html.Span(label,
                                       style={"fontWeight": "600", "fontSize": "0.75rem"}),
                         ],
@@ -744,7 +744,7 @@ def _narrative_block(narrative: dict) -> html.Div:
             html.Summary(
                 "¿Por qué este Fit Rayo?",
                 style={"cursor": "pointer", "fontSize": "0.75rem",
-                       "color": "#E30613", "fontWeight": "600",
+                       "color": "#B8960C", "fontWeight": "600",
                        "marginBottom": "6px", "marginTop": "4px"},
             ),
             html.Div(items, style={"paddingLeft": "4px"}),

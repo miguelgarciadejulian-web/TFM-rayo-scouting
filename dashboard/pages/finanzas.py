@@ -62,7 +62,7 @@ def _fmt(v, unit="€"):
 
 def _contract_dot(end_date):
     year = int(str(end_date)[:4])
-    c = "#E30613" if year <= 2026 else ("#F59E0B" if year <= 2027 else "#10B981")
+    c = "#DC2626" if year <= 2026 else ("#F59E0B" if year <= 2027 else "#10B981")
     return html.Span(style={"width":"8px","height":"8px","borderRadius":"50%",
                              "background":c,"display":"inline-block","marginRight":"6px"})
 
@@ -78,7 +78,7 @@ def _clause_badge(amount, confirmed):
 CELL = {"fontSize":"12px","padding":"8px 10px","borderBottom":"1px solid #F3F4F6",
         "color":"#374151","verticalAlign":"middle"}
 HEAD = {"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase",
-        "letterSpacing":".06em","padding":"0 10px 8px","borderBottom":"2px solid #E30613"}
+        "letterSpacing":".06em","padding":"0 10px 8px","borderBottom":"2px solid #FFD600"}
 
 MV_MAP = {
     "Andrei Rațiu":18e6,"Jorge de Frutos":12e6,"Pep Chavarría":10e6,"Ilias Akhomach":12e6,
@@ -163,7 +163,7 @@ def _clause_risk_score(p, news):
 def _risk_card(p, news):
     score, nivel, reasons = _clause_risk_score(p, news)
     color_map = {
-        "MUY ALTO": ("#FFF1F2","#E30613","#9F1239"),
+        "MUY ALTO": ("#FFF1F2","#DC2626","#9F1239"),
         "ALTO":     ("#FFFBEB","#F59E0B","#92400E"),
         "MEDIO":    ("#EFF6FF","#3B82F6","#1D4ED8"),
         "BAJO":     ("#F0FDF4","#22C55E","#166534"),
@@ -368,7 +368,7 @@ def tab_salarios(fin):
                       html.Span(f" {pct:.1f}%",style={"fontSize":"11px","color":"#6B7280","marginLeft":"6px"})],style={"marginBottom":"6px"}),
             html.Div(style={"height":"12px","background":"#F3F4F6","borderRadius":"99px","overflow":"hidden"},
                 children=html.Div(style={"height":"100%","width":f"{min(pct,100):.1f}%",
-                    "background":"#10B981" if pct<75 else ("#F59E0B" if pct<90 else "#E30613"),
+                    "background":"#10B981" if pct<75 else ("#F59E0B" if pct<90 else "#FFD600"),
                     "borderRadius":"99px"})),
         ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"14px 18px","marginBottom":"14px"}),
         html.Div([
@@ -381,7 +381,7 @@ def tab_salarios(fin):
             html.Div(html.Table([
                 html.Thead(html.Tr([html.Th("Jugador",style=HEAD),html.Th("Pos.",style=HEAD),
                     html.Th("Semanal",style=HEAD),html.Th("Anual",style=HEAD),
-                    html.Th("Editar (M€/año)",style={**HEAD,"color":"#E30613"}),
+                    html.Th("Editar (M€/año)",style={**HEAD,"color":"#FFD600"}),
                     html.Th("Bonus",style=HEAD),
                     html.Th("Contrato",style=HEAD),html.Th("Cláusula",style=HEAD)])),
                 html.Tbody(rows),
@@ -401,13 +401,13 @@ def tab_presupuesto(fin):
     def rev_row(label, value, icon, note=""):
         pct = value/total_rev*100
         return html.Div([
-            html.Div([html.I(className=f"ti {icon}",style={"fontSize":"15px","color":"#E30613","marginRight":"8px","width":"20px"}),
+            html.Div([html.I(className=f"ti {icon}",style={"fontSize":"15px","color":"#B8960C","marginRight":"8px","width":"20px"}),
                 html.Span(label,style={"fontSize":"13px","color":"#374151","flex":"1"}),
                 html.Span(note,style={"fontSize":"11px","color":"#9CA3AF","marginRight":"12px"}),
                 html.Span(_fmt(value),style={"fontSize":"13px","fontWeight":"700","color":"#1A1A2E","minWidth":"60px","textAlign":"right"}),
             ], style={"display":"flex","alignItems":"center","marginBottom":"6px"}),
             html.Div(style={"height":"5px","background":"#F3F4F6","borderRadius":"99px","overflow":"hidden","marginBottom":"12px"},
-                children=html.Div(style={"height":"100%","width":f"{pct:.1f}%","background":"#E30613","borderRadius":"99px"})),
+                children=html.Div(style={"height":"100%","width":f"{pct:.1f}%","background":"#FFD600","borderRadius":"99px"})),
         ])
     def exp_row(label, value, icon):
         pct = value/total_exp*100
@@ -423,8 +423,8 @@ def tab_presupuesto(fin):
     return html.Div([
         dbc.Row([
             dbc.Col(_fkpi("ti-arrow-up","Ingresos estimados",_fmt(total_rev),"temporada 2026/27","#047857","#10B981"),md=3),
-            dbc.Col(_fkpi("ti-arrow-down","Gastos estimados",_fmt(total_exp),"estructura + plantilla","#9F1239","#E30613"),md=3),
-            dbc.Col(_fkpi("ti-scale","Balance operativo",_fmt(abs(balance)),"superávit" if balance>=0 else "déficit","#047857" if balance>=0 else "#9F1239","#10B981" if balance>=0 else "#E30613"),md=3),
+            dbc.Col(_fkpi("ti-arrow-down","Gastos estimados",_fmt(total_exp),"estructura + plantilla","#9F1239","#FFD600"),md=3),
+            dbc.Col(_fkpi("ti-scale","Balance operativo",_fmt(abs(balance)),"superávit" if balance>=0 else "déficit","#047857" if balance>=0 else "#9F1239","#10B981" if balance>=0 else "#FFD600"),md=3),
             dbc.Col(_fkpi("ti-trophy","Conference League",_fmt(rev["conference_league_eur"]),"final 2024-25 (Crystal Palace 1-0)","#92400E","#F59E0B"),md=3),
         ], className="g-3 mb-3"),
         dbc.Row([
@@ -448,7 +448,7 @@ def tab_presupuesto(fin):
                 exp_row("Traspasos netos",             exp["transfers_net_eur"],  "ti-arrows-exchange"),
                 html.Div(style={"borderTop":"1px solid #E5E7EB","paddingTop":"10px","marginTop":"4px"}),
                 html.Div([html.Span("TOTAL",style={"fontSize":"11px","fontWeight":"700","color":"#374151","flex":"1"}),
-                          html.Span(_fmt(total_exp),style={"fontSize":"15px","fontWeight":"700","color":"#E30613"})],
+                          html.Span(_fmt(total_exp),style={"fontSize":"15px","fontWeight":"700","color":"#B8960C"})],
                          style={"display":"flex","alignItems":"center"}),
             ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}), md=6),
         ], className="g-3"),
@@ -473,7 +473,7 @@ def tab_presupuesto(fin):
                               style={"width": "100%", "padding": "7px 10px", "border": "1px solid #E5E7EB",
                                      "borderRadius": "7px", "fontSize": "13px"})], md=2),
                 dbc.Col(html.Button("Añadir", id="bud-add", n_clicks=0,
-                    style={"background": "#E30613", "color": "#fff", "border": "none", "borderRadius": "7px",
+                    style={"background": "#FFD600", "color": "#fff", "border": "none", "borderRadius": "7px",
                            "padding": "8px 16px", "fontSize": "13px", "fontWeight": "600", "cursor": "pointer",
                            "width": "100%", "marginTop": "14px"}), md=2),
             ], className="g-2"),
@@ -502,7 +502,7 @@ def tab_riesgo(fin):
         dcc.Store(id="clause-overrides", data={}),
 
         dbc.Row([
-            dbc.Col(_fkpi("ti-alert-triangle","En riesgo ALTO",""+str(muy_alto+alto),"jugadores","#9F1239","#E30613"),md=3),
+            dbc.Col(_fkpi("ti-alert-triangle","En riesgo ALTO",""+str(muy_alto+alto),"jugadores","#9F1239","#FFD600"),md=3),
             dbc.Col(_fkpi("ti-door-exit","Salidas libres jun-2026",str(len(libres)),"contratos expiran","#78350F","#F59E0B"),md=3),
             dbc.Col(_fkpi("ti-building","Interés confirmado",str(sum(1 for n in news if n.get("interest_level")=="confirmed")),"clubes con oferta real","#1D4ED8","#3B82F6"),md=3),
             dbc.Col(_fkpi("ti-eye","Sondeados",str(sum(1 for n in news if n.get("interest_level")=="sounded")),"sin oferta formal","#374151","#6B7280"),md=3),
@@ -510,7 +510,7 @@ def tab_riesgo(fin):
 
         # Salidas libres
         html.Div([
-            html.Div([html.I(className="ti ti-user-x",style={"color":"#E30613","marginRight":"8px","fontSize":"16px"}),
+            html.Div([html.I(className="ti ti-user-x",style={"color":"#FFD600","marginRight":"8px","fontSize":"16px"}),
                       html.Span("Salidas libres en junio 2026",style={"fontSize":"13px","fontWeight":"600","color":"#1A1A2E"})],
                      style={"display":"flex","alignItems":"center","marginBottom":"10px"}),
             *[html.Div([
@@ -541,7 +541,7 @@ def tab_riesgo(fin):
                     html.Thead(html.Tr([
                         html.Th("Jugador",    style=HEAD),
                         html.Th("Pos.",       style=HEAD),
-                        html.Th("Cláusula (M€) — editable", style={**HEAD,"color":"#E30613"}),
+                        html.Th("Cláusula (M€) — editable", style={**HEAD,"color":"#FFD600"}),
                         html.Th("Confirmada",style=HEAD),
                         html.Th("Valor TM",  style=HEAD),
                         html.Th("Contrato",  style=HEAD),
@@ -592,7 +592,7 @@ def tab_simulador(fin):
 
         dbc.Row([
             dbc.Col(html.Div([
-                html.Div([html.I(className="ti ti-arrow-up-right",style={"color":"#E30613","marginRight":"8px","fontSize":"16px"}),
+                html.Div([html.I(className="ti ti-arrow-up-right",style={"color":"#FFD600","marginRight":"8px","fontSize":"16px"}),
                           html.Span("Salidas simuladas",style={"fontSize":"13px","fontWeight":"600","color":"#1A1A2E"})],
                          style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
                 html.Span("Jugadores del Rayo que salen",style=lbl),
@@ -651,7 +651,7 @@ def tab_simulador_fichajes(fin):
                                      'Portugal_Primeira_Liga'])
     inp  = {"width":"100%","padding":"8px 10px","border":"1px solid #E5E7EB","borderRadius":"7px","fontSize":"13px"}
     lbl  = {"fontSize":"11px","color":"#6B7280","marginBottom":"4px","display":"block","fontWeight":"600"}
-    btn  = {"background":"#E30613","color":"#fff","border":"none","borderRadius":"8px",
+    btn  = {"background":"#FFD600","color":"#0D0D0D","border":"none","borderRadius":"8px",
             "padding":"12px 28px","fontSize":"14px","fontWeight":"700","cursor":"pointer",
             "width":"100%","marginTop":"16px","letterSpacing":".02em"}
     card = {"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"18px 20px","height":"100%"}
@@ -671,7 +671,7 @@ def tab_simulador_fichajes(fin):
             dbc.Col(html.Div([
                 html.Div([
                     html.I(className="ti ti-arrow-up-right",
-                           style={"color":"#E30613","marginRight":"8px","fontSize":"18px"}),
+                           style={"color":"#B8960C","marginRight":"8px","fontSize":"18px"}),
                     html.Span("Simular Venta",
                               style={"fontSize":"15px","fontWeight":"700","color":"#1A1A2E"}),
                 ], style={"display":"flex","alignItems":"center","marginBottom":"14px"}),
@@ -818,7 +818,7 @@ def _update_sal_kpis(values, ids):
     )
     diff = adj_total - base_total
     pct = adj_total / scl["limit_eur"] * 100
-    diff_color = "#E30613" if diff > 0 else "#166534"
+    diff_color = "#DC2626" if diff > 0 else "#059669"
     diff_str = (f"+{_fmt(diff)}" if diff >= 0 else f"-{_fmt(abs(diff))}") + " vs. original"
     return html.Div([
         html.Div([
@@ -833,12 +833,12 @@ def _update_sal_kpis(values, ids):
             html.Span(diff_str, style={"fontSize":"12px","color":diff_color,
                                        "fontWeight":"600","marginRight":"16px"}),
             html.Span(f"Uso límite LaLiga: {pct:.1f}%",
-                      style={"fontSize":"12px","color":"#E30613" if pct>90 else
+                      style={"fontSize":"12px","color":"#DC2626" if pct>90 else
                              ("#F59E0B" if pct>75 else "#374151")}),
         ], style={"display":"flex","alignItems":"center","flexWrap":"wrap","gap":"4px"}),
         html.Div(
             html.Div(style={"height":"100%","width":f"{min(pct,100):.1f}%",
-                "background":"#10B981" if pct<75 else ("#F59E0B" if pct<90 else "#E30613"),
+                "background":"#10B981" if pct<75 else ("#F59E0B" if pct<90 else "#FFD600"),
                 "borderRadius":"99px"}),
             style={"height":"6px","background":"#F3F4F6","borderRadius":"99px",
                    "overflow":"hidden","marginTop":"8px"},
@@ -1160,7 +1160,7 @@ def _render_eval_badge(ev: dict):
     elif score >= 40: bg, border, txt = "#FFFBEB","#FDE68A","#92400E"
     else:             bg, border, txt = "#FFF1F2","#FECACA","#9F1239"
 
-    bar_c  = "#10B981" if score>=75 else ("#3B82F6" if score>=55 else ("#F59E0B" if score>=40 else "#E30613"))
+    bar_c  = "#10B981" if score>=75 else ("#3B82F6" if score>=55 else ("#F59E0B" if score>=40 else "#DC2626"))
     t_icon = "ti-arrow-up-right" if tipo=="venta" else "ti-arrow-down-left"
     t_label = "ANÁLISIS DE VENTA" if tipo=="venta" else "ANÁLISIS DE COMPRA"
 
@@ -1272,7 +1272,7 @@ def render_tab(tab):
         return tab_simulador(fin)
     except Exception as e:
         return html.Div([
-            html.Strong("Error: ",style={"color":"#E30613"}),
+            html.Strong("Error: ",style={"color":"#DC2626"}),
             html.Code(str(e),style={"fontSize":"12px"}),
             html.Pre(traceback.format_exc(),style={"fontSize":"10px","marginTop":"8px","color":"#6B7280","whiteSpace":"pre-wrap"}),
         ], style={"background":"#FFF1F2","border":"1px solid #FECDD3","borderRadius":"10px","padding":"14px 16px"})
@@ -1285,7 +1285,7 @@ def fill_player_data(player_name):
         s = settings()
         master_path = Path(s["paths"]["data_processed"]) / "master_players.parquet"
         if not master_path.exists():
-            return html.P("Master no disponible",style={"fontSize":"12px","color":"#E30613"}), None, None
+            return html.P("Master no disponible",style={"fontSize":"12px","color":"#DC2626"}), None, None
         df  = pd.read_parquet(master_path)
         row = df[df["name"].astype(str).str.lower() == player_name.lower()]
         if row.empty: row = df[df["name"].astype(str).str.contains(player_name,case=False,na=False)]
@@ -1325,7 +1325,7 @@ def fill_player_data(player_name):
             (lambda _p: html.Div([
                 html.Span("Tipo de jugador (histórico): ", style={"fontSize":"10px","color":"#9CA3AF"}),
                 html.Span(_p["primary_role_label"], style={"fontSize":"11px","fontWeight":"700","color":"#fff",
-                    "background":"#E30613","borderRadius":"99px","padding":"2px 9px","marginLeft":"4px"}),
+                    "background":"#FFD600","borderRadius":"99px","padding":"2px 9px","marginLeft":"4px"}),
                 html.Span(f"  {_p.get('seasons_played','?')} temp · {int(_p.get('minutes') or 0)} min",
                     style={"fontSize":"10px","color":"#9CA3AF","marginLeft":"6px"}),
             ], style={"marginBottom":"8px"}) if _p else html.Span())(_career_role(name)),
@@ -1341,7 +1341,7 @@ def fill_player_data(player_name):
         ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"8px","padding":"10px 12px"})
         return card, round(sal_est/1_000_000,2), round(clause_est/1_000_000,1)
     except Exception as e:
-        return html.P(str(e),style={"fontSize":"11px","color":"#E30613"}), None, None
+        return html.P(str(e),style={"fontSize":"11px","color":"#DC2626"}), None, None
 
 @callback(Output("sim-fee-vs-clause","children"),Input("sim-fee","value"),Input("sim-player-clause","value"))
 def show_fee_comparison(fee_m, clause_m):
@@ -1365,7 +1365,7 @@ def show_out_summary(out_players):
     return html.Div([
         html.Div([
             html.Span(n,style={"fontSize":"11px","fontWeight":"600","color":"#1A1A2E","flex":"1"}),
-            html.Span(_fmt(pmap[n]["salary_annual"]),style={"fontSize":"11px","color":"#E30613","marginRight":"8px"}),
+            html.Span(_fmt(pmap[n]["salary_annual"]),style={"fontSize":"11px","color":"#FFD600","marginRight":"8px"}),
             html.Span(f"clausula: {_fmt(pmap[n].get('release_clause'))}",style={"fontSize":"10px","color":"#6B7280"}),
         ], style={"display":"flex","alignItems":"center","padding":"5px 0","borderBottom":"1px solid #F3F4F6"})
         for n in out_players if n in pmap
@@ -1489,13 +1489,13 @@ def update_sim(out_players, new_salary_m, income_m, fee_m, years):
         if player_name and (fee > 0 or new_sal > 0):
             eval_badges.append(_render_eval_badge(_evaluate_buy(player_name, fee, new_sal)))
     except Exception as _ex:
-        eval_badges.append(html.P(f"Error evaluación: {_ex}", style={"fontSize":"11px","color":"#E30613"}))
+        eval_badges.append(html.P(f"Error evaluación: {_ex}", style={"fontSize":"11px","color":"#DC2626"}))
 
     return html.Div([
         *eval_badges,
         html.Div([
             html.I(className=f"ti {'ti-circle-check' if ok else 'ti-alert-triangle'}",
-                   style={"fontSize":"18px","color":"#10B981" if ok else "#E30613","marginRight":"8px"}),
+                   style={"fontSize":"18px","color":"#10B981" if ok else "#DC2626","marginRight":"8px"}),
             html.Span(msg, style={"fontSize":"13px","fontWeight":"700","color":"#166534" if ok else "#9F1239"}),
         ], style={"display":"flex","alignItems":"center","marginBottom":"10px",
                   "background":"#F0FDF4" if ok else "#FFF1F2","padding":"10px 12px","borderRadius":"8px"}),
@@ -1507,18 +1507,18 @@ def update_sim(out_players, new_salary_m, income_m, fee_m, years):
                style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF","textTransform":"uppercase","margin":"8px 0 4px"}),
         row("Masa salarial actual",        _fmt(base),      "#374151"),
         row("Ahorro por salidas",          f"-{_fmt(saved)}","#10B981"),
-        row("Nuevo salario incorporación", f"+{_fmt(new_sal)}","#E30613"),
-        row(f"Amortiz. ({_fmt(fee)}/{years}a)", f"+{_fmt(fee/years if years else fee)}","#E30613"),
+        row("Nuevo salario incorporación", f"+{_fmt(new_sal)}","#B8960C"),
+        row(f"Amortiz. ({_fmt(fee)}/{years}a)", f"+{_fmt(fee/years if years else fee)}","#B8960C"),
         row("Coste total plantilla",       _fmt(squad_cost), "#1A1A2E"),
-        row("Margen vs límite",            _fmt(headroom),   "#10B981" if headroom>=0 else "#E30613"),
+        row("Margen vs límite",            _fmt(headroom),   "#10B981" if headroom>=0 else "#DC2626"),
         html.Div(style={"borderTop":"2px solid #E5E7EB","margin":"8px 0"}),
         html.P("Tesorería",
                style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF","textTransform":"uppercase","margin":"4px 0"}),
         row("Ingresos ventas",    f"+{_fmt(income)}",           "#10B981"),
-        row("Traspaso pagado",    f"-{_fmt(fee)}",              "#E30613"),
-        row("Gasto neto",         _fmt(net_spend),              "#E30613" if net_spend>0 else "#10B981"),
+        row("Traspaso pagado",    f"-{_fmt(fee)}",              "#B8960C"),
+        row("Gasto neto",         _fmt(net_spend),              "#B8960C" if net_spend>0 else "#10B981"),
         row("Presupuesto caja",   _fmt(budget_cash),            "#374151"),
-        row("Margen de caja",     _fmt(budget_cash-net_spend),  "#10B981" if cash_ok else "#E30613"),
+        row("Margen de caja",     _fmt(budget_cash-net_spend),  "#10B981" if cash_ok else "#DC2626"),
     ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"14px 16px"})
 
 
@@ -1569,7 +1569,7 @@ def _bud_render(_r):
                 html.Span(it["concepto"], style={"fontSize": "12px", "color": "#374151", "flex": "1"}),
                 html.Span(("+" if is_in else "-") + _fmt(it["importe_eur"]),
                           style={"fontSize": "12px", "fontWeight": "700",
-                                 "color": "#166534" if is_in else "#E30613", "marginRight": "12px"}),
+                                 "color": "#166534" if is_in else "#DC2626", "marginRight": "12px"}),
                 html.Span("x", id={"type": "bud-del", "index": i}, style={"cursor": "pointer",
                     "color": "#9CA3AF", "fontWeight": "700"}),
             ], style={"display": "flex", "alignItems": "center", "padding": "7px 0",

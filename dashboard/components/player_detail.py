@@ -179,7 +179,7 @@ def _find_rows(name, team=None):
 
 def _bar(label, pct, value=None):
     pct = 0 if pct is None or pd.isna(pct) else max(0, min(100, pct))
-    color = "#10B981" if pct >= 66 else ("#F59E0B" if pct >= 40 else "#E30613")
+    color = "#10B981" if pct >= 66 else ("#F59E0B" if pct >= 40 else "#DC2626")
     return html.Div([
         html.Span(label, style={"fontSize": "11px", "color": "#374151", "width": "150px",
                                 "display": "inline-block"}),
@@ -217,13 +217,13 @@ def _style_transparency(prof: dict, pct_for_fn):
                 f"{'★ ' if is_p else ''}{ROLE_LABELS.get(r, r)}",
                 style={"fontSize": "10px", "padding": "2px 5px",
                        "fontWeight": "700" if is_p else "normal",
-                       "color": "#E30613" if is_p else "#374151"},
+                       "color": "#B8960C" if is_p else "#374151"},
             ),
             html.Td(
                 f"{s:.0f}",
                 style={"fontSize": "10px", "padding": "2px 5px", "textAlign": "right",
                        "fontWeight": "700" if is_p else "normal",
-                       "color": "#E30613" if is_p else "#374151"},
+                       "color": "#B8960C" if is_p else "#374151"},
             ),
         ]))
 
@@ -310,7 +310,7 @@ def _radar(role_scores: dict):
     fig = {
         "data": [{
             "type": "scatterpolar", "r": vals, "theta": cats, "fill": "toself",
-            "fillcolor": "rgba(227,6,19,0.25)", "line": {"color": "#E30613"},
+            "fillcolor": "rgba(255,214,0,0.25)", "line": {"color": "#FFD600"},
             "name": "Rol",
         }],
         "layout": {
@@ -358,7 +358,7 @@ def build_detail(name, team=None, league=None, age=None,
             foto = None
     if foto:
         foto_elem = html.Img(src=foto, style={"width": "120px", "height": "150px",
-            "objectFit": "cover", "borderRadius": "10px", "border": "3px solid #E30613"})
+            "objectFit": "cover", "borderRadius": "10px", "border": "3px solid #FFD600"})
     else:
         foto_elem = html.Img(src=SILHOUETTE, alt="sin foto",
             style={"width": "120px", "height": "150px", "objectFit": "cover",
@@ -416,8 +416,8 @@ def build_detail(name, team=None, league=None, age=None,
             ], style={"marginBottom": "6px"}),
             # Badges de posición y rol
             html.Div([
-                html.Span(role_lbl, style={"fontSize": "12px", "fontWeight": "700", "color": "#fff",
-                    "background": "#E30613", "borderRadius": "99px", "padding": "3px 12px",
+                html.Span(role_lbl, style={"fontSize": "12px", "fontWeight": "700", "color": "#0D0D0D",
+                    "background": "#FFD600", "borderRadius": "99px", "padding": "3px 12px",
                     "marginRight": "6px"}),
                 *([ html.Span(_lat_label, style={
                         "fontSize": "12px", "fontWeight": "700", "color": "#fff",
@@ -472,7 +472,7 @@ def build_detail(name, team=None, league=None, age=None,
             ], style={"marginTop": "4px"}) if mvinfo.get("data_source") or mvinfo.get("last_updated") else html.Div(),
         ], style={"flex": "1"}),
         html.A("← Volver al Scouting", href="/scouting", style={"fontSize": "12px",
-               "color": "#E30613", "textDecoration": "none", "alignSelf": "flex-start"}),
+               "color": "#B8960C", "textDecoration": "none", "alignSelf": "flex-start"}),
     ], style={"display": "flex", "gap": "18px", "alignItems": "flex-start", "marginBottom": "18px"})
 
     def _pct_for(metric):

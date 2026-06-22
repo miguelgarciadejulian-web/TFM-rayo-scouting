@@ -27,7 +27,7 @@ PROC   = Path(settings()["paths"]["data_processed"])
 ROOT   = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "config" / "club_profile.yaml"
 
-_RED   = "#E30613"
+_RED   = "#DC2626"
 _DARK  = "#1A1A2E"
 _GRAY  = "#6B7280"
 _WHITE = "#FFFFFF"
@@ -398,11 +398,11 @@ def layout(**_p):
             ], style={"display": "flex", "alignItems": "center", "flexShrink": "0"}),
 
         ], style={
-            "background": "linear-gradient(135deg,#1A1A2E 0%,#3B0A0A 55%,#7B0A0A 100%)",
+            "background": "linear-gradient(135deg,#0D0D0D 0%,#1A1A1A 60%,#2A2A2A 100%)",
             "borderRadius": "18px", "padding": "22px 28px",
             "marginBottom": "18px",
             "display": "flex", "justifyContent": "space-between", "alignItems": "center",
-            "boxShadow": "0 8px 28px rgba(227,6,19,.18)",
+            "boxShadow": "0 8px 28px rgba(255,214,0,.18)",
         }),
 
         # ── Alertas ──────────────────────────────────────────────────────────
@@ -434,7 +434,7 @@ def layout(**_p):
             dbc.Col(_kpi_card(
                 "ti-alert-triangle", "Contratos urgentes", str(sq["expiring_1y"]),
                 "vencen en ≤12 meses",
-                "linear-gradient(135deg,#991B1B,#E30613)", "#FFF1F2",
+                "linear-gradient(135deg,#DC2626,#EF4444)", "#FFF1F2",
             ), md=2),
             dbc.Col(_kpi_card(
                 "ti-clock-exclamation", "Críticos ≤6m", str(sq["expiring_6m"]),

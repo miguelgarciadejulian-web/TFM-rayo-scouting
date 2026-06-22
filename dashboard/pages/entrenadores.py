@@ -355,14 +355,14 @@ def _needs_panel() -> html.Div:
         )
 
     pct_full = min(n_total / cap * 100, 100)
-    bar_color = "#E30613" if slots_free > 3 else "#F59E0B" if slots_free > 0 else "#10B981"
+    bar_color = "#DC2626" if slots_free > 3 else "#F59E0B" if slots_free > 0 else "#10B981"
 
     return html.Div([
         # Cabecera con ocupación
         html.Div([
             html.Div([
                 html.I(className="ti ti-users-group",
-                       style={"fontSize": "14px", "color": "#E30613", "marginRight": "6px"}),
+                       style={"fontSize": "14px", "color": "#B8960C", "marginRight": "6px"}),
                 html.Strong("Plantilla 2026/27 — análisis de necesidades",
                             style={"fontSize": "12px", "color": "#1A1A2E"}),
                 html.Span(f"  formación base: {formation}",
@@ -453,7 +453,7 @@ def _score_color(s10):
 
 def _axis_bar(label, value):
     v = 0 if value is None else max(0, min(100, value))
-    color = "#10B981" if v >= 60 else ("#F59E0B" if v >= 42 else "#E30613")
+    color = "#10B981" if v >= 60 else ("#F59E0B" if v >= 42 else "#DC2626")
     return html.Div([
         html.Span(label, style={"fontSize": "10px", "color": "#6B7280", "width": "92px",
                                 "display": "inline-block"}),
@@ -489,7 +489,7 @@ def _radar_chart(axes: dict, dna: dict | None = None):
 
     traces = [go.Scatterpolar(
         r=vals_coach_c, theta=labels_c, fill="toself",
-        fillcolor="rgba(227,6,19,0.12)", line=dict(color="#E30613", width=2),
+        fillcolor="rgba(255,214,0,0.12)", line=dict(color="#FFD600", width=2),
         name="Entrenador",
     )]
 
@@ -864,7 +864,7 @@ def _score_breakdown(ev: dict, c: dict, dna: dict) -> html.Details:
     return html.Details([
         html.Summary(
             [html.I(className="ti ti-math-function",
-                    style={"marginRight": "5px", "color": "#E30613"}),
+                    style={"marginRight": "5px", "color": "#B8960C"}),
              "¿Cómo se calcula la puntuación? — desglose completo"],
             style={"fontSize": "11px", "fontWeight": "700", "color": "#1D4ED8",
                    "cursor": "pointer", "userSelect": "none", "marginBottom": "8px"},
@@ -1092,7 +1092,7 @@ def layout(**_params):
             dbc.Col(_kpi("ti-trophy","Mejor encaje",top["name"].split()[-1],f"Score: {top_score}/10",
                 "linear-gradient(135deg,#78350F,#F59E0B)","#FFFBEB"), md=3),
             dbc.Col(_kpi("ti-target","Necesidad clave","Banquillo","sucesor de I. Pérez",
-                "linear-gradient(135deg,#991B1B,#E30613)","#FFF1F2"), md=3),
+                "linear-gradient(135deg,#DC2626,#EF4444)","#FFF1F2"), md=3),
         ], className="g-3 mb-4"),
 
         # Panel de necesidades de la plantilla (siempre visible)
@@ -1110,7 +1110,7 @@ def layout(**_params):
             # ── Caja metodología (siempre visible, compacta) ─────────────────
             html.Details([
                 html.Summary("¿Cómo se calcula el ADN Rayo?",
-                             style={"fontSize": "10px", "color": "#E30613", "cursor": "pointer",
+                             style={"fontSize": "10px", "color": "#B8960C", "cursor": "pointer",
                                     "fontWeight": "600", "marginBottom": "6px"}),
                 html.Div([
                     html.P([
@@ -1324,9 +1324,9 @@ def _download_coach_pdf(n, name):
         traceback.print_exc()
         err = html.Div([
             html.I(className="ti ti-alert-circle",
-                   style={"color": "#E30613", "marginRight": "6px"}),
+                   style={"color": "#B8960C", "marginRight": "6px"}),
             html.Span(f"Error generando PDF: {exc}",
-                      style={"fontSize": "11px", "color": "#E30613"}),
+                      style={"fontSize": "11px", "color": "#B8960C"}),
             html.Span(" — Vuelve a intentarlo",
                       style={"fontSize": "11px", "color": "#6B7280"}),
         ], style={"display": "flex", "alignItems": "center"})
@@ -1396,7 +1396,7 @@ def _suggest_adn_from_data(n):
             html.Td(f"{metrica}{inv_note}",       style={**_td, "fontSize": "9px", "color": "#6B7280"}),
             html.Td(raw_str,                      style={**_td, "textAlign": "right"}),
             html.Td(f"{pct:.0f} / 100",           style={**_td, "fontWeight": "700",
-                    "color": "#166534" if pct >= 70 else ("#E30613" if pct >= 45 else "#6B7280"),
+                    "color": "#166534" if pct >= 70 else ("#F59E0B" if pct >= 45 else "#6B7280"),
                     "textAlign": "right"}),
             html.Td(f"{cur:.0f}",                 style={**_td, "textAlign": "right", "color": "#9CA3AF"}),
             html.Td(f"{diff:+.0f}",               style={**_td, "fontWeight": "700",

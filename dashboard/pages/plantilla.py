@@ -35,7 +35,7 @@ GROUP_LABELS = {
     "midfielders": ("Centrocampistas","ti-adjustments-horizontal"),
     "forwards":    ("Delanteros",     "ti-bolt"),
 }
-_ROJO = "#E30613"
+_ROJO = "#DC2626"
 _AZUL = "#1A1A2E"
 _POS_GROUP = {
     "GK": "Porteros", "CB": "Defensas", "RB": "Defensas", "LB": "Defensas",
@@ -64,7 +64,7 @@ def pos_badge(pos):
 def contract_bar(end_date):
     year = int(str(end_date)[:4]) if end_date else 9999
     if year <= 2026:
-        color, label = "#E30613", "2026"
+        color, label = "#DC2626", "2026"
     elif year <= 2027:
         color, label = "#F59E0B", str(year)
     else:
@@ -465,7 +465,7 @@ def layout(**_params):
             dbc.Col(_kpi("ti-wallet","Presupuesto",f"{budget/1e6:.0f}M€","neto estimado 2026/27",
                 "linear-gradient(135deg,#065F46,#10B981)","#ECFDF5"), md=2),
             dbc.Col(_kpi("ti-alert-triangle","Contratos urgentes",str(expiring),f"vencen ≤{today.year+1}",
-                "linear-gradient(135deg,#991B1B,#E30613)","#FFF1F2"), md=2),
+                "linear-gradient(135deg,#DC2626,#EF4444)","#FFF1F2"), md=2),
             dbc.Col(_kpi("ti-transfer-in","Cedidos",str(n_cedidos),"cesiones de otros clubes",
                 "linear-gradient(135deg,#78350F,#F59E0B)","#FFFBEB"), md=2),
             dbc.Col(_kpi("ti-layout-grid","Líneas","4","GK · DEF · MED · DEL",
@@ -513,7 +513,7 @@ def layout(**_params):
                     ], style={"display": "flex", "alignItems": "center",
                               "gap": "8px", "marginBottom": "6px"})
                     for c, t in [
-                        ("#E30613", f"Finaliza ≤{today.year + 1} — acción urgente"),
+                        ("#DC2626", f"Finaliza ≤{today.year + 1} — acción urgente"),
                         ("#F59E0B", f"Finaliza en {today.year + 2} — vigilar"),
                         ("#10B981", "Contrato largo — seguro"),
                     ]],

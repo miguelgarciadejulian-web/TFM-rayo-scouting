@@ -26,7 +26,7 @@ DNA = yaml.safe_load(open(ROOT / "config" / "rayo_dna.yaml", encoding="utf-8"))
 CARD = {"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "12px",
         "padding": "16px 20px", "marginBottom": "14px"}
 TH = {"fontSize": "10px", "fontWeight": "700", "color": "#9CA3AF", "textTransform": "uppercase",
-      "padding": "5px 10px", "textAlign": "left", "borderBottom": "2px solid #E30613"}
+      "padding": "5px 10px", "textAlign": "left", "borderBottom": "2px solid #FFD600"}
 TD = {"fontSize": "12px", "padding": "5px 10px", "color": "#374151", "borderBottom": "1px solid #F3F4F6"}
 
 
@@ -106,7 +106,7 @@ def layout(**_p):
                         style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
                 ]),
             ], style={"display":"flex","alignItems":"center"}),
-        ], style={"background":"linear-gradient(135deg,#9F1239 0%,#BE123C 55%,#E30613 100%)",
+        ], style={"background":"linear-gradient(135deg,#0D0D0D 0%,#1A1A1A 55%,#2D2D2D 100%)",
                   "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
                   "boxShadow":"0 8px 24px rgba(159,18,57,.25)"}),
 
@@ -114,7 +114,7 @@ def layout(**_p):
         html.Div([
             html.Div([
                 html.I(className="ti ti-info-circle",
-                       style={"fontSize":"18px","color":"#E30613","marginRight":"12px","flexShrink":"0"}),
+                       style={"fontSize":"18px","color":"#FFD600","marginRight":"12px","flexShrink":"0"}),
                 html.P("Todas las tablas de esta página se generan automáticamente desde los mismos "
                        "pesos que usa la herramienta internamente — si el código cambia, esta página "
                        "lo refleja al instante. Sin datos manuales.",
