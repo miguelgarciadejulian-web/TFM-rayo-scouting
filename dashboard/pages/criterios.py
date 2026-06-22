@@ -120,16 +120,16 @@ def layout(**_p):
                        "lo refleja al instante. Sin datos manuales.",
                        style={"fontSize":"12px","color":"#374151","margin":"0"}),
             ], style={"display":"flex","alignItems":"flex-start"}),
-        ], style={"background":"#FFF1F2","border":"1px solid #FECACA","borderRadius":"12px",
+        ], style={"background":"#FFFDE7","border":"1px solid #FFD600","borderRadius":"12px",
                   "padding":"14px 16px","marginBottom":"20px"}),
 
         # ═══════════════════════════════════════════════════════════════
         # 1 · PLANTILLA
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-users-group", "1 · METODOLOGÍA — PLANTILLA", "#1E40AF"),
+        _section_chip("ti-users-group", "1 · METODOLOGÍA — PLANTILLA", "#B8960C"),
         html.Div([
             html.Div([
-                html.Div("1", style={"background":"linear-gradient(135deg,#1E40AF,#2563EB)",
+                html.Div("1", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -157,10 +157,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 2 · SCOUTING + JUGADORES (perfil individual)
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-search", "2 · METODOLOGÍA — SCOUTING Y PERFIL DE JUGADOR", "#065F46"),
+        _section_chip("ti-search", "2 · METODOLOGÍA — SCOUTING Y PERFIL DE JUGADOR", "#B8960C"),
         html.Div([
             html.Div([
-                html.Div("2", style={"background":"linear-gradient(135deg,#065F46,#059669)",
+                html.Div("2", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -183,7 +183,7 @@ def layout(**_p):
         dbc.Row([dbc.Col(_role_block(r), md=6) for r in ROLE_DEFINITIONS if r != "portero"]),
         html.Div([
             html.Div([
-                html.Div("2b", style={"background":"linear-gradient(135deg,#065F46,#059669)",
+                html.Div("2b", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"13px","marginRight":"10px","flexShrink":"0"}),
@@ -211,10 +211,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 3 · COMPARADOR
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-arrows-left-right", "3 · METODOLOGÍA — COMPARADOR", "#5B21B6"),
+        _section_chip("ti-arrows-left-right", "3 · METODOLOGÍA — COMPARADOR", "#B8960C"),
         html.Div([
             html.Div([
-                html.Div("3", style={"background":"linear-gradient(135deg,#5B21B6,#7C3AED)",
+                html.Div("3", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -239,10 +239,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 4 · ENTRENADORES
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-chalkboard", "4 · METODOLOGÍA — ENTRENADORES", "#9A3412"),
+        _section_chip("ti-chalkboard", "4 · METODOLOGÍA — ENTRENADORES", "#B8960C"),
         html.Div([
             html.Div([
-                html.Div("4", style={"background":"linear-gradient(135deg,#9A3412,#F97316)",
+                html.Div("4", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -280,10 +280,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 5 · DECISIONES
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-checklist", "5 · METODOLOGÍA — DECISIONES", "#78350F"),
+        _section_chip("ti-checklist", "5 · METODOLOGÍA — DECISIONES", "#B8960C"),
         html.Div([
             html.Div([
-                html.Div("5", style={"background":"linear-gradient(135deg,#78350F,#B45309)",
+                html.Div("5", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -322,10 +322,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 6 · FINANZAS
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-coin", "6 · METODOLOGÍA — FINANZAS", "#064E3B"),
+        _section_chip("ti-coin", "6 · METODOLOGÍA — FINANZAS", "#B8960C"),
         html.Div([
             html.Div([
-                html.Div("6", style={"background":"linear-gradient(135deg,#064E3B,#047857)",
+                html.Div("6", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),

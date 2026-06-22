@@ -32,13 +32,17 @@ _DARK  = "#1A1A2E"
 _GRAY  = "#6B7280"
 _WHITE = "#FFFFFF"
 
+_CORP_GRAD  = "linear-gradient(135deg,#0D0D0D 0%,#1A1A1A 100%)"
+_CORP_LIGHT = "#FFFFFF"
+_CORP_ACC   = "#B8960C"   # amarillo oscuro — legible sobre fondo claro
+
 MODULE_META = {
-    "plantilla":    ("linear-gradient(135deg,#1E40AF,#3B82F6)",  "#EFF6FF",  "#3B82F6"),
-    "scouting":     ("linear-gradient(135deg,#065F46,#10B981)",  "#ECFDF5",  "#10B981"),
-    "comparador":   ("linear-gradient(135deg,#5B21B6,#8B5CF6)",  "#F5F3FF",  "#8B5CF6"),
-    "entrenadores": ("linear-gradient(135deg,#9A3412,#F97316)",  "#FFF7ED",  "#F97316"),
-    "decisiones":   ("linear-gradient(135deg,#78350F,#F59E0B)",  "#FFFBEB",  "#F59E0B"),
-    "finanzas":     ("linear-gradient(135deg,#064E3B,#059669)",  "#ECFDF5",  "#059669"),
+    "plantilla":    (_CORP_GRAD, _CORP_LIGHT, _CORP_ACC),
+    "scouting":     (_CORP_GRAD, _CORP_LIGHT, _CORP_ACC),
+    "comparador":   (_CORP_GRAD, _CORP_LIGHT, _CORP_ACC),
+    "entrenadores": (_CORP_GRAD, _CORP_LIGHT, _CORP_ACC),
+    "decisiones":   (_CORP_GRAD, _CORP_LIGHT, _CORP_ACC),
+    "finanzas":     (_CORP_GRAD, _CORP_LIGHT, _CORP_ACC),
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -127,17 +131,19 @@ def _load_scouting_kpis() -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _kpi_card(icon: str, label: str, value: str, sub: str,
-              gradient: str, light: str) -> html.Div:
+              danger: bool = False) -> html.Div:
+    icon_bg    = "linear-gradient(135deg,#DC2626,#EF4444)" if danger else "linear-gradient(135deg,#0D0D0D,#2A2A2A)"
+    top_border = "#DC2626" if danger else "#FFD600"
     return html.Div([
         html.Div([
             html.I(className=f"ti {icon}",
-                   style={"fontSize": "20px", "color": _WHITE}),
+                   style={"fontSize": "20px", "color": "#FFD600" if not danger else _WHITE}),
         ], style={
-            "background": gradient, "borderRadius": "10px",
+            "background": icon_bg, "borderRadius": "10px",
             "width": "42px", "height": "42px",
             "display": "flex", "alignItems": "center", "justifyContent": "center",
             "flexShrink": "0", "marginBottom": "12px",
-            "boxShadow": "0 4px 10px rgba(0,0,0,.15)",
+            "boxShadow": "0 4px 10px rgba(0,0,0,.18)",
         }),
         html.Div(value, style={
             "fontSize": "26px", "fontWeight": "900", "color": _DARK,
@@ -149,8 +155,9 @@ def _kpi_card(icon: str, label: str, value: str, sub: str,
         }),
         html.Div(sub, style={"fontSize": "10px", "color": _GRAY}),
     ], style={
-        "background": light,
-        "border": "1px solid rgba(0,0,0,.06)",
+        "background": _WHITE,
+        "border": "1px solid rgba(0,0,0,.07)",
+        "borderTop": f"3px solid {top_border}",
         "borderRadius": "14px",
         "padding": "16px 18px",
         "height": "100%",
@@ -228,7 +235,7 @@ def _chart_age(ages: list[int]) -> go.Figure:
     fig = go.Figure()
     fig.add_trace(go.Histogram(
         x=ages, xbins=dict(start=16, end=42, size=1),
-        marker=dict(color=_RED, line=dict(color=_WHITE, width=0.5)),
+        marker=dict(color="#FFD600", line=dict(color=_WHITE, width=0.5)),
         opacity=0.85,
         hovertemplate="<b>Edad %{x}</b><br>%{y} jugadores<extra></extra>",
     ))
@@ -419,32 +426,28 @@ def layout(**_p):
             dbc.Col(_kpi_card(
                 "ti-users", "Jugadores", str(sq["n_players"]),
                 "Rayo Vallecano 2026/27",
-                "linear-gradient(135deg,#1E40AF,#3B82F6)", "#EFF6FF",
             ), md=2),
             dbc.Col(_kpi_card(
                 "ti-calendar", "Edad media", f"{sq['avg_age']}a",
                 "años en primera plantilla",
-                "linear-gradient(135deg,#065F46,#10B981)", "#ECFDF5",
             ), md=2),
             dbc.Col(_kpi_card(
                 "ti-coin-euro", "Valor de mercado", mv_fmt,
                 "valor total Transfermarkt",
-                "linear-gradient(135deg,#5B21B6,#8B5CF6)", "#F5F3FF",
             ), md=2),
             dbc.Col(_kpi_card(
                 "ti-alert-triangle", "Contratos urgentes", str(sq["expiring_1y"]),
                 "vencen en ≤12 meses",
-                "linear-gradient(135deg,#DC2626,#EF4444)", "#FFF1F2",
+                danger=True,
             ), md=2),
             dbc.Col(_kpi_card(
                 "ti-clock-exclamation", "Críticos ≤6m", str(sq["expiring_6m"]),
                 "decisión inmediata",
-                "linear-gradient(135deg,#78350F,#F59E0B)", "#FFFBEB",
+                danger=True,
             ), md=2),
             dbc.Col(_kpi_card(
                 "ti-search", "Scouting", f"{sk['candidates']:,}",
                 f"candidatos en {sk['ligas']} ligas",
-                "linear-gradient(135deg,#064E3B,#059669)", "#ECFDF5",
             ), md=2),
         ], className="g-3 mb-4"),
 
