@@ -14,7 +14,7 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
 from dashboard.components.chart_theme import RAYO_RED, RAYO_DARK, GRAPH_CONFIG_SIMPLE
-from dash import Input, Output, State, callback, dcc, html
+from dash import Input, Output, State, callback, dcc, html, no_update
 from dash.exceptions import PreventUpdate
 from src.utils.leagues import league_name
 from dashboard.components.criteria_block import criteria_accordion  # noqa: E402
@@ -681,8 +681,7 @@ def _download(n, names_json):
 
         # Build percentile map for each player
         from src.profiling.player_profile import career_aggregate, add_role_percentiles
-        from src.utils.config import settings
-        enr_path = settings.data_dir / "processed" / "player_seasons_enriched.parquet"
+        enr_path = _PROC / "player_seasons_enriched.parquet"
         pct_map: dict = {}
         if enr_path.exists():
             enr_all = pd.read_parquet(enr_path)
