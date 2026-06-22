@@ -198,14 +198,33 @@ def layout(**_params):
         # Store para navegación — clientside callback navega con window.location.href
         dcc.Store(id="scouting-nav-url", data=None),
 
+        # ── Hero ──────────────────────────────────────────────────────────────
         html.Div([
-            html.H1("Scouting", className="page-title"),
-            html.P("Búsqueda avanzada de jugadores · datos más recientes por jugador",
-                   className="page-subtitle"),
-        ], className="page-header"),
+            html.Div([
+                html.Div([html.I(className="ti ti-search",
+                           style={"fontSize":"28px","color":"#fff"})],
+                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                html.Div([
+                    html.Div("BASE DE SCOUTING", style={"fontSize":"9px","fontWeight":"700",
+                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                    html.H1("Scouting de Jugadores", style={"fontSize":"22px","fontWeight":"900",
+                        "color":"#fff","margin":"0 0 2px"}),
+                    html.Div("Búsqueda avanzada · datos más recientes por jugador",
+                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                ]),
+            ], style={"display":"flex","alignItems":"center"}),
+        ], style={"background":"linear-gradient(135deg,#065F46 0%,#047857 60%,#059669 100%)",
+                  "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
+                  "boxShadow":"0 8px 24px rgba(6,95,70,.25)"}),
 
         html.Div([
-            html.P("Filtros", className="card-modern-title"),
+            html.Div([
+                html.I(className="ti ti-adjustments-horizontal",
+                       style={"fontSize":"14px","color":"#065F46","marginRight":"7px"}),
+                html.Span("FILTROS", style={"fontSize":"9px","fontWeight":"700",
+                    "color":"#065F46","letterSpacing":".10em"}),
+            ], style={"marginBottom":"12px","display":"flex","alignItems":"center"}),
             dbc.Row([
                 dbc.Col(_filter_chip("f-player",   "Jugador",          "Todos",  player_opt, multi=False), md=2),
                 dbc.Col(_filter_chip("f-lateral",  "Posición",         "Todas",  lat_opt,    multi=True),  md=2),
@@ -237,17 +256,19 @@ def layout(**_params):
                                updatemode="mouseup"),
                 ]), md=3),
             ], className="g-3 mt-2"),
-        ], className="filter-panel"),
+        ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"14px",
+               "padding":"18px 20px","marginBottom":"16px",
+               "boxShadow":"0 2px 8px rgba(0,0,0,.05)"}),
 
         dbc.Row([
             dbc.Col(html.Div(id="scouting-count",
-                             style={"fontSize": "12px", "color": "#6B7280", "paddingBottom": "6px"})),
+                             style={"fontSize":"12px","color":"#6B7280","paddingBottom":"6px"})),
             dbc.Col(html.Div([
                 html.I(className="ti ti-hand-click",
-                       style={"fontSize": "13px", "marginRight": "5px"}),
-                html.Span("Haz clic en cualquier fila para abrir el perfil del jugador",
-                          style={"fontSize": "12px", "color": "#6B7280"}),
-            ], style={"textAlign": "right", "paddingBottom": "6px"})),
+                       style={"fontSize":"13px","marginRight":"5px","color":"#065F46"}),
+                html.Span("Clic en cualquier fila para abrir el perfil",
+                          style={"fontSize":"12px","color":"#6B7280"}),
+            ], style={"textAlign":"right","paddingBottom":"6px"})),
         ]),
 
         dash_table.DataTable(

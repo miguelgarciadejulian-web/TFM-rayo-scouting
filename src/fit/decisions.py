@@ -68,13 +68,57 @@ def squad_decisions(squad: list[dict], needs: dict, season_end: int = 2026) -> d
             renovar.append({"name": name, "role": role_lbl, "age": age, "contract_end": end,
                             "reason": f"Titular util ({role_lbl}, {int(age)} anos) con contrato hasta {end}: blindar."})
 
-    # FICHAR: necesidades
+    # FICHAR: necesidades — razones especificas con contexto de plantilla
+    role_counts = needs.get("role_counts", {})
+    target_tpl = needs.get("target_template", {})
+
+    # Mapa role_label -> lista de jugadores aging/expiring para ese rol
+    aging_by_role: dict[str, list[str]] = {}
+    for ae in needs.get("aging_or_expiring", []):
+        lbl = ae.get("role_label", "")
+        if lbl:
+            aging_by_role.setdefault(lbl, []).append(
+                f"{ae['name']} ({int(ae['age'])} anios)"
+            )
+
+    _PLURAL = {
+        "Portero": "porteros", "Central dominador": "centrales dominadores",
+        "Central corrector": "centrales correctores",
+        "Lateral ofensivo": "laterales ofensivos",
+        "Lateral defensivo": "laterales defensivos",
+        "Mediocentro organizador": "mediocentros organizadores",
+        "Mediocentro recuperador": "mediocentros recuperadores",
+        "Interior llegador": "interiores llegadores",
+        "Extremo vertical": "extremos verticales",
+        "Extremo asociativo": "extremos asociativos",
+        "Delantero rematador": "delanteros rematadores",
+        "Delantero movil": "delanteros moviles",
+    }
+
     fichar = []
     for r in needs.get("missing", []):
-        fichar.append({"role": r, "priority": "alta",
-                       "reason": "Perfil inexistente en la plantilla."})
+        target = target_tpl.get(r, 1)
+        aging_ref = aging_by_role.get(r, [])
+        rpl = _PLURAL.get(r, r.lower())
+        if aging_ref:
+            reason = (f"Sin {rpl} en plantilla (objetivo: {target}). "
+                      f"Referencia envejecida: {', '.join(aging_ref[:2])}.")
+        else:
+            reason = (f"Sin {rpl} en plantilla. "
+                      f"Rol clave sin cobertura (objetivo: {target} jugadores).")
+        fichar.append({"role": r, "priority": "alta", "reason": reason})
+
     for r in needs.get("reinforce", []):
-        fichar.append({"role": r, "priority": "media",
-                       "reason": "Perfil escaso: conviene reforzar."})
+        have = role_counts.get(r, 0)
+        target = target_tpl.get(r, 2)
+        aging_ref = aging_by_role.get(r, [])
+        rpl = _PLURAL.get(r, r.lower() + "s")
+        if aging_ref:
+            reason = (f"Solo {have} de {target} {rpl} en plantilla. "
+                      f"Referencia en declive: {', '.join(aging_ref[:2])}.")
+        else:
+            reason = (f"Solo {have} de {target} {rpl} en plantilla. "
+                      f"Refuerzo necesario para garantizar cobertura.")
+        fichar.append({"role": r, "priority": "media", "reason": reason})
 
     return {"renovar": renovar, "vender": vender, "ceder": ceder, "fichar": fichar}

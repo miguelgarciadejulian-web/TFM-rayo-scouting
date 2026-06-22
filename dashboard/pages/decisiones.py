@@ -35,7 +35,39 @@ _SQUAD_CACHE:    dict = {"data": None, "t": 0.0}
 _COACHES_CACHE:  dict = {"data": None, "t": 0.0}
 _SHORT_CACHE:    dict = {"data": None, "t": 0.0}
 _FLAT_CACHE:     dict = {"data": None, "t": 0.0}
+_FIT_SCORER_CACHE: dict = {}
+_POS_OPT_CACHE: list = []
 _CACHE_TTL = 120
+
+
+def _get_fit_scorer():
+    if "scorer" not in _FIT_SCORER_CACHE:
+        try:
+            from src.scouting.comparator import load_scorer
+            club_yaml = PROC.parents[1] / "config" / "club_profile.yaml"
+            with open(club_yaml, encoding="utf-8") as f:
+                import yaml as _yaml_local
+                club = _yaml_local.safe_load(f)
+            squad = []
+            for section in club.get("squad_2025_26", {}).values():
+                if isinstance(section, list):
+                    squad.extend(section)
+            _FIT_SCORER_CACHE["scorer"] = load_scorer(PROC, squad)
+        except Exception:
+            _FIT_SCORER_CACHE["scorer"] = None
+    return _FIT_SCORER_CACHE.get("scorer")
+
+
+def _fit_scores_for(names: list[str]) -> dict[str, float]:
+    """Fit Rayo completo (rendimiento + economico + edad + disponibilidad)."""
+    scorer = _get_fit_scorer()
+    if not scorer or not names:
+        return {}
+    try:
+        results = scorer.compare(names)
+        return {r.name: r.fit_score for r in results}
+    except Exception:
+        return {}
 
 
 def _enriched():
@@ -136,7 +168,10 @@ def _load_shortlists():
     if _SHORT_CACHE["data"] is not None and time.time() - _SHORT_CACHE["t"] < _CACHE_TTL:
         return _SHORT_CACHE["data"]
     p = PROC / "signing_shortlists.json"
-    data = json.load(open(p, encoding="utf-8")) if p.exists() else {}
+    try:
+        data = json.load(open(p, encoding="utf-8")) if p.exists() else {}
+    except Exception:
+        data = {}
     _SHORT_CACHE.update({"data": data, "t": time.time()})
     return data
 
@@ -157,35 +192,46 @@ def _item_row(it):
             html.Strong(title, style={"fontSize": "12px", "color": "#1A1A2E"}),
             html.Span("  " + " · ".join(meta), style={"fontSize": "10px", "color": "#6B7280"}),
         ]),
-        html.P(it["reason"], style={"fontSize": "11px", "color": "#374151", "margin": "2px 0 0",
-               "lineHeight": "1.4"}),
     ], style={"padding": "8px 0", "borderBottom": "1px solid #F3F4F6"})
 
 
-def _candidate_chips(cands):
+def _candidate_chips(cands, fit_map: dict | None = None):
     if not cands:
         return html.Span()
-    return html.Div([
-        html.Span("Candidatos: ", style={"fontSize": "9px", "color": "#9CA3AF", "fontWeight": "700"}),
-        *[html.Span(f"{c['name']} ({c.get('role_score','')})",
-            title=f"{c.get('team','')} · {c.get('season','')}",
+    if fit_map:
+        cands = sorted(cands, key=lambda c: fit_map.get(c["name"], 0), reverse=True)
+    chips = []
+    for c in cands[:6]:
+        name = c["name"]
+        fit_val = fit_map.get(name) if fit_map else None
+        score_str = f"{fit_val:.0f}" if fit_val is not None else f"{c.get('role_score', 0):.0f}"
+        chips.append(html.Span(
+            f"{name} ({score_str})",
+            title=f"{c.get('team', '')} · {c.get('season', '')} · Fit Rayo {score_str}",
             style={"fontSize": "10px", "background": "#F0FDF4", "color": "#166534",
                    "borderRadius": "6px", "padding": "2px 7px", "marginRight": "4px",
-                   "marginBottom": "4px", "display": "inline-block"})
-          for c in cands[:6]],
+                   "marginBottom": "4px", "display": "inline-block"},
+        ))
+    return html.Div([
+        html.Span("Candidatos (Fit Rayo): ", style={"fontSize": "9px", "color": "#9CA3AF", "fontWeight": "700"}),
+        *chips,
     ], style={"marginTop": "4px"})
 
 
 def _fichar_row(it, shortlists):
     cands = shortlists.get(it.get("role"), [])
+    names = [c["name"] for c in cands] if cands else []
+    fit_map = _fit_scores_for(names) if names else {}
+
+    cands_sorted = sorted(cands, key=lambda c: fit_map.get(c["name"], 0), reverse=True)
+
     return html.Div([
         html.Div([
             html.Strong(it.get("role"), style={"fontSize": "12px", "color": "#1A1A2E"}),
             html.Span(f"  prioridad {it.get('priority','')}",
                       style={"fontSize": "10px", "color": "#6B7280"}),
         ]),
-        html.P(it["reason"], style={"fontSize": "11px", "color": "#374151", "margin": "2px 0 0"}),
-        _candidate_chips(cands),
+        _candidate_chips(cands_sorted, fit_map=fit_map),
     ], style={"padding": "8px 0", "borderBottom": "1px solid #F3F4F6"})
 
 
@@ -219,7 +265,6 @@ def _criteria_badge(text, color="#1D4ED8", bg="#EFF6FF"):
 def layout(**_params):
     data = _load_squad()
     dec = squad_decisions(data.get("squad", []), data.get("needs", {}))
-    shortlists = _load_shortlists()
     coaches = _load_coaches()
     top3 = coaches[:3]
     needs = data.get("needs", {})
@@ -230,25 +275,14 @@ def layout(**_params):
             "encaje economico (valor de mercado vs presupuesto) · riesgo contractual "
             "(duracion + clausula). Candidatos generados automaticamente por rol."
         ),
+
         html.Div([
-            html.Span("Necesidades detectadas: ", style={"fontSize": "12px", "fontWeight": "600"}),
-            html.Span("Faltan: " + (", ".join(needs.get("missing", [])) or "—"),
-                      style={"fontSize": "12px", "color": "#991B1B", "marginRight": "14px"}),
-            html.Span("Reforzar: " + (", ".join(needs.get("reinforce", [])) or "—"),
-                      style={"fontSize": "12px", "color": "#92400E", "marginRight": "14px"}),
-            html.Span("Sobran: " + (", ".join(needs.get("over_represented", [])) or "—"),
-                      style={"fontSize": "12px", "color": "#6B7280"}),
-        ], style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
-                  "borderRadius": "10px", "padding": "12px 16px", "marginBottom": "16px"}),
-        dbc.Row([
-            _decision_col("fichar", dec["fichar"], shortlists),
-            _decision_col("renovar", dec["renovar"]),
-            _decision_col("vender", dec["vender"]),
-            _decision_col("ceder", dec["ceder"]),
-        ], className="g-3 mb-3"),
-        html.Div([
-            html.P("Explorador de candidatos por perfil",
-                   style={"fontSize": "13px", "fontWeight": "700", "color": "#1A1A2E", "marginBottom": "4px"}),
+            html.Div([
+                html.I(className="ti ti-search",
+                       style={"fontSize":"14px","color":"#F59E0B","marginRight":"7px"}),
+                html.Span("EXPLORADOR DE CANDIDATOS", style={"fontSize":"9px","fontWeight":"700",
+                    "color":"#F59E0B","letterSpacing":".10em"}),
+            ], style={"marginBottom":"10px","display":"flex","alignItems":"center"}),
             html.P("Elige un perfil y las ligas y obtén el ranking de candidatos al instante.",
                    style={"fontSize": "11px", "color": "#6B7280", "marginBottom": "10px"}),
             dbc.Row([
@@ -266,9 +300,9 @@ def layout(**_params):
             ], className="g-2"),
             dbc.Row([
 
-                dbc.Col([html.Span("Valor max (M€)", className="filter-label"),
-                    dcc.Slider(0,100,5, value=100, id="exp-maxval",
-                               marks={0:"0",25:"25",50:"50",100:"sin tope"},
+                dbc.Col([html.Span("Valor max (M€) — Rayo ≤ 15M€", className="filter-label"),
+                    dcc.Slider(0,100,5, value=15, id="exp-maxval",
+                               marks={0:"0",10:"10",15:"15M",30:"30",100:"∞"},
                                tooltip={"placement":"bottom"})], md=4),
                 dbc.Col(dcc.Checklist(
                     options=[{"label": "  Excluir grandes clubes", "value": "big"},
@@ -368,23 +402,58 @@ def layout(**_params):
     ], style={"background": "#fff", "border": "1px solid #E5E7EB",
               "borderRadius": "12px", "padding": "18px 20px"})
 
+    n_fichar   = len(dec.get("fichar", []))
+    n_renovar  = sum(1 for p in dec.get("renovar", []) if p.get("score",100) < 70)
+    n_vender   = len(dec.get("vender", []))
+
+    _tab_label = {"fontWeight":"700","fontSize":"12px"}
+    _tab_sel   = {"fontWeight":"700","fontSize":"12px","color":"#F59E0B",
+                  "borderBottom":"2px solid #F59E0B"}
+
     return html.Div([
+
+        # ── Hero ──────────────────────────────────────────────────────────────
         html.Div([
-            html.P("PLANIFICACION DEPORTIVA", style={"fontSize": "10px", "fontWeight": "600",
-                   "color": "#6B7280", "letterSpacing": ".08em", "margin": "0 0 3px"}),
-            html.H1("Decisiones deportivas", className="page-title"),
-            html.P("Rankings automaticos del mercado 2026/27 derivados de los perfiles",
-                   className="page-subtitle"),
-        ], className="page-header"),
+            html.Div([
+                html.Div([html.I(className="ti ti-clipboard-check",
+                           style={"fontSize":"28px","color":"#fff"})],
+                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                html.Div([
+                    html.Div("PLANIFICACIÓN DEPORTIVA", style={"fontSize":"9px","fontWeight":"700",
+                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                    html.H1("Decisiones Deportivas", style={"fontSize":"22px","fontWeight":"900",
+                        "color":"#fff","margin":"0 0 2px"}),
+                    html.Div("Rankings automáticos 2026/27 derivados de datos reales",
+                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                ]),
+            ], style={"display":"flex","alignItems":"center","flex":"1"}),
+            html.Div([
+                *[html.Div([
+                    html.Div(v, style={"fontSize":"22px","fontWeight":"900","color":"#fff","lineHeight":"1"}),
+                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.55)","fontWeight":"600","marginTop":"2px"}),
+                ], style={"textAlign":"center","padding":"0 16px","borderRight":s})
+                  for v,l,s in [
+                    (str(n_fichar), "fichas urgentes", "1px solid rgba(255,255,255,.15)"),
+                    (str(n_renovar), "renovaciones críticas", "1px solid rgba(255,255,255,.15)"),
+                    (str(n_vender), "candidatos salida", "none"),
+                ]],
+            ], style={"display":"flex","alignItems":"center","flexShrink":"0"}),
+        ], style={"background":"linear-gradient(135deg,#78350F 0%,#92400E 50%,#B45309 100%)",
+                  "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
+                  "display":"flex","justifyContent":"space-between","alignItems":"center",
+                  "boxShadow":"0 8px 24px rgba(120,53,15,.25)"}),
 
         dbc.Tabs([
-            dbc.Tab(tab_fichajes,     label="Fichajes",    tab_id="tab-fichajes",
-                    label_style={"fontWeight": "600", "fontSize": "13px"}),
-            dbc.Tab(tab_renovaciones, label="Renovaciones", tab_id="tab-renovaciones",
-                    label_style={"fontWeight": "600", "fontSize": "13px"}),
-            dbc.Tab(tab_entrenadores, label="Entrenadores", tab_id="tab-entrenadores",
-                    label_style={"fontWeight": "600", "fontSize": "13px"}),
-        ], active_tab="tab-fichajes", style={"marginBottom": "16px"}),
+            dbc.Tab(tab_fichajes,     label="🎯  Fichajes",     tab_id="tab-fichajes",
+                    label_style=_tab_label),
+            dbc.Tab(tab_renovaciones, label="📋  Renovaciones",  tab_id="tab-renovaciones",
+                    label_style=_tab_label),
+            dbc.Tab(tab_entrenadores, label="🧑‍🏫  Entrenadores", tab_id="tab-entrenadores",
+                    label_style=_tab_label),
+        ], active_tab="tab-fichajes", style={"marginBottom":"16px",
+            "background":"#fff","borderRadius":"14px","border":"1px solid #E5E7EB",
+            "padding":"4px","boxShadow":"0 2px 8px rgba(0,0,0,.05)"}),
     ])
 
 
@@ -395,96 +464,100 @@ def _fmt_val(v):
     return f"{v/1e6:.0f}M" if v >= 1e6 else f"{v/1e3:.0f}K"
 
 
+_SALARY_CFG_CACHE: dict = {}
+
+
+def _load_salary_cfg() -> dict:
+    """Carga salary_estimates.yaml (cacheado en memoria)."""
+    if _SALARY_CFG_CACHE:
+        return _SALARY_CFG_CACHE
+    try:
+        yaml_path = PROC.parents[1] / "config" / "salary_estimates.yaml"
+        with open(yaml_path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        _SALARY_CFG_CACHE.update(data or {})
+    except Exception:
+        pass
+    return _SALARY_CFG_CACHE
+
+
 def _est_salary(market_value_eur, league: str = "", minutes: float = 0,
-                age: int = 25, position: str = "") -> str:
+                age: int = 25, position: str = "", team: str = "") -> str:
     """
-    Estimación salarial bruta anual con modelo multi-factor.
+    Estimación salarial bruta anual desde salary_estimates.yaml.
 
-    Factores (pesos aproximados en el ratio base sobre VM):
-      Liga         35% → ratio base sobre valor de mercado
-      VM           25% → base absoluta (progresión no lineal)
-      Minutos      20% → multiplicador de titularidad
-      Edad         10% → pico 24-28 → penalización fuera del rango
-      Posición     10% → delanteros/centrocampistas atacantes reciben +5-10%
+    Método:
+      base = max(floor, min(top, mv × ratio_liga))
+      × multiplicador_club (Real Madrid, Barça, etc.)
+      × factor_titularidad (minutos jugados)
+      × factor_edad (pico 24-28, penalización veteranos/jóvenes)
 
-    Rangos de referencia LaLiga 2024/25:
-      LaLiga1 titular → ~12-18% del VM bruto/año
-      LaLiga2 titular → ~8-12% del VM bruto/año
-      Otras ligas top → ~10-15% del VM bruto/año
+    Referencia: FIFPRO Global Employment Report 2023 + LaLiga Economic Report 2024.
     """
     try:
         mv = float(market_value_eur or 0)
         if mv <= 0:
             return "n/d"
 
-        # ── 1. Ratio base según liga (peso 35%) ──
+        cfg = _load_salary_cfg()
+        leagues_cfg = cfg.get("leagues", {})
+
+        # ── 1. Configuración de liga ──
+        lc = None
         league_l = str(league).lower()
-        if any(x in league_l for x in ["primera", "laliga", "la liga", "spain"]):
-            base_ratio = 0.15   # LaLiga Primera
-        elif any(x in league_l for x in ["segunda", "segunda division", "spain 2"]):
-            base_ratio = 0.10   # LaLiga Segunda
-        elif any(x in league_l for x in ["premier", "england"]):
-            base_ratio = 0.18   # Premier League (mercado más inflado)
-        elif any(x in league_l for x in ["bundesliga", "germany"]):
-            base_ratio = 0.14
-        elif any(x in league_l for x in ["serie a", "italy"]):
-            base_ratio = 0.13
-        elif any(x in league_l for x in ["ligue 1", "france"]):
-            base_ratio = 0.12
-        else:
-            base_ratio = 0.11   # Otras ligas europeas
+        for k, v in leagues_cfg.items():
+            if k.lower() in league_l or league_l in k.lower():
+                lc = v
+                break
+        if lc is None:
+            lc = leagues_cfg.get("default", {
+                "floor_eur": 60000, "top_eur": 1000000, "ratio_of_mv": 0.09
+            })
 
-        # ── 2. Ajuste de escala no lineal por VM (peso 25%) ──
-        # Jugadores de alto valor tienen ratio ligeramente menor (negociación)
-        if mv >= 30_000_000:
-            scale = 0.90
-        elif mv >= 15_000_000:
-            scale = 0.95
-        elif mv >= 5_000_000:
-            scale = 1.00
-        elif mv >= 1_000_000:
-            scale = 1.08   # Jugadores de medio valor, ratio algo mayor
-        else:
-            scale = 1.15   # Jugadores de bajo VM (sueldos relativamente altos)
+        floor_s = float(lc.get("floor_eur", 60000))
+        top_s   = float(lc.get("top_eur", 1000000))
+        ratio   = float(lc.get("ratio_of_mv", 0.09))
 
-        # ── 3. Multiplicador titularidad por minutos (peso 20%) ──
-        min_mult = 1.0
+        # ── 2. Base salarial clampeada al rango de la liga ──
+        base = max(floor_s, min(top_s, mv * ratio))
+
+        # ── 3. Multiplicador de club ──
+        club_mults = cfg.get("club_multipliers", {})
+        club_mult = 1.0
+        if team:
+            team_l = str(team).lower()
+            for club, mult in club_mults.items():
+                if club.lower() in team_l or team_l in club.lower():
+                    club_mult = float(mult)
+                    break
+
+        # ── 4. Factor de titularidad (minutos) ──
         mins = float(minutes or 0)
         if mins >= 2500:
-            min_mult = 1.10   # Titular indiscutible
+            min_mult = 1.12
         elif mins >= 1800:
-            min_mult = 1.05   # Titular habitual
+            min_mult = 1.05
         elif mins >= 900:
-            min_mult = 0.95   # Rotación / suplente habitual
+            min_mult = 0.95
         elif mins >= 450:
-            min_mult = 0.85   # Poco minutos
+            min_mult = 0.85
         else:
-            min_mult = 0.75   # Sin apenas participación
+            min_mult = 0.75
 
-        # ── 4. Ajuste de edad (peso 10%) ──
-        age_mult = 1.0
-        if 24 <= age <= 28:
-            age_mult = 1.05   # Pico de rendimiento
-        elif 22 <= age <= 23 or 29 <= age <= 30:
+        # ── 5. Factor de edad ──
+        age_i = int(float(age or 25))
+        if 24 <= age_i <= 28:
+            age_mult = 1.06
+        elif 22 <= age_i <= 23 or 29 <= age_i <= 30:
             age_mult = 1.00
-        elif age <= 21:
-            age_mult = 0.88   # Joven — sueldo moderado aunque tenga proyección
-        elif 31 <= age <= 33:
-            age_mult = 0.92   # Inicio declive
+        elif age_i <= 21:
+            age_mult = 0.88
+        elif 31 <= age_i <= 33:
+            age_mult = 0.92
         else:
-            age_mult = 0.82   # Veterano (>33)
+            age_mult = 0.82
 
-        # ── 5. Ajuste por posición (peso 10%) ──
-        pos_mult = 1.0
-        pos_u = str(position).upper()
-        if pos_u in ("ST", "LW", "RW"):
-            pos_mult = 1.08   # Atacantes: mayor demanda
-        elif pos_u in ("AM", "CM"):
-            pos_mult = 1.03
-        elif pos_u in ("GK",):
-            pos_mult = 0.95   # Porteros: mercado más limitado
-
-        sal = mv * base_ratio * scale * min_mult * age_mult * pos_mult
+        sal = base * club_mult * min_mult * age_mult
         if sal >= 1_000_000:
             return f"~{sal/1e6:.1f}M€/año"
         return f"~{sal/1e3:.0f}K€/año"
@@ -518,16 +591,34 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract):
         if "contract_years_remaining" in rk.columns:
             rk = rk[(rk["contract_years_remaining"].isna()) |
                     (rk["contract_years_remaining"] <= max_contract)]
-    rk = rk.head(25)
+    rk = rk.head(50)  # pool amplio antes de reordenar por Fit Rayo
     if rk.empty:
         return html.P("Sin candidatos con esos filtros.", style={"fontSize": "12px", "color": "#9CA3AF"})
-    cols_h = ["#", "Jugador", "Equipo", "Liga", "Edad", "Min", "Valor", "Sal. est.", "Contrato", "Score"]
+
+    # Calcular Fit Rayo real (mismo scorer que el perfil del jugador)
+    names_list = list(rk["name"].dropna())
+    fit_map = _fit_scores_for(names_list)
+
+    # Reordenar por Fit Rayo desc, mostrar top 25
+    rk = rk.copy()
+    rk["_fit_rayo"] = rk["name"].map(lambda n: fit_map.get(n, -1))
+    rk = rk.sort_values("_fit_rayo", ascending=False).head(25).reset_index(drop=True)
+
+    cols_h = ["#", "Jugador", "Equipo", "Liga", "Edad", "Min", "Valor", "Sal. est.", "Contrato", "Fit Rayo"]
     head = html.Tr([html.Th(h, style={"fontSize": "10px", "color": "#9CA3AF", "padding": "5px 10px",
                     "textAlign": "left"}) for h in cols_h])
     body = []
     for i, r in enumerate(rk.itertuples(), 1):
         contract = getattr(r, "contract_until", None)
         exp = getattr(r, "expiring_2026", False)
+        fit_val = fit_map.get(r.name)
+        fit_color = "#166534" if (fit_val or 0) >= 70 else "#92400E" if (fit_val or 0) >= 50 else "#991B1B"
+        fit_cell = html.Td(
+            f"{fit_val:.0f}" if fit_val is not None else f"{r.role_score:.0f}*",
+            title="*Rendimiento (Fit Rayo no disponible)" if fit_val is None else f"Fit Rayo: {fit_val:.1f}/100",
+            style={"fontSize": "13px", "padding": "5px 10px",
+                   "fontWeight": "700", "color": fit_color},
+        )
         body.append(html.Tr([
             html.Td(str(i), style={"fontSize": "11px", "padding": "5px 10px", "color": "#9CA3AF"}),
             html.Td(html.A(r.name, href=f"/jugador?name={r.name}&team={r.team}",
@@ -549,14 +640,14 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract):
                         minutes=float(r.minutes) if pd.notna(r.minutes) else 0,
                         age=int(float(getattr(r, "age", 25) or 25)),
                         position=str(getattr(r, "position_primary", "") or ""),
+                        team=str(getattr(r, "team", "") or ""),
                     ), style={"fontSize": "10px", "padding": "5px 10px", "color": "#6B7280",
                            "fontStyle": "italic"}),
             html.Td(html.Span((str(contract)[:4] if contract else "n/d"),
                     style={"fontWeight": "700" if exp else "400",
                            "color": "#E30613" if exp else "#6B7280"}),
                     style={"fontSize": "11px", "padding": "5px 10px"}),
-            html.Td(f"{r.role_score:.0f}", style={"fontSize": "12px", "padding": "5px 10px",
-                    "fontWeight": "700", "color": "#E30613"}),
+            fit_cell,
         ], style={"borderTop": "1px solid #F3F4F6"}))
     # Data freshness: check when player_economic.parquet was last modified
     import os as _os, datetime as _dt
@@ -582,8 +673,8 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract):
             html.Span(freshness_note, style={"fontSize": "9px", "color": freshness_color}),
         ], style={"marginBottom": "4px"}),
         html.P(
-            "Salario estimado: ratio base por liga (LaLiga ~15% VM) × ajuste VM × minutos × edad × posición. "
-            "Estimación orientativa — no contractual.",
+            "Salario estimado: rango salarial real por liga × titularidad × edad × club. "
+            "Fuente: salary_estimates.yaml (FIFPRO 2023). Estimación orientativa — no contractual.",
             style={"fontSize": "9px", "color": "#9CA3AF", "marginBottom": "6px",
                    "fontStyle": "italic"}
         ),
@@ -670,6 +761,7 @@ def _renewal_card(result):
                           minutes=float(getattr(result, "minutes", 0) or 0),
                           age=int(float(getattr(result, "age", 25) or 25)),
                           position=str(getattr(result, "position_primary", "") or ""),
+                          team=str(getattr(result, "team", "") or ""),
                       ), style={"fontSize": "9px", "color": "#6B7280", "marginRight": "5px",
                              "fontStyle": "italic"}),
             html.Span(f"Conf: {result.confidence}", style={

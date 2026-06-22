@@ -1,0 +1,163 @@
+# salary_estimates.yaml
+# =====================
+# Estimaciones salariales brutas anuales por liga (en EUR).
+# Fuentes de referencia: FIFPRO Global Employment Report 2023,
+# La Liga Economic Report 2024, UEFA Club Licensing Benchmarking.
+#
+# floor_eur   → salario mínimo real de un jugador del equipo (reserva/suplente)
+# median_eur  → salario típico de un titular habitual en un club mid-table
+# top_eur     → techo para clubes normales (sin multiplicador de elite)
+# ratio_of_mv → % del valor de mercado usado como punto de partida base
+#
+# El salario estimado = max(floor, min(top, mv × ratio)) × club_mult × min_mult × age_mult
+
+leagues:
+  Spain_Primera_Division:
+    floor_eur:   180000      # LaLiga1: salario mínimo convenio ~150-200K
+    median_eur:  900000      # titular mid-table: ~600K-1.2M
+    top_eur:     7000000     # techo para clubes no-elite (Sevilla, Betis, Sociedad)
+    ratio_of_mv: 0.14
+
+  Spain_Segunda_Division:
+    floor_eur:   75000       # Segunda: mínimo ~60-80K
+    median_eur:  250000      # titular habitual: 150-350K
+    top_eur:     900000      # techo para cualquier club de Segunda
+    ratio_of_mv: 0.10
+
+  England_Premier_League:
+    floor_eur:   750000      # Premier: salario mínimo muy alto
+    median_eur:  2800000     # titular mid-table: 2-4M
+    top_eur:     12000000    # techo no-élite (Brentford, Fulham, etc.)
+    ratio_of_mv: 0.16
+
+  England_Championship:
+    floor_eur:   100000
+    median_eur:  450000
+    top_eur:     1800000
+    ratio_of_mv: 0.10
+
+  Germany_Bundesliga:
+    floor_eur:   350000
+    median_eur:  1400000
+    top_eur:     6000000
+    ratio_of_mv: 0.13
+
+  Germany_2_Bundesliga:
+    floor_eur:   100000
+    median_eur:  350000
+    top_eur:     1200000
+    ratio_of_mv: 0.09
+
+  Italy_Serie_A:
+    floor_eur:   200000
+    median_eur:  950000
+    top_eur:     5500000
+    ratio_of_mv: 0.12
+
+  France_Ligue_1:
+    floor_eur:   180000
+    median_eur:  800000
+    top_eur:     4500000
+    ratio_of_mv: 0.11
+
+  France_Ligue_2:
+    floor_eur:   60000
+    median_eur:  200000
+    top_eur:     700000
+    ratio_of_mv: 0.08
+
+  Netherlands_Eredivisie:
+    floor_eur:   90000
+    median_eur:  380000
+    top_eur:     2000000
+    ratio_of_mv: 0.09
+
+  Portugal_Primeira_Liga:
+    floor_eur:   60000
+    median_eur:  220000
+    top_eur:     1100000
+    ratio_of_mv: 0.09
+
+  Belgium_First_Division_A:
+    floor_eur:   60000
+    median_eur:  190000
+    top_eur:     850000
+    ratio_of_mv: 0.08
+
+  Türkiye_Süper_Lig:
+    floor_eur:   80000
+    median_eur:  350000
+    top_eur:     2000000
+    ratio_of_mv: 0.10
+
+  Argentina_Liga_Profesional:
+    floor_eur:   40000       # convierten desde pesos argentinos
+    median_eur:  150000
+    top_eur:     500000
+    ratio_of_mv: 0.08
+
+  Mexico_Liga_MX:
+    floor_eur:   70000
+    median_eur:  230000
+    top_eur:     750000
+    ratio_of_mv: 0.09
+
+  Denmark_Superliga:
+    floor_eur:   70000
+    median_eur:  250000
+    top_eur:     900000
+    ratio_of_mv: 0.09
+
+  default:
+    floor_eur:   60000
+    median_eur:  250000
+    top_eur:     1000000
+    ratio_of_mv: 0.09
+
+# ── Multiplicadores por club ────────────────────────────────────────────────
+# Se aplican DESPUÉS de calcular el salario base de la liga.
+# Refleja la diferencia salarial entre un club de mitad de tabla y los grandes.
+# Ejemplo: Real Madrid paga ~3-4x el sueldo de un club mid-table de LaLiga.
+club_multipliers:
+  # LaLiga
+  Real Madrid:         4.0
+  FC Barcelona:        3.5
+  Atlético de Madrid:  2.5
+  Sevilla FC:          1.8
+  Real Betis:          1.7
+  Athletic Club:       1.6
+  Villarreal CF:       1.5
+  Real Sociedad:       1.5
+  Valencia CF:         1.4
+  Osasuna:             1.1
+  Celta de Vigo:       1.1
+  Getafe CF:           1.0
+  Rayo Vallecano:      0.75   # club con presupuesto modesto
+  UD Almería:          0.9
+  # Premier
+  Manchester City:     4.0
+  Arsenal:             3.0
+  Liverpool:           3.2
+  Chelsea:             3.2
+  Manchester United:   3.0
+  Tottenham Hotspur:   2.5
+  Newcastle United:    2.2
+  # Bundesliga
+  Bayern München:      3.5
+  Borussia Dortmund:   2.5
+  Bayer Leverkusen:    2.0
+  RB Leipzig:          1.8
+  # Serie A
+  Inter Milan:         2.5
+  Juventus:            2.5
+  AC Milan:            2.2
+  Napoli:              2.0
+  # Ligue 1
+  Paris Saint-Germain: 5.0   # presupuesto atípico
+  Olympique de Marseille: 1.8
+  AS Monaco:           1.6
+  Olympique Lyonnais:  1.5
+  # Portugal
+  SL Benfica:          1.6
+  FC Porto:            1.5
+  Sporting CP:         1.4

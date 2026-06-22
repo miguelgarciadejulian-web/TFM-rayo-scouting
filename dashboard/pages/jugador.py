@@ -540,17 +540,43 @@ def _fit_rayo_card(name: str) -> html.Div:
         ], style={"borderBottom": "1px solid #F3F4F6", "paddingBottom": "4px"})
 
     # Paneles de cada sub-score
-    rend_items = ([
-        _mini_row("Minutos jugados", "0.50",
-                  rend_bd.get("min_s", 0),
-                  f"{rend_bd.get('mins',0)} min → min(100, {rend_bd.get('mins',0)}/25)"),
-        _mini_row("Goles+Asist /90", "0.30",
-                  rend_bd.get("ga_s", 0),
-                  f"{rend_bd.get('goals',0)}G + {rend_bd.get('assists',0)}A"),
-        _mini_row("Duelos ganados /90", "0.20",
-                  rend_bd.get("duel_s", 0),
-                  f"{rend_bd.get('tackles_won',0)} duelos"),
-    ] if rend_bd else [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})])
+    if rend_bd:
+        _mins   = rend_bd.get("mins", 0)
+        _goals  = rend_bd.get("goals", 0)
+        _asts   = rend_bd.get("assists", 0)
+        _duels  = rend_bd.get("tackles_won", 0)
+        _min_s  = rend_bd.get("min_s", 0)
+        _ga_s   = rend_bd.get("ga_s", 0)
+        _duel_s = rend_bd.get("duel_s", 0)
+        _p90    = max(_mins / 90, 1)
+        rend_items = [
+            _mini_row(
+                "Minutos jugados", "×0.50", _min_s,
+                f"{_mins} min jugados → min(100, {_mins}/25) = {_min_s:.0f}  "
+                f"[2.250 min = score máx 90; 1.000 min ≈ 40]",
+            ),
+            _mini_row(
+                "Goles + Asistencias /90", "×0.30", _ga_s,
+                f"({_goals} goles + {_asts} asist) en {_mins} min "
+                f"→ {(_goals+_asts)}/{_p90:.1f}p90 × 300 = {_ga_s:.0f}  "
+                f"[0.33 G+A/90 = score 100]",
+            ),
+            _mini_row(
+                "Duelos ganados /90", "×0.20", _duel_s,
+                f"{_duels} duelos ganados en {_mins} min "
+                f"→ {_duels}/{_p90:.1f}p90 × 150 = {_duel_s:.0f}  "
+                f"[0.67 duelos/90 = score 100]",
+            ),
+            html.Div(
+                "⚠ Este score mide actividad bruta del jugador, no percentil posicional. "
+                "Un delantero con pocos duelos puede igualmente tener score alto si marca.",
+                style={"fontSize": "8px", "color": "#9CA3AF", "fontStyle": "italic",
+                       "marginTop": "6px", "paddingTop": "6px",
+                       "borderTop": "1px dashed #E5E7EB"},
+            ),
+        ]
+    else:
+        rend_items = [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})]
 
     eco_items = ([
         html.Div([
@@ -600,27 +626,27 @@ def _fit_rayo_card(name: str) -> html.Div:
                 "fontSize": "9px", "fontWeight": "700", "color": "#9CA3AF",
                 "textTransform": "uppercase", "letterSpacing": ".05em", "marginBottom": "8px",
             }),
-            html.Div("Score = 0.35 × Rendimiento + 0.25 × Económico + 0.20 × Edad + 0.20 × Disponibilidad",
+            html.Div("Fit Rayo = 0.40 × Rendimiento + 0.30 × Económico + 0.15 × Edad + 0.15 × Disponibilidad",
                      style={"fontSize": "9px", "color": "#6B7280", "fontStyle": "italic",
                             "marginBottom": "10px", "fontFamily": "monospace"}),
 
             dbc.Row([
                 dbc.Col(_sub_panel(
-                    "Rendimiento (35%)", "ti-run", rend_items,
+                    "Rendimiento (40%)", "ti-run", rend_items,
                     "Score = 0.50×Minutos + 0.30×G+A/90 + 0.20×Duelos/90",
                 ), md=6),
                 dbc.Col(_sub_panel(
-                    "Encaje económico (25%)", "ti-coin-euro", eco_items,
-                    "Horquilla de inversión Rayo: tramos Min/Ideal/Máx",
+                    "Encaje económico (30%)", "ti-coin-euro", eco_items,
+                    "Curva progresiva: ≤7M→90 · 10M→70 · 20M→20 · >70M→0",
                 ), md=6),
             ], className="g-2"),
             dbc.Row([
                 dbc.Col(_sub_panel(
-                    "Perfil de edad (20%)", "ti-calendar", edad_items,
-                    "Curva Prime→Peak→Declive por posición",
+                    "Perfil de edad (15%)", "ti-calendar", edad_items,
+                    "Joven ≤21→95 · 22-25→90 · 26-28→90→78 · 29-30→60 · >33→10",
                 ), md=6),
                 dbc.Col(_sub_panel(
-                    "Disponibilidad (20%)", "ti-door-enter", disp_items,
+                    "Disponibilidad (15%)", "ti-door-enter", disp_items,
                     "Meses contrato restantes: ≤6→95 / ≤12→75 / ≤24→50 / >24→25",
                 ), md=6),
             ], className="g-2 mt-1"),
@@ -632,10 +658,10 @@ def _fit_rayo_card(name: str) -> html.Div:
 
     # Tabla resumen fórmula
     formula_items = [
-        ("Rendimiento",    r.score_rendimiento,    "35%"),
-        ("Enc. económico", r.score_economico,      "25%"),
-        ("Perfil de edad", r.score_edad,           "20%"),
-        ("Disponibilidad", r.score_disponibilidad, "20%"),
+        ("Rendimiento",    r.score_rendimiento,    "40%"),
+        ("Enc. económico", r.score_economico,      "30%"),
+        ("Perfil de edad", r.score_edad,           "15%"),
+        ("Disponibilidad", r.score_disponibilidad, "15%"),
     ]
     formula_rows = []
     for lbl, val, weight in formula_items:
@@ -946,4 +972,10 @@ def save_lateral(n, lateral_pos, role_type, key):
         entry["lateral_pos"] = lateral_pos
     elif "lateral_pos" in entry:
         del entry["lateral_pos"]   # borrar override → vuelve al inferido
-   
+    if role_type:
+        entry["role_type"] = role_type
+    elif "role_type" in entry:
+        del entry["role_type"]   # borrar override → vuelve al inferido
+    ov[_norm(name)] = entry
+    _save_overrides(ov)
+    return "Guardado"

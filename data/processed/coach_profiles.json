@@ -4520,4 +4520,478 @@
    },
    "pros_auto": [],
    "contras_auto": [
-    
+    "Produccion ofensiva baja en sus equipos; poca generacion.",
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Cristóbal Parralo",
+  "age": 58,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Sin balon / reactivo",
+   "Juego elaborado"
+  ],
+  "description_auto": "Equipos con una posesion media del 47.7% (percentil 32 de su liga). Intensidad de presion reducida y intensidad defensiva media. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 4.2,
+   "solidez_defensiva": 35.0,
+   "presion_alta": 28.2,
+   "intensidad_defensiva": 44.4,
+   "verticalidad": 12.5,
+   "posesion_pct_real": 47.7,
+   "posesion": 32.7,
+   "uso_transiciones": 27.3,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Racing Club Ferrol",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Racing Club Ferrol",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "Racing Club Ferrol"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Cristóbal Parralo",
+   "global_score": 38.8,
+   "score_10": 3.9,
+   "subscores": {
+    "estilo": 54.9,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 43.2,
+    "posesion": 64.4,
+    "solidez_defensiva": 76.7,
+    "tendencia_ofensiva": 80.9,
+    "verticalidad": 49.2,
+    "intensidad_defensiva": 82.7,
+    "uso_transiciones": 34.0
+   },
+   "pros_auto": [],
+   "contras_auto": [
+    "Produccion ofensiva baja en sus equipos; poca generacion.",
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Fernando Estévez",
+  "age": 47,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Bloque medio / Equilibrado",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Sin balon / reactivo",
+   "Juego elaborado"
+  ],
+  "description_auto": "Equipos con una posesion media del 45.6% (percentil 20 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 52.3,
+   "solidez_defensiva": 28.8,
+   "presion_alta": 21.6,
+   "intensidad_defensiva": 19.8,
+   "verticalidad": 23.2,
+   "posesion_pct_real": 45.6,
+   "posesion": 20.5,
+   "uso_transiciones": 45.9,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "CD Eldense",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "CD Eldense",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "CD Eldense"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Fernando Estévez",
+   "global_score": 38.8,
+   "score_10": 3.9,
+   "subscores": {
+    "estilo": 54.8,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 70.0
+   },
+   "style_detail": {
+    "presion_alta": 36.6,
+    "posesion": 52.2,
+    "solidez_defensiva": 70.5,
+    "tendencia_ofensiva": 71.0,
+    "verticalidad": 59.9,
+    "intensidad_defensiva": 58.1,
+    "uso_transiciones": 52.6
+   },
+   "pros_auto": [],
+   "contras_auto": [
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "medio"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Imanol Idiakez",
+  "age": 52,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Posicional / Dominio de balon",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Dominio de balon",
+   "Juego elaborado"
+  ],
+  "description_auto": "Equipos con una posesion media del 53.8% (percentil 80 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida prioriza la elaboracion y el pase corto. Muestra un perfil equilibrado entre ataque y defensa.",
+  "axes": {
+   "tendencia_ofensiva": 49.3,
+   "solidez_defensiva": 39.9,
+   "presion_alta": 25.2,
+   "intensidad_defensiva": 31.1,
+   "verticalidad": 35.7,
+   "posesion_pct_real": 53.8,
+   "posesion": 80.0,
+   "uso_transiciones": 33.7,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "RC Deportivo de La Coruña",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "RC Deportivo de La Coruña",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "RC Deportivo de La Coruña"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Imanol Idiakez",
+   "global_score": 37.4,
+   "score_10": 3.7,
+   "subscores": {
+    "estilo": 60.0,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 45.0
+   },
+   "style_detail": {
+    "presion_alta": 40.2,
+    "posesion": 88.3,
+    "solidez_defensiva": 81.6,
+    "tendencia_ofensiva": 74.0,
+    "verticalidad": 72.4,
+    "intensidad_defensiva": 69.4,
+    "uso_transiciones": 40.4
+   },
+   "pros_auto": [],
+   "contras_auto": [
+    "Sus equipos encajan con facilidad; riesgo defensivo.",
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Su estilo exige perfiles de los que la plantilla anda escasa.",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "medio-alto"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Eder Sarabia",
+  "age": 46,
+  "nationality": "España",
+  "current_club": null,
+  "last_club": null,
+  "available": null,
+  "contract_status": null,
+  "salary_estimate_eur": null,
+  "release_clause_eur": null,
+  "formation_preferred": null,
+  "laliga_seasons": 0,
+  "segunda_seasons": 1,
+  "style_main": "Posicional / Dominio de balon",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Dominio de balon",
+   "Vocacion ofensiva",
+   "Solidez defensiva"
+  ],
+  "description_auto": "Equipos con una posesion media del 61.7% (percentil 97 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
+  "axes": {
+   "tendencia_ofensiva": 85.9,
+   "solidez_defensiva": 93.1,
+   "presion_alta": 31.2,
+   "intensidad_defensiva": 35.2,
+   "verticalidad": 58.4,
+   "posesion_pct_real": 61.7,
+   "posesion": 97.3,
+   "uso_transiciones": 47.2,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "Elche CF",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "Elche CF",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "Elche CF"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Eder Sarabia",
+   "global_score": 37.1,
+   "score_10": 3.7,
+   "subscores": {
+    "estilo": 59.3,
+    "experiencia_laliga": 0.0,
+    "encaje_presupuesto": 60.0,
+    "compatibilidad_plantilla": 45.0
+   },
+   "style_detail": {
+    "presion_alta": 46.2,
+    "posesion": 71.0,
+    "solidez_defensiva": 65.2,
+    "tendencia_ofensiva": 37.4,
+    "verticalidad": 95.1,
+    "intensidad_defensiva": 73.5,
+    "uso_transiciones": 53.9
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
+   ],
+   "contras_auto": [
+    "Sin experiencia reciente en LaLiga (mayor riesgo de adaptacion).",
+    "Su estilo exige perfiles de los que la plantilla anda escasa.",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "bajo",
+    "clausula": "medio",
+    "adaptacion_laliga": "alto",
+    "incompatibilidad_plantilla": "medio-alto"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ },
+ {
+  "name": "Hansi Flick",
+  "age": 59,
+  "nationality": "Alemana",
+  "current_club": "FC Barcelona",
+  "last_club": "FC Barcelona",
+  "available": false,
+  "contract_status": "Contrato vigente FC Barcelona",
+  "salary_estimate_eur": 10000000,
+  "release_clause_eur": null,
+  "formation_preferred": "4-2-3-1 / 4-3-3",
+  "laliga_seasons": 1,
+  "segunda_seasons": 0,
+  "style_main": "Posicional / Dominio de balon",
+  "style_tags": [
+   "Bloque medio-bajo",
+   "Dominio de balon",
+   "Vocacion ofensiva",
+   "Solidez defensiva"
+  ],
+  "description_auto": "Equipos con una posesion media del 68.7% (percentil 100 de su liga). Intensidad de presion reducida y intensidad defensiva reducida. En salida alterna juego directo y elaboracion. Muestra un perfil de doble fase muy completo (ofensivo y defensivo).",
+  "axes": {
+   "tendencia_ofensiva": 97.0,
+   "solidez_defensiva": 79.1,
+   "presion_alta": 16.8,
+   "intensidad_defensiva": 8.8,
+   "verticalidad": 54.8,
+   "posesion_pct_real": 68.7,
+   "posesion": 100.0,
+   "uso_transiciones": 46.8,
+   "flexibilidad_tactica": null
+  },
+  "axes_source": "opta",
+  "coverage": {
+   "matched": [
+    [
+     "FC Barcelona",
+     "2024-2025"
+    ]
+   ],
+   "requested": [
+    [
+     "FC Barcelona",
+     "2024-2025"
+    ]
+   ],
+   "n_rows": 1,
+   "teams": [
+    "FC Barcelona"
+   ],
+   "seasons": [
+    "2024-2025"
+   ]
+  },
+  "data_partial": false,
+  "evaluation": {
+   "name": "Hansi Flick",
+   "global_score": 36.6,
+   "score_10": 3.7,
+   "subscores": {
+    "estilo": 52.9,
+    "experiencia_laliga": 25.0,
+    "encaje_presupuesto": 30.0,
+    "compatibilidad_plantilla": 45.0
+   },
+   "style_detail": {
+    "presion_alta": 31.8,
+    "posesion": 68.3,
+    "solidez_defensiva": 79.2,
+    "tendencia_ofensiva": 26.3,
+    "verticalidad": 91.5,
+    "intensidad_defensiva": 47.1,
+    "uso_transiciones": 53.5
+   },
+   "pros_auto": [
+    "Equipos con marcada solidez defensiva (encaja con la prioridad del Rayo)."
+   ],
+   "contras_auto": [
+    "Salario por encima de la referencia del club.",
+    "Su estilo exige perfiles de los que la plantilla anda escasa.",
+    "Cobertura de datos limitada (pocas temporadas en el dataset): perfil menos fiable.",
+    "Bajo contrato: requeriria negociacion/indemnizacion."
+   ],
+   "risks": {
+    "deportivo": "medio-alto",
+    "economico": "alto",
+    "clausula": "medio",
+    "adaptacion_laliga": "medio",
+    "incompatibilidad_plantilla": "medio-alto"
+   },
+   "data_partial": false,
+   "coverage_n": 1
+  }
+ }
+]

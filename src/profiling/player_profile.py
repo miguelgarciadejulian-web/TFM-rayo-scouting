@@ -532,12 +532,18 @@ def rank_players_for_role(enriched: pd.DataFrame, role: str, top_n: int = 10,
                           seasons: list[str] | None = None,
                           max_value_eur: float | None = None,
                           exclude_big_clubs: bool = False,
-                          only_expiring: bool = False) -> pd.DataFrame:
+                          only_expiring: bool = False,
+                          lateral_filter: str | None = None) -> pd.DataFrame:
     """Ranking automatico de candidatos para un rol (score del rol 0-100).
 
     Por defecto SOLO jugadores con datos en temporadas actuales (en activo),
     para no proponer fichar a jugadores retirados/sin datos recientes.
     Percentila dentro del grupo posicional del rol y devuelve los mejores.
+
+    lateral_filter: "LI", "LD", "DC" — solo para roles DEF. Filtra por posicion
+    lateral inferida. Ademas, se aplica automaticamente:
+      - roles central_* → excluye LI/LD (no puede ser un lateral un central)
+      - roles lateral_* → excluye DC (no puede ser un central un lateral)
     """
     import unicodedata as _u
     if role not in ROLE_DEFINITIONS:
@@ -552,6 +558,34 @@ def rank_players_for_role(enriched: pd.DataFrame, role: str, top_n: int = 10,
     if leagues:
         df = df[df["league"].isin(leagues)]
     df = df[df["position_group"] == grp]
+    if df.empty:
+        return pd.DataFrame()
+
+    # ── Filtro lateral (solo para DEF) ──────────────────────────────────────
+    if grp == "DEF":
+        try:
+            from pathlib import Path as _Path
+            from src.utils.lateral_position import build_lateral_map as _blm
+            _enr_path = _Path(__file__).resolve().parents[2] / "data" / "processed" / "player_seasons_enriched.parquet"
+            _lat = _blm(_enr_path, _enr_path)[["name", "lateral_pos"]].copy()
+            _lat_dict = dict(zip(_lat["name"], _lat["lateral_pos"]))
+            df = df.copy()
+            df["_lateral_pos"] = df["name"].map(_lat_dict)
+
+            # Auto-filtro por tipo de rol
+            if role.startswith("central_"):
+                # Centrales: excluir jugadores inferidos como LI o LD
+                df = df[~df["_lateral_pos"].isin(["LI", "LD"])]
+            elif role.startswith("lateral_"):
+                # Laterales: excluir jugadores inferidos como DC
+                df = df[~df["_lateral_pos"].isin(["DC"])]
+
+            # Filtro explícito de banda (LI / LD)
+            if lateral_filter in ("LI", "LD", "DC"):
+                df = df[df["_lateral_pos"] == lateral_filter]
+        except Exception:
+            pass  # Si falla, continúa sin filtro lateral
+
     if df.empty:
         return pd.DataFrame()
 
@@ -580,13 +614,21 @@ def rank_players_for_role(enriched: pd.DataFrame, role: str, top_n: int = 10,
         except Exception:
             pass
 
-    # quedarse con la mejor temporada de cada jugador
-    enr = enr.sort_values("role_score", ascending=False)
-    enr = enr.drop_duplicates(subset=["name", "team"], keep="first")
+    # Quedarse con el equipo MÁS RECIENTE de cada jugador
+    # (evita duplicados si cambió de club dentro de las temporadas actuales)
+    _SO_MAP = {"2026": 7, "2025-2026": 6, "2025/2026": 6, "2025": 5,
+               "2024-2025": 4, "2024": 4, "2023-2024": 3}
+    enr = enr.assign(_s_ord=enr["season"].astype(str).map(_SO_MAP).fillna(0))
+    enr = enr.sort_values(["_s_ord", "role_score"], ascending=[False, False])
+    enr = enr.drop_duplicates(subset=["name"], keep="first")
+    enr = enr.drop(columns=["_s_ord"], errors="ignore")
 
-    cols = ["name", "team", "league", "season", "minutes", "role_score"]
+    cols = ["name", "team", "league", "season", "minutes", "role_score", "_lateral_pos"]
     cols = [c for c in cols if c in enr.columns]
     out = enr[cols].reset_index(drop=True)
+    # Renombrar _lateral_pos → lateral_pos en la salida
+    if "_lateral_pos" in out.columns:
+        out = out.rename(columns={"_lateral_pos": "lateral_pos"})
 
     # Adjuntar valor de mercado / contrato / edad (si estan en market_values.csv)
     try:

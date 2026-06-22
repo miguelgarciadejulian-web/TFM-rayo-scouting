@@ -77,20 +77,54 @@ def _dna_table():
     return html.Table([html.Thead(head), html.Tbody(body)], style={"width": "100%", "borderCollapse": "collapse"})
 
 
+def _section_chip(icon, text, color):
+    return html.Div([
+        html.I(className=f"ti {icon}",
+               style={"fontSize":"14px","color":color,"marginRight":"7px"}),
+        html.Span(text, style={"fontSize":"9px","fontWeight":"700",
+            "color":color,"letterSpacing":".10em"}),
+    ], style={"display":"flex","alignItems":"center","marginBottom":"14px"})
+
+
 def layout(**_p):
     cw = DNA["context_weights"]
     return html.Div([
+
+        # ── Hero ──────────────────────────────────────────────────────────────
         html.Div([
-            html.P("METODOLOGÍA", style={"fontSize": "10px", "fontWeight": "600", "color": "#6B7280",
-                   "letterSpacing": ".08em", "margin": "0 0 3px"}),
-            html.H1("Criterios de puntuación", className="page-title"),
-            html.P("Cómo se calculan, por código, los perfiles y scores. Estas tablas salen de los "
-                   "mismos pesos que usa la herramienta, así que cuadran con lo que ves.",
-                   className="page-subtitle"),
-        ], className="page-header"),
+            html.Div([
+                html.Div([html.I(className="ti ti-list-check",
+                           style={"fontSize":"28px","color":"#fff"})],
+                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                html.Div([
+                    html.Div("TRANSPARENCIA", style={"fontSize":"9px","fontWeight":"700",
+                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                    html.H1("Criterios de Puntuación", style={"fontSize":"22px","fontWeight":"900",
+                        "color":"#fff","margin":"0 0 2px"}),
+                    html.Div("Pesos y fórmulas reales del código · siempre sincronizados con el output",
+                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                ]),
+            ], style={"display":"flex","alignItems":"center"}),
+        ], style={"background":"linear-gradient(135deg,#9F1239 0%,#BE123C 55%,#E30613 100%)",
+                  "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
+                  "boxShadow":"0 8px 24px rgba(159,18,57,.25)"}),
+
+        # ── Descripción ───────────────────────────────────────────────────────
+        html.Div([
+            html.Div([
+                html.I(className="ti ti-info-circle",
+                       style={"fontSize":"18px","color":"#E30613","marginRight":"12px","flexShrink":"0"}),
+                html.P("Todas las tablas de esta página se generan automáticamente desde los mismos "
+                       "pesos que usa la herramienta internamente — si el código cambia, esta página "
+                       "lo refleja al instante. Sin datos manuales.",
+                       style={"fontSize":"12px","color":"#374151","margin":"0"}),
+            ], style={"display":"flex","alignItems":"flex-start"}),
+        ], style={"background":"#FFF1F2","border":"1px solid #FECACA","borderRadius":"12px",
+                  "padding":"14px 16px","marginBottom":"20px"}),
 
         # ── JUGADORES ──
-        html.H2("1. Jugadores", style={"color": "#E30613", "fontSize": "20px", "margin": "8px 0 10px"}),
+        _section_chip("ti-run", "METODOLOGÍA — JUGADORES", "#E30613"),
         html.Div([
             html.P("Paso 1 — Percentiles. Cada métrica del jugador se convierte en un percentil 0-100 "
                    "comparándolo con los jugadores de su MISMO grupo posicional y liga (peras con peras). "
@@ -117,7 +151,14 @@ def layout(**_p):
         ], style=CARD),
 
         # ── ENTRENADORES ──
-        html.H2("2. Entrenadores", style={"color": "#E30613", "fontSize": "20px", "margin": "16px 0 10px"}),
+        _section_chip("ti-chalkboard", "METODOLOGÍA — ENTRENADORES", "#9A3412"),
+        html.Div([
+            html.Div("2", style={"background":"linear-gradient(135deg,#9A3412,#F97316)",
+                "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
+                "display":"flex","alignItems":"center","justifyContent":"center",
+                "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
+            html.Span("Entrenadores", style={"fontSize":"18px","fontWeight":"800","color":"#1A1A2E"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
         html.Div([
             html.P("Paso 1 — Estilo. Se agregan las métricas (por partido) de todos los equipos-temporada "
                    "que dirigió el técnico y se percentilan dentro de su liga. Cada eje de estilo (0-100) es "

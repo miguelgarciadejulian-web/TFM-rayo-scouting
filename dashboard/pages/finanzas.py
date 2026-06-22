@@ -339,13 +339,13 @@ def tab_salarios(fin):
         dcc.Store(id="sal-overrides", data={}),
         dbc.Row([
             dbc.Col(html.Div([html.P("Masa salarial base",className="kpi-label"),
-                html.P(_fmt(total),className="kpi-value"),html.P("sin bonus",className="kpi-sub")],className="kpi-modern"),md=3),
+                html.P(_fmt(total),className="kpi-value"),html.P("sin bonus",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
             dbc.Col(html.Div([html.P("Total con bonus",className="kpi-label"),
-                html.P(_fmt(total+bonus),className="kpi-value"),html.P("bonus conocidos",className="kpi-sub")],className="kpi-modern"),md=3),
+                html.P(_fmt(total+bonus),className="kpi-value"),html.P("bonus conocidos",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
             dbc.Col(html.Div([html.P("Límite LaLiga",className="kpi-label"),
-                html.P(_fmt(scl["limit_eur"]),className="kpi-value"),html.P(f"#{scl['laliga_ranking']} LaLiga",className="kpi-sub")],className="kpi-modern"),md=3),
+                html.P(_fmt(scl["limit_eur"]),className="kpi-value"),html.P(f"#{scl['laliga_ranking']} LaLiga",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
             dbc.Col(html.Div([html.P("Margen disponible",className="kpi-label"),
-                html.P(_fmt(scl["limit_eur"]-total),className="kpi-value"),html.P(f"{100-pct:.0f}% libre",className="kpi-sub")],className="kpi-modern"),md=3),
+                html.P(_fmt(scl["limit_eur"]-total),className="kpi-value"),html.P(f"{100-pct:.0f}% libre",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
         ], className="g-3 mb-3"),
         html.Div(id="sal-live-kpis"),
         html.Div([
@@ -407,10 +407,10 @@ def tab_presupuesto(fin):
 
     return html.Div([
         dbc.Row([
-            dbc.Col(html.Div([html.P("Ingresos estimados",className="kpi-label"),html.P(_fmt(total_rev),className="kpi-value"),html.P("temporada 2025/26",className="kpi-sub")],className="kpi-modern"),md=3),
-            dbc.Col(html.Div([html.P("Gastos estimados",className="kpi-label"),html.P(_fmt(total_exp),className="kpi-value"),html.P("estructura + plantilla",className="kpi-sub")],className="kpi-modern"),md=3),
+            dbc.Col(html.Div([html.P("Ingresos estimados",className="kpi-label"),html.P(_fmt(total_rev),className="kpi-value"),html.P("temporada 2025/26",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
+            dbc.Col(html.Div([html.P("Gastos estimados",className="kpi-label"),html.P(_fmt(total_exp),className="kpi-value"),html.P("estructura + plantilla",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
             dbc.Col(html.Div([html.P("Balance operativo",className="kpi-label"),html.P(_fmt(abs(balance)),className="kpi-value"),html.P("superávit" if balance>=0 else "déficit",className="kpi-sub")],className=f"kpi-modern {'danger' if balance<0 else ''}"),md=3),
-            dbc.Col(html.Div([html.P("Conference League",className="kpi-label"),html.P(_fmt(rev["conference_league_eur"]),className="kpi-value"),html.P("final 2024-25 (Crystal Palace 1-0)",className="kpi-sub")],className="kpi-modern"),md=3),
+            dbc.Col(html.Div([html.P("Conference League",className="kpi-label"),html.P(_fmt(rev["conference_league_eur"]),className="kpi-value"),html.P("final 2024-25 (Crystal Palace 1-0)",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
         ], className="g-3 mb-3"),
         dbc.Row([
             dbc.Col(html.Div([
@@ -487,10 +487,10 @@ def tab_riesgo(fin):
         dcc.Store(id="clause-overrides", data={}),
 
         dbc.Row([
-            dbc.Col(html.Div([html.P("En riesgo MUY ALTO + ALTO",className="kpi-label"),html.P(str(muy_alto+alto),className="kpi-value"),html.P("jugadores",className="kpi-sub")],className="kpi-modern danger"),md=3),
-            dbc.Col(html.Div([html.P("Salidas libres (jun-2026)",className="kpi-label"),html.P(str(len(libres)),className="kpi-value"),html.P("contratos expiran",className="kpi-sub")],className="kpi-modern danger"),md=3),
-            dbc.Col(html.Div([html.P("Interés confirmado",className="kpi-label"),html.P(str(sum(1 for n in news if n.get("interest_level")=="confirmed")),className="kpi-value"),html.P("clubes con oferta/interés real",className="kpi-sub")],className="kpi-modern"),md=3),
-            dbc.Col(html.Div([html.P("Sondeados",className="kpi-label"),html.P(str(sum(1 for n in news if n.get("interest_level")=="sounded")),className="kpi-value"),html.P("sin oferta formal",className="kpi-sub")],className="kpi-modern"),md=3),
+            dbc.Col(html.Div([html.P("En riesgo MUY ALTO + ALTO",className="kpi-label"),html.P(str(muy_alto+alto),className="kpi-value"),html.P("jugadores",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
+            dbc.Col(html.Div([html.P("Salidas libres (jun-2026)",className="kpi-label"),html.P(str(len(libres)),className="kpi-value"),html.P("contratos expiran",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
+            dbc.Col(html.Div([html.P("Interés confirmado",className="kpi-label"),html.P(str(sum(1 for n in news if n.get("interest_level")=="confirmed")),className="kpi-value"),html.P("clubes con oferta/interés real",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
+            dbc.Col(html.Div([html.P("Sondeados",className="kpi-label"),html.P(str(sum(1 for n in news if n.get("interest_level")=="sounded")),className="kpi-value"),html.P("sin oferta formal",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
         ], className="g-3 mb-3"),
 
         # Salidas libres
@@ -622,31 +622,156 @@ def tab_simulador(fin):
         ], className="g-3"),
     ])
 
-# ── Layout ────────────────────────────────────────────────────────────────────
-def layout(**_params):
+
+# ── Tab 5: Simulador de Fichajes ────────────────────────────────────────────
+def tab_simulador_fichajes(fin):
+    players     = fin["player_salaries"]
+    player_opts = [
+        {"label": f"{p['name']}  ({p['position']}) · {_fmt(p['salary_annual'])}/año", "value": p["name"]}
+        for p in sorted(players, key=lambda x: -x["salary_annual"])
+    ]
+    master_opts = _load_master_opts(['Spain_Primera_Division','Spain_Segunda_Division',
+                                     'England_Premier_League','Germany_Bundesliga',
+                                     'Italy_Serie_A','France_Ligue_1','Netherlands_Eredivisie',
+                                     'Portugal_Primeira_Liga'])
+    inp  = {"width":"100%","padding":"8px 10px","border":"1px solid #E5E7EB","borderRadius":"7px","fontSize":"13px"}
+    lbl  = {"fontSize":"11px","color":"#6B7280","marginBottom":"4px","display":"block","fontWeight":"600"}
+    btn  = {"background":"#E30613","color":"#fff","border":"none","borderRadius":"8px",
+            "padding":"12px 28px","fontSize":"14px","fontWeight":"700","cursor":"pointer",
+            "width":"100%","marginTop":"16px","letterSpacing":".02em"}
+    card = {"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"18px 20px","height":"100%"}
+
     return html.Div([
         html.Div([
-            html.P("DIRECCIÓN DEPORTIVA",style={"fontSize":"10px","fontWeight":"600","color":"#6B7280","letterSpacing":".08em","margin":"0 0 3px"}),
-            html.H1("Finanzas del Club",className="page-title"),
-            html.P("Salarios · Presupuesto · Riesgo de cláusulas · Simulador de mercado · 2025/26",className="page-subtitle"),
-        ], className="page-header"),
+            html.I(className="ti ti-sparkles", style={"marginRight":"10px","color":"#7C3AED","fontSize":"16px"}),
+            html.Span(
+                "Analiza si una venta o compra es buena operación para el Rayo. "
+                "Introduce los datos y pulsa Analizar — recibirás un score 0-100 con el "
+                "razonamiento detallado basado en datos reales del jugador.",
+                style={"fontSize":"12px","color":"#5B21B6"}),
+        ], style={"background":"#F5F3FF","border":"1px solid #DDD6FE","borderRadius":"10px",
+                  "padding":"12px 16px","marginBottom":"20px","display":"flex","alignItems":"center"}),
 
-        dcc.Tabs(id="fin-tabs",value="salarios",
-                 style={"marginBottom":"16px"},
-                 colors={"border":"#E5E7EB","primary":"#E30613","background":"#F9FAFB"},
-                 children=[
-            dcc.Tab(label="💶  Salarios",        value="salarios",
-                    style={"fontSize":"13px","fontWeight":"500","padding":"8px 18px"},
-                    selected_style={"fontSize":"13px","fontWeight":"600","padding":"8px 18px","borderTop":"3px solid #E30613","color":"#E30613"}),
-            dcc.Tab(label="📊  Presupuesto",     value="presupuesto",
-                    style={"fontSize":"13px","fontWeight":"500","padding":"8px 18px"},
-                    selected_style={"fontSize":"13px","fontWeight":"600","padding":"8px 18px","borderTop":"3px solid #E30613","color":"#E30613"}),
-            dcc.Tab(label="🎯  Riesgo cláusulas",value="riesgo",
-                    style={"fontSize":"13px","fontWeight":"500","padding":"8px 18px"},
-                    selected_style={"fontSize":"13px","fontWeight":"600","padding":"8px 18px","borderTop":"3px solid #E30613","color":"#E30613"}),
-            dcc.Tab(label="🔀  Simulador",       value="simulador",
-                    style={"fontSize":"13px","fontWeight":"500","padding":"8px 18px"},
-                    selected_style={"fontSize":"13px","fontWeight":"600","padding":"8px 18px","borderTop":"3px solid #E30613","color":"#E30613"}),
+        dbc.Row([
+            dbc.Col(html.Div([
+                html.Div([
+                    html.I(className="ti ti-arrow-up-right",
+                           style={"color":"#E30613","marginRight":"8px","fontSize":"18px"}),
+                    html.Span("Simular Venta",
+                              style={"fontSize":"15px","fontWeight":"700","color":"#1A1A2E"}),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"14px"}),
+                html.Span("Jugador del Rayo que sale", style=lbl),
+                dcc.Dropdown(player_opts, multi=False, id="fich-sell-player",
+                             placeholder="Selecciona un jugador...", style={"marginBottom":"12px"}),
+                html.Div(id="fich-sell-card", style={"marginBottom":"10px"}),
+                html.Span("Ingreso acordado por la venta (M€)", style=lbl),
+                dcc.Input(id="fich-sell-price", type="number", min=0, step=0.5,
+                          placeholder="Ej: 8.5", style=inp),
+                html.Div(id="fich-sell-hint", style={"marginTop":"6px"}),
+            ], style=card), md=5),
+
+            dbc.Col(html.Div([
+                html.Div([
+                    html.I(className="ti ti-arrow-down-left",
+                           style={"color":"#10B981","marginRight":"8px","fontSize":"18px"}),
+                    html.Span("Simular Compra",
+                              style={"fontSize":"15px","fontWeight":"700","color":"#1A1A2E"}),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"14px"}),
+                html.Span("Ligas donde buscar", style=lbl),
+                dcc.Dropdown(SIM_LEAGUES, multi=True, id="fich-buy-leagues",
+                             value=["Spain_Primera_Division","Spain_Segunda_Division"],
+                             placeholder="Elige ligas...", style={"marginBottom":"8px"}),
+                html.Span("Jugador a fichar", style=lbl),
+                dcc.Dropdown(options=master_opts, id="fich-buy-player",
+                             placeholder="Escribe un nombre...", searchable=True, clearable=True,
+                             style={"marginBottom":"12px"}),
+                html.Div(id="fich-buy-card", style={"marginBottom":"10px"}),
+                html.Span("Traspaso acordado (M€)  — 0 si es libre", style=lbl),
+                dcc.Input(id="fich-buy-fee", type="number", min=0, step=0.5,
+                          placeholder="Ej: 12.0", style=inp),
+                html.Div(id="fich-buy-hint", style={"marginTop":"6px"}),
+            ], style=card), md=5),
+
+        ], className="g-3"),
+
+        # ── Botón centrado + resultado a ancho completo ───────────────────────
+        html.Div(
+            html.Button(
+                [html.I(className="ti ti-search", style={"marginRight":"10px","fontSize":"16px"}),
+                 "Analizar operación"],
+                id="fich-analyze-btn", n_clicks=0,
+                style={"background":"#1A1A2E","color":"#fff","border":"none","borderRadius":"10px",
+                       "padding":"13px 36px","fontSize":"15px","fontWeight":"700","cursor":"pointer",
+                       "letterSpacing":".02em","display":"block","margin":"20px auto 0"}),
+            style={"textAlign":"center"}
+        ),
+        dcc.Loading(html.Div(id="fich-result", style={"marginTop":"20px"}),
+                    type="dot", color="#7C3AED"),
+    ])
+
+# ── Layout ────────────────────────────────────────────────────────────────────
+def layout(**_params):
+    fin = _load_finances()
+    scl = fin.get("squad_cost_limit", {})
+    total_sal = sum(p.get("salary_annual",0) for p in fin.get("player_salaries",[]))
+    limit     = scl.get("limit_eur", 0)
+    pct       = round(total_sal / limit * 100) if limit else 0
+    budget    = fin.get("transfer_budget", {}).get("net_eur", 0)
+
+    _tab_style = {"fontSize":"13px","fontWeight":"500","padding":"9px 16px"}
+    _tab_sel   = lambda c: {"fontSize":"13px","fontWeight":"700","padding":"9px 16px",
+                             "borderTop":f"3px solid {c}","color":c}
+
+    return html.Div([
+
+        # ── Hero ──────────────────────────────────────────────────────────────
+        html.Div([
+            html.Div([
+                html.Div([html.I(className="ti ti-coins",
+                           style={"fontSize":"28px","color":"#fff"})],
+                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                html.Div([
+                    html.Div("DIRECCIÓN DEPORTIVA", style={"fontSize":"9px","fontWeight":"700",
+                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                    html.H1("Finanzas del Club", style={"fontSize":"22px","fontWeight":"900",
+                        "color":"#fff","margin":"0 0 2px"}),
+                    html.Div("Salarios · Presupuesto · Riesgo de cláusulas · Simulador · 2025/26",
+                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                ]),
+            ], style={"display":"flex","alignItems":"center","flex":"1"}),
+            html.Div([
+                *[html.Div([
+                    html.Div(v, style={"fontSize":"22px","fontWeight":"900","color":"#fff","lineHeight":"1"}),
+                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.55)","fontWeight":"600","marginTop":"2px"}),
+                ], style={"textAlign":"center","padding":"0 16px","borderRight":s})
+                  for v,l,s in [
+                    (f"{total_sal/1e6:.1f}M€", "masa salarial", "1px solid rgba(255,255,255,.15)"),
+                    (f"{pct}%", "del límite FFP", "1px solid rgba(255,255,255,.15)"),
+                    (f"{budget/1e6:.0f}M€", "presupuesto neto", "none"),
+                ]],
+            ], style={"display":"flex","alignItems":"center","flexShrink":"0"}),
+        ], style={"background":"linear-gradient(135deg,#064E3B 0%,#065F46 50%,#047857 100%)",
+                  "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
+                  "display":"flex","justifyContent":"space-between","alignItems":"center",
+                  "boxShadow":"0 8px 24px rgba(6,78,59,.25)"}),
+
+        dcc.Tabs(id="fin-tabs", value="salarios",
+            style={"marginBottom":"16px","background":"#fff","borderRadius":"14px",
+                   "border":"1px solid #E5E7EB","padding":"4px",
+                   "boxShadow":"0 2px 8px rgba(0,0,0,.05)"},
+            colors={"border":"transparent","primary":"#059669","background":"transparent"},
+            children=[
+                dcc.Tab(label="💶  Salarios",            value="salarios",
+                        style=_tab_style, selected_style=_tab_sel("#059669")),
+                dcc.Tab(label="📊  Presupuesto",         value="presupuesto",
+                        style=_tab_style, selected_style=_tab_sel("#059669")),
+                dcc.Tab(label="🎯  Riesgo cláusulas",    value="riesgo",
+                        style=_tab_style, selected_style=_tab_sel("#059669")),
+                dcc.Tab(label="🔀  Simulador Económico", value="simulador",
+                        style=_tab_style, selected_style=_tab_sel("#059669")),
+                dcc.Tab(label="📋  Simulador Fichajes",  value="simulador-fichajes",
+                        style=_tab_style, selected_style=_tab_sel("#7C3AED")),
         ]),
         html.Div(id="fin-content"),
         criteria_accordion("finanzas"),
@@ -741,13 +866,394 @@ def update_risk_cards(values, ids):
     )
 
 
+
+# ── Helpers de evaluación de operaciones de mercado ─────────────────────────
+
+def _get_player_stats(name: str) -> dict:
+    """Stats reales del jugador — TM market data + enriched para minutos/goles."""
+    out = {"name": name, "mv": MV_MAP.get(name), "minutes": 0, "goals": 0,
+           "assists": 0, "age": None, "position": None, "league": None, "team": None}
+    try:
+        # ── 1. Fuente primaria: src.utils.market.get_value (TM + club_profile) ──
+        try:
+            from src.utils.market import get_value as _gv
+            tm = _gv(name)
+            if tm:
+                out["mv"]       = float(tm["value_eur"]) if tm.get("value_eur") else out["mv"]
+                out["age"]      = int(float(tm["age"])) if tm.get("age") else None
+                out["position"] = str(tm.get("position") or "")
+                # team viene siempre del enriched (último equipo donde jugó realmente)
+        except Exception:
+            pass
+
+        # ── 2. Stats de juego: player_seasons_enriched (temporada más reciente) ─
+        s    = settings()
+        proc = Path(s["paths"]["data_processed"])
+        enr_path = proc / "player_seasons_enriched.parquet"
+        if enr_path.exists():
+            enr = pd.read_parquet(enr_path)
+            _SO = {"2025-2026":6,"2025/2026":6,"2025":5,"2024-2025":4,"2024/2025":4,"2024":4,"2023-2024":3}
+            enr["_ord"] = enr["season"].astype(str).map(_SO).fillna(0)
+            # Ordenar: temporada desc, luego minutos desc (desempata jugadores con 2 equipos)
+            enr = enr.sort_values(["_ord","minutes"], ascending=[False,False])
+            # Match exacto primero, luego por apellido
+            surname = name.strip().split()[-1].lower() if name.strip() else ""
+            mask = enr["name"].astype(str).str.lower() == name.lower()
+            if not mask.any() and surname:
+                mask = enr["name"].astype(str).str.lower().str.endswith(surname)
+            rows = enr[mask]
+            if not rows.empty:
+                p = rows.iloc[0]
+                out["minutes"] = int(float(p["minutes"])) if pd.notna(p.get("minutes")) else 0
+                out["goals"]   = int(float(p["goals"]))   if pd.notna(p.get("goals"))   else 0
+                _ast = p.get("goal_assists") or p.get("assists") or 0
+                out["assists"] = int(float(_ast)) if pd.notna(_ast) else 0
+                # Equipo y liga: siempre del enriched (refleja dónde jugó realmente)
+                out["team"]   = str(p.get("team","") or "")
+                out["league"] = str(p.get("league","") or "")
+                if not out["position"]:
+                    out["position"] = str(p.get("position_primary","") or p.get("position","") or "")
+                if out["age"] is None and pd.notna(p.get("age")):
+                    out["age"] = int(float(p["age"]))
+
+        # ── 3. Fallback finances para jugadores del Rayo ─────────────────────
+        if out["age"] is None or not out["position"]:
+            for fp in _load_finances().get("player_salaries", []):
+                if fp["name"].lower() == name.lower():
+                    if out["age"] is None:   out["age"]      = fp.get("age")
+                    if not out["position"]:  out["position"] = fp.get("position","")
+                    if not out["team"]:      out["team"]     = "Rayo Vallecano"
+                    break
+    except Exception:
+        pass
+    return out
+
+
+def _get_squad_needs_roles() -> tuple:
+    """Devuelve (missing_roles, reinforce_roles) desde las necesidades reales de plantilla."""
+    try:
+        from src.squad.needs import squad_decisions as _sd
+        import json as _json, yaml as _yaml
+        s = settings()
+        sp = Path(s["paths"]["data_processed"]) / "squad_current.json"
+        cp = Path(s["paths"]["data_processed"]) / "club_profile.yaml"
+        squad = _json.load(open(sp, encoding="utf-8")).get("squad", []) if sp.exists() else []
+        needs = _yaml.safe_load(open(cp, encoding="utf-8")).get("squad_needs", {}) if cp.exists() else {}
+        dec = _sd(squad, needs)
+        missing   = [it.get("role", "") for it in dec.get("fichar",   [])]
+        reinforce = [it.get("role", "") for it in dec.get("reforzar", [])]
+        return missing, reinforce
+    except Exception:
+        return [], []
+
+
+def _squad_pos_count(position: str) -> int:
+    """Cuántos jugadores del Rayo hay en esa posición."""
+    try:
+        players = _load_finances().get("player_salaries", [])
+        return sum(1 for p in players
+                   if position.upper()[:2] in str(p.get("position", "")).upper())
+    except Exception:
+        return 0
+
+
+def _evaluate_sale(player_name: str, income_eur: float, pmap: dict) -> dict:
+    """Score 0-100 de la calidad de la venta, con razones y fórmulas detalladas."""
+    stats   = _get_player_stats(player_name)
+    pdata   = pmap.get(player_name, {})
+    mv      = stats["mv"] or (pdata.get("salary_annual", 500_000) * 8)
+    minutes = stats["minutes"] or 0
+    goals   = stats["goals"]   or 0
+    assists = stats["assists"] or 0
+    age     = stats["age"]     or 27
+    income  = income_eur or 0
+    score, reasons = 50, []
+    g90 = round((goals + assists) / (minutes / 90), 2) if minutes > 90 else 0
+
+    # Factor 1: Precio vs valor TM — peso 40 pts
+    if mv > 0 and income > 0:
+        r = income / mv
+        formula1 = f"Ingreso {_fmt(income)} ÷ Valor TM {_fmt(mv)} = {r:.2f}×  [tramos: ≥1.5×→+40 · ≥1.2×→+28 · ≥0.9×→+12 · ≥0.7×→−8 · ≥0.5×→−22 · <0.5×→−38]"
+        if   r >= 1.50: pts, tag = 40, "Precio EXCEPCIONAL — muy por encima del valor de mercado"
+        elif r >= 1.20: pts, tag = 28, "Muy buen precio — claramente por encima del valor de mercado"
+        elif r >= 0.90: pts, tag = 12, "Precio de mercado — operación justa"
+        elif r >= 0.70: pts, tag = -8, f"Precio bajo — dejamos {_fmt(mv-income)} sobre la mesa"
+        elif r >= 0.50: pts, tag = -22, f"Malventa — perdemos {_fmt(mv-income)} respecto al valor real"
+        else:           pts, tag = -38, f"MALVENTA GRAVE — perdemos {_fmt(mv-income)} respecto al valor real"
+    elif income == 0:
+        formula1 = "Ingreso = 0€ → sin recuperación económica"
+        pts, tag = -15, "Sin ingreso registrado — ¿cesión gratuita?"
+    else:
+        formula1 = "Valor TM desconocido → ratio no calculable"
+        pts, tag = 0, "Valor TM no disponible"
+    score += pts; reasons.append(("💰", "Precio de la operación", tag, formula1, pts))
+
+    # Factor 2: Importancia del jugador — peso 28 pts
+    formula2 = (f"{minutes} min jugados  ·  {goals} goles + {assists} asistencias = {goals+assists} G+A"
+                f"  ·  G+A/90 = ({goals}+{assists}) ÷ ({minutes}/90) = {g90:.2f}"
+                f"  [tramos: ≥2500→−25 · ≥1800→−14 · ≥900→+5 · ≥200→+12 · <200→+18]")
+    if   minutes >= 2500: pts, tag = -25, f"TITULAR INDISCUTIBLE — {minutes} min, {goals}G+{assists}A ({g90}/90)"
+    elif minutes >= 1800: pts, tag = -14, f"Jugador importante — {minutes} min, {goals}G+{assists}A ({g90}/90)"
+    elif minutes >= 900:  pts, tag =   5, f"Rotacional — {minutes} min, salida asumible"
+    elif minutes >= 200:  pts, tag =  12, f"Suplente con escasos minutos ({minutes} min)"
+    else:                 pts, tag =  18, f"Sin protagonismo ({minutes} min) — venta lógica"
+    score += pts; reasons.append(("⏱️", "Importancia en el equipo", tag, formula2, pts))
+
+    # Factor 3: Perfil de edad — peso 20 pts
+    if   age <= 21: umbral, pts = "≤21 años",  -20
+    elif age <= 24: umbral, pts = "22–24 años", -10
+    elif age <= 28: umbral, pts = "25–28 años",   5
+    elif age <= 31: umbral, pts = "29–31 años",  12
+    else:           umbral, pts = ">31 años",    18
+    formula3 = (f"Edad = {age} años → tramo '{umbral}' → {'+' if pts>=0 else ''}{pts} pts"
+                f"  [tramos: ≤21→−20 · 22-24→−10 · 25-28→+5 · 29-31→+12 · >31→+18]")
+    tag3_map = {-20:"Muy joven — se vende potencial proyectable",
+                -10:"Joven en desarrollo — venta discutible",
+                 5: "Edad óptima — buen momento económico para vender",
+                12: "Veterano — se maximiza el valor residual ahora",
+                18: "Jugador mayor — vender ahora es lo correcto"}
+    score += pts; reasons.append(("📅", "Perfil de edad", tag3_map[pts], formula3, pts))
+
+    # Factor 4: Impacto en plantilla — peso 12 pts
+    missing, reinforce = _get_squad_needs_roles()
+    pos = stats.get("position") or "?"
+    pos_count = _squad_pos_count(pos[:2] if pos else "")
+    in_missing   = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in missing)
+    in_reinforce = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in reinforce)
+    formula4 = (f"Posición '{pos}' · jugadores actuales en esa pos: {pos_count}"
+                f"  ·  En lista 'fichar': {'Sí' if in_missing else 'No'}"
+                f"  ·  En lista 'reforzar': {'Sí' if in_reinforce else 'No'}"
+                f"  [Necesidad prioritaria→−12 · Refuerzo→−5 · Cubierta→+8]")
+    if in_missing:   pts, tag = -12, f"Posición '{pos}' es necesidad PRIORITARIA — la venta la agrava"
+    elif in_reinforce: pts, tag = -5, f"Posición '{pos}' en lista de refuerzo — salida no ideal"
+    else:              pts, tag =  8, f"Posición '{pos}' cubierta ({pos_count} jugadores) — venta sin urgencia"
+    score += pts; reasons.append(("🎯", "Impacto en plantilla", tag, formula4, pts))
+
+    score = max(0, min(100, score))
+    if   score >= 80: veredicto = "EXCELENTE OPERACIÓN"
+    elif score >= 65: veredicto = "BUENA OPERACIÓN"
+    elif score >= 50: veredicto = "OPERACIÓN ACEPTABLE"
+    elif score >= 35: veredicto = "OPERACIÓN DISCUTIBLE"
+    else:             veredicto = "MALA OPERACIÓN"
+    raw = {"mv": mv, "income": income, "minutes": minutes, "goals": goals,
+           "assists": assists, "g90": g90, "age": age, "position": pos,
+           "ratio_precio": round(income/mv, 2) if mv and income else None}
+    return {"score": score, "veredicto": veredicto, "reasons": reasons, "tipo": "venta", "raw": raw}
+
+
+def _evaluate_buy(player_name: str, fee_eur: float, _salary_eur: float) -> dict:
+    """Score 0-100 de la calidad del fichaje, con razones y fórmulas detalladas."""
+    stats   = _get_player_stats(player_name)
+    mv      = stats["mv"]
+    minutes = stats["minutes"] or 0
+    goals   = stats["goals"]   or 0
+    assists = stats["assists"] or 0
+    age     = stats["age"]     or 25
+    fee     = fee_eur or 0
+    score, reasons = 50, []
+    g90 = round((goals + assists) / (minutes / 90), 2) if minutes > 90 else 0
+
+    # Factor 1: Precio pagado vs valor TM — peso 40 pts
+    if mv and mv > 0:
+        if fee == 0:
+            r = 0.0
+            formula1 = f"Fee = 0€ (libre/cedido) · Valor TM = {_fmt(mv)} → ahorro íntegro del traspaso"
+            pts, tag = 35, f"Sin coste de traspaso — valor TM {_fmt(mv)} (libre o cedido)"
+        else:
+            r = fee / mv
+            formula1 = (f"Fee {_fmt(fee)} ÷ Valor TM {_fmt(mv)} = {r:.2f}×"
+                        f"  [tramos: ≤0.5×→+40 · ≤0.75×→+28 · ≤1.05×→+12 · ≤1.3×→−10 · ≤1.7×→−25 · >1.7×→−38]")
+            if   r <= 0.50: pts, tag = 40, f"CHOLLO ABSOLUTO — ahorramos {_fmt(mv-fee)} vs valor real"
+            elif r <= 0.75: pts, tag = 28, f"Muy buen precio — ahorramos {_fmt(mv-fee)} vs valor TM"
+            elif r <= 1.05: pts, tag = 12, f"Precio de mercado — operación justa"
+            elif r <= 1.30: pts, tag = -10, f"Precio algo alto — pagamos {_fmt(fee-mv)} de más"
+            elif r <= 1.70: pts, tag = -25, f"Sobreprecio — pagamos {_fmt(fee-mv)} de más"
+            else:           pts, tag = -38, f"SOBREPRECIO GRAVE — pagamos {_fmt(fee-mv)} de más"
+    else:
+        r = None
+        formula1 = "Valor TM desconocido → ratio no calculable"
+        pts, tag = 0, "Valor TM no disponible — ratio precio/mercado no calculable"
+    score += pts; reasons.append(("💰", "Precio de la operación", tag, formula1, pts))
+
+    # Factor 2: Rendimiento real del jugador — peso 22 pts
+    formula2 = (f"{minutes} min · {goals} goles + {assists} asistencias"
+                f"  ·  G+A/90 = ({goals}+{assists}) ÷ ({minutes}/90) = {g90:.2f}"
+                f"  [tramos: ≥2500→+22 · ≥1800→+14 · ≥900→+5 · <900→−8]")
+    if   minutes >= 2500: pts, tag = 22, f"Alto rendimiento — {minutes} min, {goals}G+{assists}A ({g90}/90)"
+    elif minutes >= 1800: pts, tag = 14, f"Buen rendimiento — {minutes} min, {goals}G+{assists}A ({g90}/90)"
+    elif minutes >= 900:  pts, tag =  5, f"Rendimiento moderado — {minutes} min, potencial a confirmar"
+    else:                 pts, tag = -8, f"Pocos datos ({minutes} min) — riesgo deportivo alto"
+    score += pts; reasons.append(("📊", "Rendimiento deportivo", tag, formula2, pts))
+
+    # Factor 3: Necesidad de plantilla — peso 25 pts
+    missing, reinforce = _get_squad_needs_roles()
+    pos       = stats.get("position") or "?"
+    pos_count = _squad_pos_count(pos[:2] if pos else "")
+    in_miss = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in missing)
+    in_rein = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in reinforce)
+    formula3 = (f"Posición '{pos}' · jugadores actuales: {pos_count}"
+                f"  ·  Necesidad 'fichar': {'Sí' if in_miss else 'No'}"
+                f"  ·  Necesidad 'reforzar': {'Sí' if in_rein else 'No'}"
+                f"  [Prioritaria→+25 · Refuerzo→+12 · Cubierta(≥3)→−15 · Otra→−5]")
+    if in_miss:        pts, tag = 25, f"NECESIDAD PRIORITARIA — '{pos}' está en la lista de fichajes"
+    elif in_rein:      pts, tag = 12, f"Posición '{pos}' en lista de refuerzo — mejora la plantilla"
+    elif pos_count>=3: pts, tag =-15, f"Ya tenemos {pos_count} jugadores en '{pos}' — oportunidad, no necesidad"
+    else:              pts, tag = -5, f"Posición '{pos}' no es prioridad — oportunidad de mercado puntual"
+    score += pts; reasons.append(("🎯", "Necesidad de plantilla", tag, formula3, pts))
+
+    # Factor 4: Edad y proyección — peso 15 pts
+    if   age <= 20: umbral, pts = "≤20 años",  13
+    elif age <= 24: umbral, pts = "21–24 años", 15
+    elif age <= 27: umbral, pts = "25–27 años",  8
+    elif age <= 30: umbral, pts = "28–30 años",  0
+    else:           umbral, pts = ">30 años",   -12
+    formula4 = (f"Edad = {age} años → tramo '{umbral}' → {'+' if pts>=0 else ''}{pts} pts"
+                f"  [tramos: ≤20→+13 · 21-24→+15 · 25-27→+8 · 28-30→0 · >30→−12]")
+    tag4_map = {13:"Muy joven — alta proyección, apuesta de futuro",
+                15:"Joven con proyección — perfil ideal para el Rayo",
+                 8:"Edad óptima — rendimiento inmediato + valor residual",
+                 0:"Veterano — rendimiento sin recorrido de reventa",
+               -12:"Jugador mayor — bajo valor de reventa futuro"}
+    score += pts; reasons.append(("📅", "Perfil de edad", tag4_map[pts], formula4, pts))
+
+    score = max(0, min(100, score))
+    is_opp = score >= 60 and not in_miss
+    if   is_opp:      veredicto = "BUENA OPORTUNIDAD DE MERCADO"
+    elif score >= 80: veredicto = "FICHAJE EXCELENTE"
+    elif score >= 65: veredicto = "BUEN FICHAJE"
+    elif score >= 50: veredicto = "FICHAJE ACEPTABLE"
+    elif score >= 35: veredicto = "FICHAJE DISCUTIBLE"
+    else:             veredicto = "MAL FICHAJE"
+    raw = {"mv": mv, "fee": fee, "minutes": minutes, "goals": goals,
+           "assists": assists, "g90": g90, "age": age, "position": pos,
+           "ratio_precio": round(r, 2) if r is not None else None}
+    return {"score": score, "veredicto": veredicto, "reasons": reasons, "tipo": "compra", "raw": raw}
+
+
+def _render_eval_badge(ev: dict):
+    """Renderiza el panel de evaluación con score, datos de partida y desglose por factor."""
+    if not ev:
+        return html.Div()
+    score    = ev["score"]
+    veredicto = ev["veredicto"]
+    reasons  = ev["reasons"]   # (icon, titulo, tag, formula, pts)
+    tipo     = ev["tipo"]
+    raw      = ev.get("raw", {})
+
+    if   score >= 75: bg, border, txt = "#F0FDF4","#86EFAC","#166534"
+    elif score >= 55: bg, border, txt = "#F0F9FF","#BAE6FD","#0C4A6E"
+    elif score >= 40: bg, border, txt = "#FFFBEB","#FDE68A","#92400E"
+    else:             bg, border, txt = "#FFF1F2","#FECACA","#9F1239"
+
+    bar_c  = "#10B981" if score>=75 else ("#3B82F6" if score>=55 else ("#F59E0B" if score>=40 else "#E30613"))
+    t_icon = "ti-arrow-up-right" if tipo=="venta" else "ti-arrow-down-left"
+    t_label = "ANÁLISIS DE VENTA" if tipo=="venta" else "ANÁLISIS DE COMPRA"
+
+    # Datos de partida en chips
+    def chip(label, value, highlight=False):
+        return html.Div([
+            html.Span(label, style={"fontSize":"9px","color":txt,"opacity":".65","display":"block","marginBottom":"1px"}),
+            html.Span(str(value), style={"fontSize":"12px","fontWeight":"700","color":txt}),
+        ], style={"background":"rgba(0,0,0,.06)","borderRadius":"8px","padding":"5px 9px",
+                  "border":"1px solid rgba(0,0,0,.08)" if not highlight else f"1px solid {txt}",
+                  "minWidth":"70px","textAlign":"center"})
+
+    precio_key = "income" if tipo=="venta" else "fee"
+    precio_lbl = "Ingreso" if tipo=="venta" else "Fee pagado"
+    ratio_raw  = raw.get("ratio_precio")
+    ratio_str  = f"{ratio_raw:.2f}×" if ratio_raw is not None else "—"
+
+    raw_chips = html.Div([
+        chip("Valor TM",   _fmt(raw.get("mv"))),
+        chip(precio_lbl,   _fmt(raw.get(precio_key, 0))),
+        chip("Ratio precio", ratio_str, highlight=True),
+        chip("Minutos",    f"{raw.get('minutes',0):,}"),
+        chip("G+A/90",     raw.get("g90", 0)),
+        chip("Edad",       f"{raw.get('age','?')} años"),
+        chip("Posición",   raw.get("position","?")),
+    ], style={"display":"flex","flexWrap":"wrap","gap":"6px","marginBottom":"14px"})
+
+    return html.Div([
+        # Cabecera tipo operación
+        html.Div([
+            html.I(className=f"ti {t_icon}", style={"fontSize":"14px","color":txt,"marginRight":"7px"}),
+            html.Span(t_label, style={"fontSize":"10px","fontWeight":"700","color":txt,
+                      "textTransform":"uppercase","letterSpacing":".08em"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"10px"}),
+
+        # Score + barra + veredicto
+        dbc.Row([
+            dbc.Col([
+                html.Div([
+                    html.Span(str(score), style={"fontSize":"52px","fontWeight":"900","color":txt,"lineHeight":"1"}),
+                    html.Span("/100", style={"fontSize":"13px","color":txt,"opacity":".6",
+                              "marginLeft":"3px","alignSelf":"flex-end","paddingBottom":"8px"}),
+                ], style={"display":"flex","alignItems":"flex-end","marginBottom":"6px"}),
+                html.Div(html.Div(style={"height":"100%","width":f"{score}%","background":bar_c,"borderRadius":"99px"}),
+                         style={"height":"10px","background":"rgba(0,0,0,.1)","borderRadius":"99px",
+                                "overflow":"hidden","marginBottom":"8px"}),
+                html.Span(veredicto, style={"fontSize":"14px","fontWeight":"800","color":txt}),
+            ], md=4),
+            dbc.Col([
+                html.P("Datos utilizados en el cálculo",
+                       style={"fontSize":"9px","fontWeight":"700","color":txt,"opacity":".7",
+                              "textTransform":"uppercase","letterSpacing":".08em","margin":"0 0 8px"}),
+                raw_chips,
+            ], md=8),
+        ], className="g-2", style={"marginBottom":"16px"}),
+
+        # Desglose por factor
+        html.Div([
+            html.P("Desglose por factor",
+                   style={"fontSize":"9px","fontWeight":"700","color":txt,"opacity":".7",
+                          "textTransform":"uppercase","letterSpacing":".08em","margin":"0 0 8px"}),
+            *[html.Div([
+                # Fila principal: icono + título + tag + puntos
+                html.Div([
+                    html.Span(icon, style={"fontSize":"15px","marginRight":"8px","flexShrink":"0"}),
+                    html.Div([
+                        html.Span(titulo, style={"fontSize":"10px","fontWeight":"700","color":txt,
+                                  "textTransform":"uppercase","letterSpacing":".04em","display":"block"}),
+                        html.Span(tag, style={"fontSize":"12px","color":txt,"lineHeight":"1.4"}),
+                    ], style={"flex":"1"}),
+                    html.Span(f"{'+' if pts>0 else ''}{pts}",
+                              style={"fontSize":"15px","fontWeight":"900","minWidth":"42px","textAlign":"right",
+                                     "color":"#166534" if pts>0 else ("#9F1239" if pts<0 else "#6B7280")}),
+                ], style={"display":"flex","alignItems":"flex-start","gap":"4px","marginBottom":"4px"}),
+                # Fila fórmula
+                html.Div(
+                    html.Span(formula, style={"fontSize":"10px","color":txt,"opacity":".65","fontFamily":"monospace",
+                              "lineHeight":"1.5","wordBreak":"break-word"}),
+                    style={"background":"rgba(0,0,0,.04)","borderRadius":"6px","padding":"5px 8px",
+                           "marginLeft":"24px","marginBottom":"2px"}
+                ),
+              ], style={"padding":"8px 0","borderBottom":"1px solid rgba(0,0,0,.07)"})
+              for icon, titulo, tag, formula, pts in reasons],
+            # Fila total
+            html.Div([
+                html.Div([
+                    html.Span("TOTAL",
+                              style={"fontSize":"11px","fontWeight":"800","color":txt,"flex":"1"}),
+                    html.Span(f"{score}/100",
+                              style={"fontSize":"13px","fontWeight":"900","color":txt}),
+                ], style={"display":"flex","padding":"8px 0"}),
+                html.Span(
+                    "La escala parte de 50 (operación neutra sin datos) y sube o baja según cada factor.",
+                    style={"fontSize":"9px","color":txt,"opacity":".5","fontStyle":"italic"}
+                ),
+            ]),
+        ]),
+    ], style={"background":bg,"border":f"2px solid {border}","borderRadius":"14px",
+              "padding":"18px 20px","marginBottom":"16px"})
+
 @callback(Output("fin-content","children"), Input("fin-tabs","value"))
 def render_tab(tab):
     try:
         fin = _load_finances()
         if tab == "salarios":    return tab_salarios(fin)
         if tab == "presupuesto": return tab_presupuesto(fin)
-        if tab == "riesgo":      return tab_riesgo(fin)
+        if tab == "riesgo":              return tab_riesgo(fin)
+        if tab == "simulador-fichajes":  return tab_simulador_fichajes(fin)
         return tab_simulador(fin)
     except Exception as e:
         return html.Div([
@@ -955,7 +1461,23 @@ def update_sim(out_players, new_salary_m, income_m, fee_m, years):
         margin=dict(l=20, r=20, t=50, b=10),
     )
 
+    # ── Evaluación inteligente de la operación ──────────────────────────────
+    eval_badges = []
+    try:
+        if out_players and income > 0:
+            split_income = income / max(len(out_players), 1)
+            for pname in out_players:
+                eval_badges.append(_render_eval_badge(_evaluate_sale(pname, split_income, pmap)))
+        elif out_players:
+            for pname in out_players:
+                eval_badges.append(_render_eval_badge(_evaluate_sale(pname, 0, pmap)))
+        if player_name and (fee > 0 or new_sal > 0):
+            eval_badges.append(_render_eval_badge(_evaluate_buy(player_name, fee, new_sal)))
+    except Exception as _ex:
+        eval_badges.append(html.P(f"Error evaluación: {_ex}", style={"fontSize":"11px","color":"#E30613"}))
+
     return html.Div([
+        *eval_badges,
         html.Div([
             html.I(className=f"ti {'ti-circle-check' if ok else 'ti-alert-triangle'}",
                    style={"fontSize":"18px","color":"#10B981" if ok else "#E30613","marginRight":"8px"}),
@@ -1056,3 +1578,91 @@ def _bud_render(_r):
 @callback(Output("sim-player-search", "options"), Input("sim-leagues", "value"))
 def _sim_update_leagues(leagues):
     return _load_master_opts(leagues or None)
+
+
+# ── Callbacks Simulador Fichajes ────────────────────────────────────────────
+
+@callback(Output("fich-buy-player","options"), Input("fich-buy-leagues","value"))
+def _fich_update_players(leagues):
+    if not leagues:
+        leagues = ['Spain_Primera_Division','Spain_Segunda_Division']
+    return _load_master_opts(leagues)
+
+
+@callback(Output("fich-sell-card","children"), Output("fich-sell-hint","children"),
+          Input("fich-sell-player","value"))
+def _fich_sell_card(player_name):
+    if not player_name:
+        return html.Div(), html.Div()
+    stats = _get_player_stats(player_name)
+    mv, mins, age = stats["mv"], stats["minutes"], stats["age"]
+    hint = html.Span(
+        f"Valor TM estimado: {_fmt(mv)}  ·  Edad: {age}  ·  Minutos: {mins}",
+        style={"fontSize":"10px","color":"#9CA3AF","fontStyle":"italic"}
+    ) if mv else html.Div()
+    card = html.Div([
+        html.Span(player_name, style={"fontSize":"12px","fontWeight":"700","color":"#1A1A2E","marginRight":"8px"}),
+        html.Span(stats.get("position") or "?",
+                  style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px","borderRadius":"99px",
+                         "background":"#F3F4F6","color":"#374151"}),
+    ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"7px",
+              "padding":"8px 10px","display":"flex","alignItems":"center"})
+    return card, hint
+
+
+@callback(Output("fich-buy-card","children"), Output("fich-buy-hint","children"),
+          Input("fich-buy-player","value"))
+def _fich_buy_card(player_name):
+    if not player_name:
+        return html.Div(), html.Div()
+    stats  = _get_player_stats(player_name)
+    mv     = stats["mv"]
+    mins   = stats["minutes"] or 0
+    goals  = stats["goals"]   or 0
+    asts   = stats["assists"] or 0
+    age    = stats["age"]
+    g90    = (goals + asts) / (mins / 90) if mins > 90 else 0
+    hint = html.Span(
+        f"Valor TM: {_fmt(mv)}  ·  Edad: {age}  ·  {mins} min  ·  {goals}G+{asts}A ({g90:.2f}/90)",
+        style={"fontSize":"10px","color":"#9CA3AF","fontStyle":"italic"}
+    ) if mv else html.Div()
+    card = html.Div([
+        html.Span(player_name, style={"fontSize":"12px","fontWeight":"700","color":"#1A1A2E","marginRight":"8px"}),
+        html.Span(f"{stats.get('position') or '?'}  ·  {stats.get('team','?')}  ·  {stats.get('league','?')}",
+                  style={"fontSize":"10px","color":"#6B7280"}),
+    ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"7px","padding":"8px 10px"})
+    return card, hint
+
+
+@callback(Output("fich-result","children"),
+          Input("fich-analyze-btn","n_clicks"),
+          State("fich-sell-player","value"),
+          State("fich-sell-price","value"),
+          State("fich-buy-player","value"),
+          State("fich-buy-fee","value"),
+          prevent_initial_call=True)
+def _fich_analyze(n_clicks, sell_player, sell_price_m, buy_player, buy_fee_m):
+    if not n_clicks:
+        return html.Div()
+
+    sell_eur = (sell_price_m or 0) * 1_000_000
+    buy_eur  = (buy_fee_m   or 0) * 1_000_000
+    fin      = _load_finances()
+    pmap     = {p["name"]: p for p in fin["player_salaries"]}
+    badges   = []
+
+    if sell_player:
+        badges.append(_render_eval_badge(_evaluate_sale(sell_player, sell_eur, pmap)))
+    if buy_player:
+        badges.append(_render_eval_badge(_evaluate_buy(buy_player, buy_eur, 0)))
+
+    if not badges:
+        return html.Div([
+            html.I(className="ti ti-info-circle",
+                   style={"color":"#F59E0B","marginRight":"8px","fontSize":"16px"}),
+            html.Span("Selecciona al menos un jugador para analizar la operación",
+                      style={"fontSize":"12px","color":"#92400E"}),
+        ], style={"background":"#FFFBEB","border":"1px solid #FDE68A","borderRadius":"8px",
+                  "padding":"12px 14px","display":"flex","alignItems":"center"})
+
+    return html.Div(badges)

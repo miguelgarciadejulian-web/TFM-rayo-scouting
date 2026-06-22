@@ -62,9 +62,48 @@ def _scorer():
     return _CACHE["scorer"]
 
 
-def _player_options() -> list[dict]:
+def _lateral_lookup() -> dict[str, str]:
+    """Devuelve {nombre_jugador: lateral_pos} desde el parquet enriquecido."""
+    if "lat_dict" not in _CACHE:
+        try:
+            from src.utils.lateral_position import build_lateral_map as _blm
+            enr_path = _PROC / "player_seasons_enriched.parquet"
+            lat_df = _blm(enr_path, enr_path)[["name", "lateral_pos"]]
+            _CACHE["lat_dict"] = dict(zip(lat_df["name"], lat_df["lateral_pos"]))
+        except Exception:
+            _CACHE["lat_dict"] = {}
+    return _CACHE["lat_dict"]
+
+
+def _position_filter_options() -> list[dict]:
+    """Opciones de filtro de posición dinámicas (position_primary + lateral_pos)."""
+    if "pos_filter_opts" not in _CACHE:
+        df = _master()
+        POS_LABELS = {
+            "CB": "CB — Defensa central",
+            "CM": "CM — Mediocentro",
+            "GK": "GK — Portero",
+            "ST": "ST — Delantero",
+        }
+        positions = sorted(df["position_primary"].dropna().unique())
+        opts: list[dict] = [{"label": "Todas las posiciones", "value": "all"}]
+        for p in positions:
+            opts.append({"label": POS_LABELS.get(p, p), "value": f"pos:{p}"})
+            if p == "CB":
+                lat = _lateral_lookup()
+                lat_vals = sorted(set(v for v in lat.values() if v))
+                LAT_LABELS = {"LI": "└ LI — Lateral izquierdo",
+                              "LD": "└ LD — Lateral derecho",
+                              "DC": "└ DC — Central puro"}
+                for lv in lat_vals:
+                    opts.append({"label": LAT_LABELS.get(lv, f"└ {lv}"), "value": f"lat:{lv}"})
+        _CACHE["pos_filter_opts"] = opts
+    return _CACHE["pos_filter_opts"]
+
+
+def _player_options(pos_filter: str | None = None) -> list[dict]:
     """Opciones del dropdown de búsqueda (precargadas, deduplicadas por nombre)."""
-    if "opts" not in _CACHE:
+    if "opts_raw_with_pos" not in _CACHE:
         df = _master()
         ORDER = {"2026": 7, "2025-2026": 6, "2025/2026": 6, "2025": 5,
                  "2024-2025": 4, "2024": 4, "2023-2024": 3}
@@ -74,9 +113,22 @@ def _player_options() -> list[dict]:
         opts = []
         for _, row in best.iterrows():
             label = f"{row['name']}  ·  {row.get('team','?')}  ({league_name(row.get('league',''))})"
-            opts.append({"label": label, "value": row["name"]})
-        _CACHE["opts"] = opts
-    return _CACHE["opts"]
+            opts.append({"label": label, "value": row["name"],
+                         "_pos": str(row.get("position_primary", "") or "")})
+        _CACHE["opts_raw_with_pos"] = opts
+    opts = _CACHE["opts_raw_with_pos"]
+    if not pos_filter or pos_filter == "all":
+        return [{"label": o["label"], "value": o["value"]} for o in opts]
+    if pos_filter.startswith("pos:"):
+        target_pos = pos_filter[4:]
+        return [{"label": o["label"], "value": o["value"]}
+                for o in opts if o["_pos"] == target_pos]
+    if pos_filter.startswith("lat:"):
+        target_lat = pos_filter[4:]
+        lat = _lateral_lookup()
+        return [{"label": o["label"], "value": o["value"]}
+                for o in opts if o["_pos"] == "CB" and lat.get(o["value"]) == target_lat]
+    return [{"label": o["label"], "value": o["value"]} for o in opts]
 
 
 # ---------------------------------------------------------------------------
@@ -112,83 +164,86 @@ def _fit_badge(score: float) -> html.Span:
 # ---------------------------------------------------------------------------
 
 def layout():
-    return dbc.Container(
-        fluid=True,
-        children=[
-            # Cabecera
-            dbc.Row(
-                dbc.Col(
-                    html.Div(
-                        [
-                            html.I(className="ti ti-git-compare me-2",
-                                   style={"fontSize": "1.5rem", "color": "#E30613"}),
-                            html.H4("Comparador de Fichajes",
-                                    className="d-inline mb-0 fw-bold"),
-                        ],
-                        className="d-flex align-items-center mb-3 mt-3",
-                    )
-                )
-            ),
+    _label_style = {"fontSize":"11px","fontWeight":"600","color":"#374151","marginBottom":"4px"}
+    return html.Div([
 
-            # Selector de jugadores
-            dbc.Row(
-                [
-                    dbc.Col(
-                        [
-                            html.Label("Selecciona jugadores (2-6)",
-                                       className="fw-semibold mb-1"),
-                            dcc.Dropdown(
-                                id="comp-player-select",
-                                options=_player_options(),
-                                multi=True,
-                                placeholder="Busca por nombre, equipo...",
-                                style={"fontSize": "0.88rem"},
-                                className="mb-2",
-                            ),
-                        ],
-                        md=9,
+        # ── Hero ──────────────────────────────────────────────────────────────
+        html.Div([
+            html.Div([
+                html.Div([html.I(className="ti ti-git-compare",
+                           style={"fontSize":"28px","color":"#fff"})],
+                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                html.Div([
+                    html.Div("ANÁLISIS COMPARATIVO", style={"fontSize":"9px","fontWeight":"700",
+                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                    html.H1("Comparador de Fichajes", style={"fontSize":"22px","fontWeight":"900",
+                        "color":"#fff","margin":"0 0 2px"}),
+                    html.Div("Compara hasta 6 jugadores · Fit Rayo 0–100 calculado automáticamente",
+                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                ]),
+            ], style={"display":"flex","alignItems":"center"}),
+        ], style={"background":"linear-gradient(135deg,#5B21B6 0%,#6D28D9 60%,#7C3AED 100%)",
+                  "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
+                  "boxShadow":"0 8px 24px rgba(91,33,182,.25)"}),
+
+        # ── Panel de selección ────────────────────────────────────────────────
+        html.Div([
+            html.Div([
+                html.I(className="ti ti-users",
+                       style={"fontSize":"14px","color":"#7C3AED","marginRight":"7px"}),
+                html.Span("SELECCIÓN DE JUGADORES", style={"fontSize":"9px","fontWeight":"700",
+                    "color":"#7C3AED","letterSpacing":".10em"}),
+            ], style={"marginBottom":"14px","display":"flex","alignItems":"center"}),
+            dbc.Row([
+                dbc.Col([
+                    html.Div("Filtrar por posición", style=_label_style),
+                    dcc.Dropdown(
+                        id="comp-lateral",
+                        options=_position_filter_options(),
+                        value="all", clearable=False,
+                        style={"fontSize":"0.82rem"},
                     ),
-                    dbc.Col(
-                        [
-                            html.Label("Añadir plantilla actual",
-                                       className="fw-semibold mb-1"),
-                            dcc.Dropdown(
-                                id="comp-rayo-select",
-                                options=[
-                                    {"label": _rayo_label(p), "value": p["name"]}
-                                    for p in _squad_info()
-                                ],
-                                multi=True,
-                                placeholder="Jugadores Rayo...",
-                                style={"fontSize": "0.88rem"},
-                            ),
-                        ],
-                        md=3,
+                ], md=3),
+                dbc.Col([
+                    html.Div("Candidatos externos (2–6)", style=_label_style),
+                    dcc.Dropdown(
+                        id="comp-player-select",
+                        options=_player_options(),
+                        multi=True,
+                        placeholder="Busca por nombre o equipo...",
+                        style={"fontSize":"0.88rem"},
                     ),
-                ],
-                className="mb-3",
-            ),
-
-            dbc.Row(
-                dbc.Col(
-                    dbc.Button(
-                        [html.I(className="ti ti-chart-radar me-2"), "Comparar"],
-                        id="comp-run-btn",
-                        color="danger",
-                        size="sm",
-                        className="me-2",
+                ], md=6),
+                dbc.Col([
+                    html.Div("Jugadores del Rayo", style=_label_style),
+                    dcc.Dropdown(
+                        id="comp-rayo-select",
+                        options=[{"label": _rayo_label(p), "value": p["name"]}
+                                  for p in _squad_info()],
+                        multi=True,
+                        placeholder="Jugadores Rayo...",
+                        style={"fontSize":"0.88rem"},
                     ),
-                    width="auto",
-                )
+                ], md=3),
+            ], className="g-3 mb-3"),
+            dbc.Button(
+                [html.I(className="ti ti-chart-radar", style={"marginRight":"6px"}),
+                 "Comparar jugadores"],
+                id="comp-run-btn",
+                style={"background":"linear-gradient(135deg,#5B21B6,#7C3AED)",
+                       "border":"none","borderRadius":"10px","fontWeight":"700",
+                       "fontSize":"13px","padding":"9px 20px","color":"#fff",
+                       "boxShadow":"0 4px 12px rgba(91,33,182,.3)"},
             ),
+        ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"14px",
+                  "padding":"18px 20px","marginBottom":"18px",
+                  "boxShadow":"0 2px 8px rgba(0,0,0,.05)"}),
 
-            html.Hr(),
-
-            # Resultados
-            html.Div(id="comp-results"),
-            criteria_accordion("comparador"),
-        ],
-    )
+        # ── Resultados ───────────────────────────────────────────────────────
+        html.Div(id="comp-results"),
+        criteria_accordion("comparador"),
+    ])
 
 
 def _rayo_label(p: dict) -> str:
@@ -206,6 +261,14 @@ def _rayo_label(p: dict) -> str:
 # ---------------------------------------------------------------------------
 # Callback principal
 # ---------------------------------------------------------------------------
+
+@callback(
+    Output("comp-player-select", "options"),
+    Input("comp-lateral", "value"),
+)
+def _filter_player_options(pos_filter):
+    return _player_options(pos_filter=pos_filter)
+
 
 @callback(
     Output("comp-results", "children"),
@@ -233,13 +296,14 @@ def _run_comparison(n, ext_players, rayo_players):
         return dbc.Alert("No se encontraron datos para los jugadores seleccionados.",
                          color="danger")
 
+    lat_dict = _lateral_lookup()
     return html.Div(
         [
             _radar_section(results),
             html.Hr(),
-            _cards_section(results),
+            _cards_section(results, lat_dict=lat_dict),
             html.Hr(),
-            _table_section(results),
+            _table_section(results, lat_dict=lat_dict),
             html.Hr(),
             _export_section(results),
         ]
@@ -354,7 +418,7 @@ def _radar_section(results) -> html.Div:
     )
 
 
-def _cards_section(results) -> html.Div:
+def _cards_section(results, lat_dict: dict | None = None) -> html.Div:
     cards = []
     for i, r in enumerate(results):
         color = PLAYER_COLORS[i % len(PLAYER_COLORS)]
@@ -443,7 +507,9 @@ def _cards_section(results) -> html.Div:
                                     ),
                                     html.Br(),
                                     html.Small(
-                                        f"{r.position} · {r.age:.0f}a · {r.team}",
+                                        f"{r.position}"
+                                        + (f" ({(lat_dict or {}).get(r.name, '')})" if (lat_dict or {}).get(r.name) else "")
+                                        + f" · {r.age:.0f}a · {r.team}",
                                         style={"color": "#555"},
                                     ),
                                 ]
@@ -490,17 +556,18 @@ def _cards_section(results) -> html.Div:
     )
 
 
-def _table_section(results) -> html.Div:
+def _table_section(results, lat_dict: dict | None = None) -> html.Div:
     header = dbc.Row(
         [
             dbc.Col(html.Small("Jugador",       className="fw-bold"), md=3),
+            dbc.Col(html.Small("Pos.",          className="fw-bold text-center", title="Posición lateral"), md=1),
             dbc.Col(html.Small("Fit",          className="fw-bold text-center"), md=1),
             dbc.Col(html.Small("Min",          className="fw-bold text-center"), md=1),
             dbc.Col(html.Small("G+A",          className="fw-bold text-center"), md=1),
             dbc.Col(html.Small("G+A/90",       className="fw-bold text-center"), md=1),
             dbc.Col(html.Small("KC/90",        className="fw-bold text-center", title="Pases clave / 90"), md=1),
             dbc.Col(html.Small("Rec/90",       className="fw-bold text-center", title="Recuperaciones / 90"), md=1),
-            dbc.Col(html.Small("V. Mercado",   className="fw-bold text-center"), md=3),
+            dbc.Col(html.Small("V. Mercado",   className="fw-bold text-center"), md=2),
         ],
         className="px-2 py-1",
         style={"background": "#f3f4f6", "borderRadius": "4px"},
@@ -514,6 +581,7 @@ def _table_section(results) -> html.Div:
                       pill=True, className="ms-1", style={"fontSize":"0.65rem"})
             if r.loan_from else None
         )
+        lat_pos = (lat_dict or {}).get(r.name, "—")
         rows.append(
             dbc.Row(
                 [
@@ -528,6 +596,8 @@ def _table_section(results) -> html.Div:
                         ]),
                         md=3,
                     ),
+                    dbc.Col(html.Small(lat_pos, style={"fontWeight": "600"}),
+                            md=1, className="text-center d-flex align-items-center justify-content-center"),
                     dbc.Col(_fit_badge(r.fit_score),
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
                     dbc.Col(html.Small(str(r.minutes)),
@@ -541,7 +611,7 @@ def _table_section(results) -> html.Div:
                     dbc.Col(html.Small(f"{r.ball_recoveries_p90:.2f}"),
                             md=1, className="text-center d-flex align-items-center justify-content-center"),
                     dbc.Col(html.Small(_fmt_mv(r.market_value_eur)),
-                            md=3, className="text-center d-flex align-items-center justify-content-center"),
+                            md=2, className="text-center d-flex align-items-center justify-content-center"),
                 ],
                 className="px-2 py-2 border-bottom align-items-center",
             )

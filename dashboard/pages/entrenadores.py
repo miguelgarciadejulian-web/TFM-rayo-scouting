@@ -1032,31 +1032,68 @@ def layout(**_params):
     top = profiles[0]
     styles = sorted({c.get("style_main", "") for c in profiles if c.get("style_main")})
 
+    def _kpi(icon, label, value, sub, grad, light):
+        return html.Div([
+            html.Div([html.I(className=f"ti {icon}", style={"fontSize":"18px","color":"#fff"})],
+                style={"background":grad,"borderRadius":"10px","width":"38px","height":"38px",
+                       "display":"flex","alignItems":"center","justifyContent":"center",
+                       "marginBottom":"10px","boxShadow":"0 3px 8px rgba(0,0,0,.14)"}),
+            html.Div(value, style={"fontSize":"24px","fontWeight":"900","color":"#1A1A2E","lineHeight":"1","marginBottom":"2px"}),
+            html.Div(label, style={"fontSize":"11px","fontWeight":"700","color":"#1A1A2E","marginBottom":"1px"}),
+            html.Div(sub,   style={"fontSize":"10px","color":"#6B7280"}),
+        ], style={"background":light,"border":"1px solid rgba(0,0,0,.06)","borderRadius":"14px",
+                  "padding":"14px 16px","height":"100%","boxShadow":"0 2px 6px rgba(0,0,0,.05)"})
+
+    top_score = top["evaluation"].get("score_10", "?")
+
     return html.Div([
         dcc.Store(id="manual-refresh", data=0),
-        html.Div([
-            html.P("PLANIFICACION DEPORTIVA", style={"fontSize": "10px", "fontWeight": "600",
-                   "color": "#6B7280", "letterSpacing": ".08em", "margin": "0 0 3px"}),
-            html.H1("Casting de Entrenadores", className="page-title"),
-            html.P("Estilo y encaje calculados automaticamente desde los datos · Rayo 2026/27",
-                   className="page-subtitle"),
-        ], className="page-header"),
 
+        # ── Hero ──────────────────────────────────────────────────────────────
+        html.Div([
+            html.Div([
+                html.Div([html.I(className="ti ti-chalkboard",
+                           style={"fontSize":"28px","color":"#fff"})],
+                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                html.Div([
+                    html.Div("PLANIFICACIÓN DEPORTIVA", style={"fontSize":"9px","fontWeight":"700",
+                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                    html.H1("Casting de Entrenadores", style={"fontSize":"22px","fontWeight":"900",
+                        "color":"#fff","margin":"0 0 2px"}),
+                    html.Div("Estilo y encaje calculados automáticamente · Rayo Vallecano 2026/27",
+                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                ]),
+            ], style={"display":"flex","alignItems":"center","flex":"1"}),
+            html.Div([
+                *[html.Div([
+                    html.Div(v, style={"fontSize":"22px","fontWeight":"900","color":"#fff","lineHeight":"1"}),
+                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.55)","fontWeight":"600","marginTop":"2px"}),
+                ], style={"textAlign":"center","padding":"0 16px","borderRight":s})
+                  for v,l,s in [
+                    (str(len(profiles)), "técnicos", "1px solid rgba(255,255,255,.15)"),
+                    (str(available_cnt), "libres", "1px solid rgba(255,255,255,.15)"),
+                    (f"{top_score}/10", "mejor encaje", "none"),
+                ]],
+            ], style={"display":"flex","alignItems":"center","flexShrink":"0"}),
+        ], style={"background":"linear-gradient(135deg,#9A3412 0%,#C2410C 60%,#EA580C 100%)",
+                  "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
+                  "display":"flex","justifyContent":"space-between","alignItems":"center",
+                  "boxShadow":"0 8px 24px rgba(154,52,18,.25)"}),
+
+        # ── KPIs ──────────────────────────────────────────────────────────────
+        html.P("RESUMEN DEL CASTING", style={"fontSize":"9px","fontWeight":"700","color":"#6B7280",
+               "letterSpacing":".08em","marginBottom":"10px"}),
         dbc.Row([
-            dbc.Col(html.Div([html.P("Tecnicos analizados", className="kpi-label"),
-                html.P(str(len(profiles)), className="kpi-value"),
-                html.P("con estilo calculado", className="kpi-sub")], className="kpi-modern"), md=3),
-            dbc.Col(html.Div([html.P("Libres", className="kpi-label"),
-                html.P(str(available_cnt), className="kpi-value"),
-                html.P("sin equipo actual", className="kpi-sub")], className="kpi-modern"), md=3),
-            dbc.Col(html.Div([html.P("Mejor encaje", className="kpi-label"),
-                html.P(top["name"].split()[-1], className="kpi-value"),
-                html.P(f"{top['evaluation'].get('score_10')}/10", className="kpi-sub")],
-                className="kpi-modern danger"), md=3),
-            dbc.Col(html.Div([html.P("Necesidad clave", className="kpi-label"),
-                html.P("Banquillo", className="kpi-value"),
-                html.P("sucesor de I. Perez", className="kpi-sub")], className="kpi-modern"), md=3),
-        ], className="g-3 mb-3"),
+            dbc.Col(_kpi("ti-chalkboard","Técnicos analizados",str(len(profiles)),"con estilo calculado",
+                "linear-gradient(135deg,#9A3412,#F97316)","#FFF7ED"), md=3),
+            dbc.Col(_kpi("ti-user-check","Sin equipo actual",str(available_cnt),"disponibles ahora",
+                "linear-gradient(135deg,#065F46,#10B981)","#ECFDF5"), md=3),
+            dbc.Col(_kpi("ti-trophy","Mejor encaje",top["name"].split()[-1],f"Score: {top_score}/10",
+                "linear-gradient(135deg,#78350F,#F59E0B)","#FFFBEB"), md=3),
+            dbc.Col(_kpi("ti-target","Necesidad clave","Banquillo","sucesor de I. Pérez",
+                "linear-gradient(135deg,#991B1B,#E30613)","#FFF1F2"), md=3),
+        ], className="g-3 mb-4"),
 
         # Panel de necesidades de la plantilla (siempre visible)
         _needs_panel(),
@@ -1143,6 +1180,12 @@ def layout(**_params):
                   "padding": "14px 18px", "marginBottom": "14px"}),
 
         html.Div([
+            html.Div([
+                html.I(className="ti ti-adjustments-horizontal",
+                       style={"fontSize":"14px","color":"#F97316","marginRight":"7px"}),
+                html.Span("FILTROS", style={"fontSize":"9px","fontWeight":"700",
+                    "color":"#F97316","letterSpacing":".10em"}),
+            ], style={"marginBottom":"12px","display":"flex","alignItems":"center"}),
             dbc.Row([
                 dbc.Col([html.Span("Disponibilidad", className="filter-label"),
                     dcc.Dropdown([{"label": "Todos", "value": "all"},
@@ -1158,7 +1201,9 @@ def layout(**_params):
                                marks={0: "0", 5: "5", 7: "7", 9: "9"},
                                tooltip={"placement": "bottom"})], md=5),
             ], className="g-2"),
-        ], className="filter-panel"),
+        ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"14px",
+                  "padding":"18px 20px","marginBottom":"16px",
+                  "boxShadow":"0 2px 8px rgba(0,0,0,.05)"}),
 
         html.Div(id="coaches-count", style={"fontSize": "12px", "color": "#6B7280", "margin": "8px 0"}),
         dcc.Loading(
@@ -1169,9 +1214,12 @@ def layout(**_params):
         ),
 
         html.Div([
-            html.P("Analisis del candidato", style={"fontSize": "11px", "fontWeight": "700",
-                   "color": "#9CA3AF", "textTransform": "uppercase", "letterSpacing": ".05em",
-                   "marginBottom": "8px"}),
+            html.Div([
+                html.I(className="ti ti-user-search",
+                       style={"fontSize":"14px","color":"#F97316","marginRight":"7px"}),
+                html.Span("ANÁLISIS DEL CANDIDATO", style={"fontSize":"9px","fontWeight":"700",
+                    "color":"#F97316","letterSpacing":".10em"}),
+            ], style={"marginBottom":"10px","display":"flex","alignItems":"center"}),
             dcc.Dropdown(names, value=names[0], id="coach-select", clearable=False,
                          style={"maxWidth": "360px", "marginBottom": "12px"}),
             dcc.Loading(

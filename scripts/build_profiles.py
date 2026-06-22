@@ -136,7 +136,8 @@ def main():
         role = label_to_role.get(role_label)
         if not role:
             continue
-        rk = rank_players_for_role(enr, role, top_n=8, leagues=target_leagues)
+        rk = rank_players_for_role(enr, role, top_n=8, leagues=target_leagues,
+                                   max_value_eur=10_000_000)  # Rayo no gasta más de 10M€
         shortlists[role_label] = _clean(rk.to_dict("records")) if not rk.empty else []
     json.dump(shortlists, open(proc / "signing_shortlists.json", "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
@@ -244,3 +245,13 @@ def main():
     json.dump(_clean(out), open(proc / "coach_profiles.json", "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
     print(f"  {len(out)} entrenadores incluidos | {len(skipped)} eliminados (sin 1ª/2ª española):")
+    if skipped:
+        print(f"   Eliminados: {', '.join(skipped)}")
+    print("  Top-5 por encaje:")
+    for r in out[:5]:
+        ev = r["evaluation"]
+        print(f"   {ev.get('score_10')}/10  {r['name']:24s} | {r['style_main']}")
+
+
+if __name__ == "__main__":
+    main()

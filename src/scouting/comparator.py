@@ -274,7 +274,8 @@ class FitRayoScorer:
         s_a  = self._score_edad(age, pos)
         s_d  = self._score_disponibilidad(cu, name, squad_entry=squad_entry)
 
-        fit = round(0.35*s_r + 0.25*s_e + 0.20*s_a + 0.20*s_d, 1)
+        # Rendimiento primero (40%), económico importante (30%), edad y disponibilidad (15% c/u)
+        fit = round(0.40*s_r + 0.30*s_e + 0.15*s_a + 0.15*s_d, 1)
 
         def _sf(v) -> float:
             """Convierte a float de forma segura (NaN → 0)."""
@@ -446,71 +447,108 @@ class FitRayoScorer:
         }
 
     def _score_economico(self, mv: float) -> float:
-        bp = _budget_params()
-        mv_min   = bp.get("mv_min",   _RAYO_MV_MIN_FALLBACK)
-        mv_sweet = bp.get("mv_sweet", _RAYO_MV_SWEET_FALLBACK)
-        mv_max   = bp.get("mv_max",   _RAYO_MV_MAX_FALLBACK)
+        """
+        Encaje económico del Rayo Vallecano. Curva progresiva:
+          sin datos      → 50  (neutro: no sabemos el valor)
+          ≤ 500K         → 95  (baratísimo, perfecto)
+          500K – 3M      → 92  (muy asequible)
+          3M – 7M        → 90  (zona ideal Rayo)
+          7M – 10M       → 90→70  (empieza a bajar)
+          10M – 20M      → 70→20  (declive significativo; a 20M ya débil)
+          20M – 40M      → 20→5   (muy difícil)
+          40M – 70M      → 5→0    (prácticamente inviable)
+          > 70M          → 0      (imposible para el Rayo)
+        """
         if mv <= 0:
             return 50.0
-        if mv <= mv_min:
-            return 30.0
-        if mv <= mv_sweet:
+        if mv <= 500_000:
+            return 95.0
+        if mv <= 3_000_000:
+            return 92.0
+        if mv <= 7_000_000:
             return 90.0
-        if mv <= mv_max:
-            return round(90.0 - 40.0*(mv - mv_sweet)/(mv_max - mv_sweet), 1)
-        return 15.0   # demasiado caro
+        if mv <= 10_000_000:
+            return round(90.0 - 20.0 * (mv - 7_000_000) / 3_000_000, 1)
+        if mv <= 20_000_000:
+            return round(70.0 - 50.0 * (mv - 10_000_000) / 10_000_000, 1)
+        if mv <= 40_000_000:
+            return round(20.0 - 15.0 * (mv - 20_000_000) / 20_000_000, 1)
+        if mv <= 70_000_000:
+            return max(0.0, round(5.0 * (1.0 - (mv - 40_000_000) / 30_000_000), 1))
+        return 0.0
 
     def score_economico_breakdown(self, mv: float) -> dict:
         """Desglosa el score económico para la UI."""
-        bp       = _budget_params()
-        mv_min   = bp.get("mv_min",   _RAYO_MV_MIN_FALLBACK)
-        mv_sweet = bp.get("mv_sweet", _RAYO_MV_SWEET_FALLBACK)
-        mv_max   = bp.get("mv_max",   _RAYO_MV_MAX_FALLBACK)
-        score    = self._score_economico(mv)
+        score = self._score_economico(mv)
         if mv <= 0:
             tramo = "Desconocido (sin datos TM)"
-        elif mv <= mv_min:
-            tramo = f"Por debajo del mínimo ({mv_min/1e6:.1f}M€) → jugador muy económico"
-        elif mv <= mv_sweet:
-            tramo = f"En zona ideal (≤ {mv_sweet/1e6:.0f}M€) → precio óptimo para Rayo"
-        elif mv <= mv_max:
-            tramo = f"En zona de negociación ({mv_sweet/1e6:.0f}M–{mv_max/1e6:.0f}M€)"
+        elif mv <= 500_000:
+            tramo = "Baratísimo (≤ 500K€) — encaje perfecto"
+        elif mv <= 3_000_000:
+            tramo = "Muy asequible (≤ 3M€) — zona ideal"
+        elif mv <= 7_000_000:
+            tramo = "Zona ideal Rayo (3M–7M€)"
+        elif mv <= 10_000_000:
+            tramo = "Zona aceptable (7M–10M€) — empieza a bajar"
+        elif mv <= 20_000_000:
+            tramo = "Caro para el Rayo (10M–20M€) — declive significativo"
+        elif mv <= 40_000_000:
+            tramo = "Muy difícil (20M–40M€) — casi inviable"
+        elif mv <= 70_000_000:
+            tramo = "Prácticamente inviable (40M–70M€)"
         else:
-            tramo = f"Por encima del presupuesto máximo ({mv_max/1e6:.0f}M€)"
+            tramo = "Imposible para el Rayo (> 70M€)"
         return {
-            "mv_eur": mv, "mv_min": mv_min, "mv_sweet": mv_sweet, "mv_max": mv_max,
+            "mv_eur": mv,
+            "mv_sweet": 7_000_000, "mv_max": 20_000_000,
             "tramo": tramo, "score": score,
         }
 
     def _score_edad(self, age: float, pos: str) -> float:
+        """
+        Curva de edad para el Rayo: los jugadores jóvenes son ideales —
+        proyección, revalorización y mejor relación calidad/precio.
+
+          ≤ 21 años  → 95  (talento joven, máxima proyección)
+          22–25      → 90  (rango ideal de fichaje)
+          26–28      → 90→78  (maduro, menos recorrido)
+          29–30      → 78→60  (veterano funcional)
+          31–33      → 60→35  (inicio declive)
+          > 33       → 35→10  (mínimo funcional)
+        """
         if age <= 0:
             return 50.0
-        prime = {"GK":27,"CB":25,"RB":24,"LB":24,"DM":25,"CM":24,
-                 "AM":23,"RW":22,"LW":22,"ST":24}.get(pos, 24)
-        decl  = DECLINE_AGE.get(pos, 31)
-        if age < prime:
-            return round(max(40.0, 80.0 - (prime - age)*5), 1)
-        if age <= decl:
+        if age <= 21:
+            return 95.0
+        if age <= 25:
             return 90.0
-        return round(max(10.0, 90.0 - (age - decl)*8), 1)
+        if age <= 28:
+            return round(90.0 - (age - 25) * 4.0, 1)
+        if age <= 30:
+            return round(78.0 - (age - 28) * 9.0, 1)
+        if age <= 33:
+            return round(60.0 - (age - 30) * (25.0 / 3.0), 1)
+        return round(max(10.0, 35.0 - (age - 33) * 8.0), 1)
 
     def score_edad_breakdown(self, age: float, pos: str) -> dict:
         """Desglosa el score de edad para la UI."""
-        PRIME_AGE = {"GK":27,"CB":25,"RB":24,"LB":24,"DM":25,"CM":24,
-                     "AM":23,"RW":22,"LW":22,"ST":24}
-        prime = PRIME_AGE.get(pos, 24)
-        decl  = DECLINE_AGE.get(pos, 31)
         score = self._score_edad(age, pos)
         if age <= 0:
             fase = "Edad desconocida"
-        elif age < prime:
-            fase = f"En desarrollo (< {prime} años prime para {pos})"
-        elif age <= decl:
-            fase = f"En peak ({prime}–{decl} años)"
+        elif age <= 21:
+            fase = "Talento joven — máxima proyección y recorrido"
+        elif age <= 25:
+            fase = "Rango ideal de fichaje (22–25 años)"
+        elif age <= 28:
+            fase = "Maduro — buen rendimiento, menor proyección"
+        elif age <= 30:
+            fase = "Veterano funcional — encaje moderado"
+        elif age <= 33:
+            fase = "Inicio de declive — encaje reducido"
         else:
-            fase = f"En declive (> {decl} años para {pos})"
+            fase = "Veterano avanzado — encaje bajo"
         return {
-            "age": age, "pos": pos, "prime": prime, "decline": decl,
+            "age": age, "pos": pos, "prime": 23, "decline": 29,
             "fase": fase, "score": score,
         }
 

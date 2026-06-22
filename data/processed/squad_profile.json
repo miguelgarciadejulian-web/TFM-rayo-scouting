@@ -509,21 +509,19 @@
    "secondary_roles": [],
    "style_label": "Killer de area / referencia ofensiva",
    "strengths": [
-    "juego aereo (top 6%)",
-    "volumen de tiro (top 12%)",
-    "tiros a puerta (top 12%)",
-    "presencia en area rival (top 13%)"
+    "tiros a puerta (top 1%)",
+    "presencia en area rival (top 5%)",
+    "volumen de tiro (top 5%)",
+    "goles (top 6%)"
    ],
    "weaknesses": [
-    "centros (percentil 5)",
-    "asistencias (percentil 8)",
-    "regate (percentil 17)",
-    "juego en campo rival (percentil 22)"
+    "asistencias (percentil 29)",
+    "juego en campo rival (percentil 36)"
    ],
-   "risk_level": "bajo",
+   "risk_level": "medio-alto",
    "potential": "veterania",
-   "confidence": "media",
-   "minutes": 1640.0
+   "confidence": "baja",
+   "minutes": 891.0
   },
   {
    "name": "Carlos Martín",
@@ -609,16 +607,24 @@
    "contract_end": "2029-06-30",
    "market_value": 3000000,
    "matched": true,
-   "primary_role": null,
-   "primary_role_label": "Sin datos suficientes",
+   "primary_role": "extremo_asociativo",
+   "primary_role_label": "Extremo asociativo",
    "secondary_roles": [],
-   "style_label": "n/d",
-   "strengths": [],
-   "weaknesses": [],
-   "risk_level": "n/d",
-   "potential": "n/d",
-   "confidence": "insuficiente",
-   "minutes": 20.0
+   "style_label": "Extremo de juego interior y ultimo pase",
+   "strengths": [
+    "asistencias (top 12%)",
+    "pases clave (top 40%)"
+   ],
+   "weaknesses": [
+    "centros (percentil 15)",
+    "volumen de tiro (percentil 29)",
+    "presencia en area rival (percentil 37)",
+    "juego en campo rival (percentil 37)"
+   ],
+   "risk_level": "bajo",
+   "potential": "alto",
+   "confidence": "media",
+   "minutes": 957.0
   },
   {
    "name": "Sergio Camello",
@@ -680,7 +686,7 @@
    "Central corrector": 3,
    "Delantero movil": 1,
    "Delantero rematador": 2,
-   "Extremo asociativo": 1,
+   "Extremo asociativo": 2,
    "Extremo vertical": 1,
    "Interior llegador": 3,
    "Lateral defensivo": 1,
@@ -699,18 +705,20 @@
    "mediocentro_recuperador": 2,
    "interior_llegador": 3,
    "extremo_vertical": 1,
-   "extremo_asociativo": 1,
+   "extremo_asociativo": 2,
    "delantero_rematador": 2,
    "delantero_movil": 1
   },
-  "over_represented": [
-   "Interior llegador"
-  ],
+  "over_represented": [],
   "missing": [
    "Central dominador"
   ],
   "reinforce": [
-   "Portero"
+   "Portero",
+   "Lateral defensivo",
+   "Mediocentro organizador",
+   "Extremo vertical",
+   "Delantero movil"
   ],
   "aging_or_expiring": [
    {
@@ -781,4 +789,32 @@
     "role": "delantero_rematador",
     "role_label": "Delantero rematador",
     "age": 33,
-    "co
+    "contract_end": "2028-06-30"
+   },
+   {
+    "name": "Ilias Akhomach",
+    "role": "delantero_movil",
+    "role_label": "Delantero movil",
+    "age": 22,
+    "contract_end": "2026-06-30"
+   }
+  ],
+  "formation_used": "4-2-3-1",
+  "target_template": {
+   "Portero": 3,
+   "Central dominador": 1,
+   "Central corrector": 3,
+   "Lateral ofensivo": 2,
+   "Lateral defensivo": 2,
+   "Mediocentro organizador": 2,
+   "Mediocentro recuperador": 2,
+   "Interior llegador": 2,
+   "Extremo vertical": 2,
+   "Extremo asociativo": 2,
+   "Delantero rematador": 2,
+   "Delantero movil": 2
+  },
+  "squad_cap": 25,
+  "n_profiled": 20
+ }
+}

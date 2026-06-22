@@ -405,49 +405,92 @@ def layout(**_params):
         for p in players_all
     ]
 
+    def _kpi(icon, label, value, sub, grad, light):
+        return html.Div([
+            html.Div([html.I(className=f"ti {icon}", style={"fontSize":"18px","color":"#fff"})],
+                style={"background":grad,"borderRadius":"10px","width":"38px","height":"38px",
+                       "display":"flex","alignItems":"center","justifyContent":"center",
+                       "marginBottom":"10px","boxShadow":"0 3px 8px rgba(0,0,0,.14)"}),
+            html.Div(value, style={"fontSize":"24px","fontWeight":"900","color":"#1A1A2E","lineHeight":"1","marginBottom":"2px"}),
+            html.Div(label, style={"fontSize":"11px","fontWeight":"700","color":"#1A1A2E","marginBottom":"1px"}),
+            html.Div(sub,   style={"fontSize":"10px","color":"#6B7280"}),
+        ], style={"background":light,"border":"1px solid rgba(0,0,0,.06)","borderRadius":"14px",
+                  "padding":"14px 16px","height":"100%","boxShadow":"0 2px 6px rgba(0,0,0,.05)"})
+
+    mv_fmt = f"{total_mv/1e6:.0f}M€" if total_mv >= 1e6 else f"{total_mv:,}€"
+
     return html.Div([
         dcc.Location(id="plantilla-nav", refresh=True),
+
+        # ── Hero ─────────────────────────────────────────────────────────────
         html.Div([
-            html.P("PLANTILLA ACTUAL", style={"fontSize": "10px", "fontWeight": "600",
-                   "color": "#6B7280", "letterSpacing": ".08em", "margin": "0 0 3px"}),
-            html.H1("Rayo Vallecano 2025/26", className="page-title"),
-            html.P("Base para la planificación deportiva 2026/27. Clic en jugador para ver perfil.",
-                   className="page-subtitle"),
-        ], className="page-header"),
+            html.Div([
+                html.Div([html.I(className="ti ti-users-group",
+                           style={"fontSize":"28px","color":"#fff"})],
+                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                html.Div([
+                    html.Div("PLANTILLA 2025/26", style={"fontSize":"9px","fontWeight":"700",
+                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                    html.H1("Rayo Vallecano", style={"fontSize":"22px","fontWeight":"900",
+                        "color":"#fff","margin":"0 0 2px"}),
+                    html.Div("Clic en cualquier jugador para ver su perfil completo",
+                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                ]),
+            ], style={"display":"flex","alignItems":"center","flex":"1"}),
+            html.Div([
+                *[html.Div([
+                    html.Div(v, style={"fontSize":"22px","fontWeight":"900","color":"#fff","lineHeight":"1"}),
+                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.55)","fontWeight":"600","marginTop":"2px"}),
+                ], style={"textAlign":"center","padding":"0 16px","borderRight":s})
+                  for v,l,s in [
+                    (str(total_players), "jugadores", "1px solid rgba(255,255,255,.15)"),
+                    (mv_fmt, "valor mercado", "1px solid rgba(255,255,255,.15)"),
+                    (str(expiring), "contratos urgentes", "none"),
+                ]],
+            ], style={"display":"flex","alignItems":"center","flexShrink":"0"}),
+        ], style={"background":"linear-gradient(135deg,#1E40AF 0%,#1D4ED8 60%,#2563EB 100%)",
+                  "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
+                  "display":"flex","justifyContent":"space-between","alignItems":"center",
+                  "boxShadow":"0 8px 24px rgba(30,64,175,.25)"}),
 
+        # ── KPIs ──────────────────────────────────────────────────────────────
+        html.P("RESUMEN DE PLANTILLA", style={"fontSize":"9px","fontWeight":"700","color":"#6B7280",
+               "letterSpacing":".08em","marginBottom":"10px"}),
         dbc.Row([
-            dbc.Col(html.Div([html.P("Jugadores", className="kpi-label"),
-                html.P(str(total_players), className="kpi-value"),
-                html.P("en plantilla", className="kpi-sub")], className="kpi-modern"), md=2),
-            dbc.Col(html.Div([html.P("Valor total", className="kpi-label"),
-                html.P(f"{total_mv/1e6:.0f} M€", className="kpi-value"),
-                html.P("Transfermarkt may-26", className="kpi-sub")], className="kpi-modern"), md=2),
-            dbc.Col(html.Div([html.P("Presupuesto fichajes", className="kpi-label"),
-                html.P(f"{budget/1e6:.0f} M€", className="kpi-value"),
-                html.P("neto estimado 2026/27", className="kpi-sub")], className="kpi-modern"), md=2),
-            dbc.Col(html.Div([html.P("Contratos urgentes", className="kpi-label"),
-                html.P(str(expiring), className="kpi-value"),
-                html.P(f"vencen ≤{today.year + 1}", className="kpi-sub")],
-                className="kpi-modern danger"), md=2),
-            dbc.Col(html.Div([html.P("Cedidos en plantilla", className="kpi-label"),
-                html.P(str(n_cedidos), className="kpi-value"),
-                html.P("cesiones de otros clubes", className="kpi-sub")], className="kpi-modern"), md=2),
-            dbc.Col(html.Div([html.P("Líneas", className="kpi-label"),
-                html.P("4", className="kpi-value"),
-                html.P("GK / DEF / MED / DEL", className="kpi-sub")], className="kpi-modern"), md=2),
-        ], className="g-3 mb-3"),
+            dbc.Col(_kpi("ti-users","Jugadores",str(total_players),"en plantilla",
+                "linear-gradient(135deg,#1E40AF,#3B82F6)","#EFF6FF"), md=2),
+            dbc.Col(_kpi("ti-coin-euro","Valor de mercado",mv_fmt,"Transfermarkt may-26",
+                "linear-gradient(135deg,#5B21B6,#8B5CF6)","#F5F3FF"), md=2),
+            dbc.Col(_kpi("ti-wallet","Presupuesto",f"{budget/1e6:.0f}M€","neto estimado 2026/27",
+                "linear-gradient(135deg,#065F46,#10B981)","#ECFDF5"), md=2),
+            dbc.Col(_kpi("ti-alert-triangle","Contratos urgentes",str(expiring),f"vencen ≤{today.year+1}",
+                "linear-gradient(135deg,#991B1B,#E30613)","#FFF1F2"), md=2),
+            dbc.Col(_kpi("ti-transfer-in","Cedidos",str(n_cedidos),"cesiones de otros clubes",
+                "linear-gradient(135deg,#78350F,#F59E0B)","#FFFBEB"), md=2),
+            dbc.Col(_kpi("ti-layout-grid","Líneas","4","GK · DEF · MED · DEL",
+                "linear-gradient(135deg,#374151,#6B7280)","#F9FAFB"), md=2),
+        ], className="g-3 mb-4"),
 
-        html.P("ANÁLISIS VISUAL", style={"fontSize": "10px", "fontWeight": "700",
-               "color": "#9CA3AF", "letterSpacing": ".07em", "marginBottom": "8px"}),
+        html.P("ANÁLISIS VISUAL", style={"fontSize":"9px","fontWeight":"700",
+               "color":"#6B7280","letterSpacing":".08em","marginBottom":"10px"}),
         dbc.Row([
-            dbc.Col(html.Div([dcc.Graph(figure=_chart_age_scatter(players_all),
-                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
-            dbc.Col(html.Div([dcc.Graph(figure=_chart_position_donut(players_all),
-                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
-            dbc.Col(html.Div([dcc.Graph(figure=_chart_contract_status(players_all),
-                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
-            dbc.Col(html.Div([dcc.Graph(figure=_chart_mv_bars(players_all),
-                config={"displayModeBar": False}, style={"height": "230px"})], className="card-modern"), md=3),
+            dbc.Col(html.Div(dcc.Graph(figure=_chart_age_scatter(players_all),
+                config={"displayModeBar":False}, style={"height":"220px"}),
+                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
+                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
+            dbc.Col(html.Div(dcc.Graph(figure=_chart_position_donut(players_all),
+                config={"displayModeBar":False}, style={"height":"220px"}),
+                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
+                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
+            dbc.Col(html.Div(dcc.Graph(figure=_chart_contract_status(players_all),
+                config={"displayModeBar":False}, style={"height":"220px"}),
+                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
+                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
+            dbc.Col(html.Div(dcc.Graph(figure=_chart_mv_bars(players_all),
+                config={"displayModeBar":False}, style={"height":"220px"}),
+                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
+                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
         ], className="g-3 mb-4"),
 
         dbc.Row([

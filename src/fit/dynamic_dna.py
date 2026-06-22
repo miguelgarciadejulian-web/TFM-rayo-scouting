@@ -337,8 +337,8 @@ def _compute_economics(club: dict) -> dict:
 
     return {
         "transfer_budget_net_eur": budget,
-        "mv_max":                  round(budget * 2),
-        "mv_sweet":                round(budget * 0.80),
+        "mv_max":                  round(budget * 1.0),   # maximo real: = presupuesto total (ej. 10M€)
+        "mv_sweet":                round(budget * 0.25),  # zona ideal: 25% del presupuesto (ej. 2.5M€)
         "mv_min":                  round(mv_min_squad / 2),
         "target_salary_eur":       round(salary_mass * 0.03),   # ~3% masa salarial
         "max_salary_eur":          round(salary_mass * 0.05),   # ~5% masa salarial
