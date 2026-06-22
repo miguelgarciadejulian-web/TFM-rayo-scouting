@@ -163,4 +163,20 @@ GRAPH_CONFIG = {
     "modeBarButtonsToRemove": [
         "zoom2d", "pan2d", "select2d", "lasso2d",
         "zoomIn2d", "zoomOut2d", "autoScale2d",
-        "hoverClosestCartesian", "hoverCompareCart
+        "hoverClosestCartesian", "hoverCompareCartesian",
+        "toggleSpikelines",
+    ],
+    "displaylogo": False,
+    "toImageButtonOptions": {
+        "format": "png",
+        "filename": "rayo_scouting_chart",
+        "height": 600,
+        "width": 1000,
+        "scale": 2,
+    },
+}
+
+GRAPH_CONFIG_SIMPLE = {
+    "displayModeBar": False,
+    "displaylogo": False,
+}
