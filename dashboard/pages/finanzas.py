@@ -298,6 +298,25 @@ def _load_master_opts(leagues=None):
         opts.append({"label": f"{name}  ·  {team}  ({league})", "value": name})
     return opts[:3000]
 
+
+# ── Finanzas KPI card helper ──────────────────────────────────────────────────
+def _fkpi(icon: str, label: str, value, sub: str, grad1: str, grad2: str, icon_color: str = "#fff"):
+    """Gradient-icon KPI card matching the modern design system."""
+    return html.Div([
+        html.Div([html.I(className=f"ti {icon}",
+                         style={"fontSize":"20px","color":icon_color})],
+                 style={"width":"40px","height":"40px","borderRadius":"10px",
+                        "background":f"linear-gradient(135deg,{grad1},{grad2})",
+                        "display":"flex","alignItems":"center","justifyContent":"center",
+                        "marginBottom":"10px"}),
+        html.P(label, style={"fontSize":"10px","color":"#6B7280","margin":"0 0 2px",
+                              "textTransform":"uppercase","letterSpacing":".05em","fontWeight":"600"}),
+        html.P(str(value), style={"fontSize":"20px","fontWeight":"800","color":"#1A1A2E",
+                                   "margin":"0 0 2px","lineHeight":"1"}),
+        html.P(sub, style={"fontSize":"11px","color":"#9CA3AF","margin":"0"}),
+    ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px",
+              "padding":"16px","boxShadow":"0 2px 8px rgba(0,0,0,.06)"})
+
 # ── Tab 1: Salarios ───────────────────────────────────────────────────────────
 def tab_salarios(fin):
     players = fin["player_salaries"]
@@ -338,14 +357,10 @@ def tab_salarios(fin):
     return html.Div([
         dcc.Store(id="sal-overrides", data={}),
         dbc.Row([
-            dbc.Col(html.Div([html.P("Masa salarial base",className="kpi-label"),
-                html.P(_fmt(total),className="kpi-value"),html.P("sin bonus",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Total con bonus",className="kpi-label"),
-                html.P(_fmt(total+bonus),className="kpi-value"),html.P("bonus conocidos",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Límite LaLiga",className="kpi-label"),
-                html.P(_fmt(scl["limit_eur"]),className="kpi-value"),html.P(f"#{scl['laliga_ranking']} LaLiga",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Margen disponible",className="kpi-label"),
-                html.P(_fmt(scl["limit_eur"]-total),className="kpi-value"),html.P(f"{100-pct:.0f}% libre",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
+            dbc.Col(_fkpi("ti-wallet","Masa salarial base",_fmt(total),"sin bonus","#047857","#10B981"),md=3),
+            dbc.Col(_fkpi("ti-receipt","Total con bonus",_fmt(total+bonus),"bonus conocidos","#1D4ED8","#3B82F6"),md=3),
+            dbc.Col(_fkpi("ti-chart-bar","Límite LaLiga",_fmt(scl["limit_eur"]),f"#{scl['laliga_ranking']} LaLiga","#6D28D9","#8B5CF6"),md=3),
+            dbc.Col(_fkpi("ti-trending-up","Margen disponible",_fmt(scl["limit_eur"]-total),f"{100-pct:.0f}% libre","#065F46","#059669"),md=3),
         ], className="g-3 mb-3"),
         html.Div(id="sal-live-kpis"),
         html.Div([
@@ -407,10 +422,10 @@ def tab_presupuesto(fin):
 
     return html.Div([
         dbc.Row([
-            dbc.Col(html.Div([html.P("Ingresos estimados",className="kpi-label"),html.P(_fmt(total_rev),className="kpi-value"),html.P("temporada 2025/26",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Gastos estimados",className="kpi-label"),html.P(_fmt(total_exp),className="kpi-value"),html.P("estructura + plantilla",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Balance operativo",className="kpi-label"),html.P(_fmt(abs(balance)),className="kpi-value"),html.P("superávit" if balance>=0 else "déficit",className="kpi-sub")],className=f"kpi-modern {'danger' if balance<0 else ''}"),md=3),
-            dbc.Col(html.Div([html.P("Conference League",className="kpi-label"),html.P(_fmt(rev["conference_league_eur"]),className="kpi-value"),html.P("final 2024-25 (Crystal Palace 1-0)",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
+            dbc.Col(_fkpi("ti-arrow-up","Ingresos estimados",_fmt(total_rev),"temporada 2025/26","#047857","#10B981"),md=3),
+            dbc.Col(_fkpi("ti-arrow-down","Gastos estimados",_fmt(total_exp),"estructura + plantilla","#9F1239","#E30613"),md=3),
+            dbc.Col(_fkpi("ti-scale","Balance operativo",_fmt(abs(balance)),"superávit" if balance>=0 else "déficit","#047857" if balance>=0 else "#9F1239","#10B981" if balance>=0 else "#E30613"),md=3),
+            dbc.Col(_fkpi("ti-trophy","Conference League",_fmt(rev["conference_league_eur"]),"final 2024-25 (Crystal Palace 1-0)","#92400E","#F59E0B"),md=3),
         ], className="g-3 mb-3"),
         dbc.Row([
             dbc.Col(html.Div([
@@ -487,10 +502,10 @@ def tab_riesgo(fin):
         dcc.Store(id="clause-overrides", data={}),
 
         dbc.Row([
-            dbc.Col(html.Div([html.P("En riesgo MUY ALTO + ALTO",className="kpi-label"),html.P(str(muy_alto+alto),className="kpi-value"),html.P("jugadores",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Salidas libres (jun-2026)",className="kpi-label"),html.P(str(len(libres)),className="kpi-value"),html.P("contratos expiran",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Interés confirmado",className="kpi-label"),html.P(str(sum(1 for n in news if n.get("interest_level")=="confirmed")),className="kpi-value"),html.P("clubes con oferta/interés real",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
-            dbc.Col(html.Div([html.P("Sondeados",className="kpi-label"),html.P(str(sum(1 for n in news if n.get("interest_level")=="sounded")),className="kpi-value"),html.P("sin oferta formal",className="kpi-sub")],style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px","padding":"12px 16px","boxShadow":"0 1px 4px rgba(0,0,0,.05)"}),md=3),
+            dbc.Col(_fkpi("ti-alert-triangle","En riesgo ALTO",""+str(muy_alto+alto),"jugadores","#9F1239","#E30613"),md=3),
+            dbc.Col(_fkpi("ti-door-exit","Salidas libres jun-2026",str(len(libres)),"contratos expiran","#78350F","#F59E0B"),md=3),
+            dbc.Col(_fkpi("ti-building","Interés confirmado",str(sum(1 for n in news if n.get("interest_level")=="confirmed")),"clubes con oferta real","#1D4ED8","#3B82F6"),md=3),
+            dbc.Col(_fkpi("ti-eye","Sondeados",str(sum(1 for n in news if n.get("interest_level")=="sounded")),"sin oferta formal","#374151","#6B7280"),md=3),
         ], className="g-3 mb-3"),
 
         # Salidas libres

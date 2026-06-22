@@ -188,4 +188,164 @@ def layout(**_p):
                    "riesgo de adaptación alto; salario por encima de la referencia → riesgo económico.",
                    style={"fontSize": "12px", "color": "#374151"}),
         ], style=CARD),
+
+        # ── SCOUTING ──────────────────────────────────────────────────────────
+        _section_chip("ti-search", "METODOLOGÍA — SCOUTING", "#065F46"),
+        html.Div([
+            html.Div("3", style={"background":"linear-gradient(135deg,#065F46,#059669)",
+                "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
+                "display":"flex","alignItems":"center","justifyContent":"center",
+                "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
+            html.Span("Scouting", style={"fontSize":"18px","fontWeight":"800","color":"#1A1A2E"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
+        html.Div([
+            html.P("Paso 1 — Perfil del jugador. Se calcula igual que en Plantilla (percentiles "
+                   "por grupo posicional y liga, luego suma ponderada por rol).",
+                   style={"fontSize":"12px","color":"#374151"}),
+            html.P("Paso 2 — Fit Rayo de scouting (0-100). Se evalúan cuatro dimensiones:",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+            html.Table([
+                html.Thead(html.Tr([html.Th("Dimensión", style=TH), html.Th("Peso", style=TH), html.Th("Cálculo", style=TH)])),
+                html.Tbody([
+                    html.Tr([html.Td("Rol (calidad en el perfil principal)", style=TD), html.Td("40 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Percentil del rol principal · 0→0, 100→40 pts", style=TD)]),
+                    html.Tr([html.Td("Cobertura de necesidad (hueco en plantilla)", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("1.0 si el perfil está sub-representado, 0.0 si ya sobra", style=TD)]),
+                    html.Tr([html.Td("Estilo (afinidad con el ADN del Rayo)", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Distancia euclidiana entre percentiles del jugador y el ADN objetivo", style=TD)]),
+                    html.Tr([html.Td("Potencial por edad", style=TD), html.Td("10 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("≤21→10, ≤24→8, ≤28→5, ≤31→2, +31→0 pts", style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
+            html.P("Bandas de Fit: ≥ 80 Excelente · 65-79 Muy bueno · 50-64 Bueno · 35-49 Dudoso · < 35 No encaja.",
+                   style={"fontSize":"11px","color":"#6B7280"}),
+            html.P("Paso 3 — Filtros aplicables: liga/país, edad mín/máx, minutos mínimos, posición, "
+                   "Fit mínimo, valor TM máximo. Los jugadores en el dashboard de scouting son siempre "
+                   "de fuera de la plantilla actual del Rayo.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+        ], style=CARD),
+
+        # ── COMPARADOR ────────────────────────────────────────────────────────
+        _section_chip("ti-arrows-left-right", "METODOLOGÍA — COMPARADOR", "#5B21B6"),
+        html.Div([
+            html.Div("4", style={"background":"linear-gradient(135deg,#5B21B6,#7C3AED)",
+                "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
+                "display":"flex","alignItems":"center","justifyContent":"center",
+                "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
+            html.Span("Comparador de jugadores", style={"fontSize":"18px","fontWeight":"800","color":"#1A1A2E"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
+        html.Div([
+            html.P("La comparación es siempre head-to-head por percentiles dentro del MISMO grupo "
+                   "posicional y liga. Ambos jugadores se muestran sobre los mismos ejes para que "
+                   "los valores sean directamente comparables (peras con peras).",
+                   style={"fontSize":"12px","color":"#374151"}),
+            html.P("Radar chart: cada vértice es una métrica clave del grupo posicional. El área "
+                   "rellenada refleja el percentil (0 = centro, 100 = borde externo).",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+            html.P("Veredicto automático: suma ponderada de diferencias de percentil en las métricas "
+                   "del rol principal de cada jugador. Si la diferencia es < 5 pts se considera "
+                   "\"equivalentes\"; > 15 pts determina un claro favorito.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+            html.P("Nota: los jugadores se buscan en player_seasons_enriched. Si un jugador tiene "
+                   "varias temporadas, se utiliza la más reciente con más minutos.",
+                   style={"fontSize":"11px","color":"#6B7280","marginTop":"6px"}),
+        ], style=CARD),
+
+        # ── PLANTILLA ─────────────────────────────────────────────────────────
+        _section_chip("ti-users-group", "METODOLOGÍA — PLANTILLA", "#1E40AF"),
+        html.Div([
+            html.Div("5", style={"background":"linear-gradient(135deg,#1E40AF,#2563EB)",
+                "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
+                "display":"flex","alignItems":"center","justifyContent":"center",
+                "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
+            html.Span("Plantilla", style={"fontSize":"18px","fontWeight":"800","color":"#1A1A2E"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
+        html.Div([
+            html.P("Valor de mercado total: suma de los valores TM (Transfermarkt) de los jugadores "
+                   "de la plantilla actual. Los sub-21 tienen su propio subtotal.",
+                   style={"fontSize":"12px","color":"#374151"}),
+            html.P("Contratos por expirar: se marcan como urgentes los que finalizan en ≤ 12 meses "
+                   "(junio del año siguiente). Se diferencian tres estados: 2025 (ya expirado), "
+                   "2026 (inminente), 2027+ (margen de tiempo).",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+            html.P("Distribución de edad: < 21 cantera/futuro · 21-26 proyección · 27-30 peak · "
+                   "> 30 veteranía. El equilibrio ideal del Rayo es ≈ 25-26 años de media.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+            html.P("Perfil posicional: los jugadores se asignan a un grupo (portero, defensa central, "
+                   "lateral, mediocentro, mediapunta, extremo, delantero) según su posición principal. "
+                   "El conteo determina si hay superávit o déficit en cada línea.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+        ], style=CARD),
+
+        # ── DECISIONES ────────────────────────────────────────────────────────
+        _section_chip("ti-checklist", "METODOLOGÍA — DECISIONES", "#78350F"),
+        html.Div([
+            html.Div("6", style={"background":"linear-gradient(135deg,#78350F,#B45309)",
+                "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
+                "display":"flex","alignItems":"center","justifyContent":"center",
+                "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
+            html.Span("Decisiones (Fichajes / Renovaciones / Salidas)", style={"fontSize":"18px","fontWeight":"800","color":"#1A1A2E"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
+        html.Div([
+            html.P("Recomendación de fichaje — score 0-100 (4 factores):",
+                   style={"fontSize":"12px","color":"#374151","fontWeight":"600"}),
+            html.Table([
+                html.Thead(html.Tr([html.Th("Factor", style=TH), html.Th("Peso", style=TH), html.Th("Umbral", style=TH)])),
+                html.Tbody([
+                    html.Tr([html.Td("Fit Rayo (rol + cobertura + estilo + edad)", style=TD), html.Td("50 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("≥ 70 → fichar · 50-69 → estudiar · < 50 → descartar", style=TD)]),
+                    html.Tr([html.Td("Situación contractual (libre, 1 año, cláusula asequible)", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Libre = máx · 1 año = alto · cláusula > 2×MV = penaliza", style=TD)]),
+                    html.Tr([html.Td("Viabilidad económica (MV vs presupuesto disponible)", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("MV ≤ 50% presupuesto = verde · MV > 100% = rojo", style=TD)]),
+                    html.Tr([html.Td("Afinidad entrenador (estilo demandado por el técnico)", style=TD), html.Td("10 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Distancia entre percentiles del jugador y el perfil típico del entrenador", style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"12px"}),
+            html.P("Recomendación de renovación — 3 niveles:",
+                   style={"fontSize":"12px","color":"#374151","fontWeight":"600","marginTop":"6px"}),
+            html.Table([
+                html.Thead(html.Tr([html.Th("Nivel", style=TH), html.Th("Criterios", style=TH)])),
+                html.Tbody([
+                    html.Tr([html.Td("🟢 Renovar (urgente)", style={**TD,"color":"#166534","fontWeight":"700"}), html.Td("Contrato ≤ 1 año + titular indiscutible (> 1500 min) + Fit Rayo ≥ 65", style=TD)]),
+                    html.Tr([html.Td("🟡 Evaluar", style={**TD,"color":"#92400E","fontWeight":"700"}), html.Td("Contrato ≤ 2 años o rendimiento en zona media (900-1499 min)", style=TD)]),
+                    html.Tr([html.Td("🔴 Dejar salir / no renovar", style={**TD,"color":"#991B1B","fontWeight":"700"}), html.Td("< 900 min + Fit < 50 o MV muy por debajo de coste salarial", style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"12px"}),
+            html.P("Candidatos a salida: jugadores con Fit < 40, o cedidos con rendimiento bajo, "
+                   "o cuyo salario anual supera 2× su valor de mercado estimado.",
+                   style={"fontSize":"11px","color":"#6B7280"}),
+        ], style=CARD),
+
+        # ── FINANZAS ──────────────────────────────────────────────────────────
+        _section_chip("ti-coin", "METODOLOGÍA — FINANZAS", "#064E3B"),
+        html.Div([
+            html.Div("7", style={"background":"linear-gradient(135deg,#064E3B,#047857)",
+                "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
+                "display":"flex","alignItems":"center","justifyContent":"center",
+                "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
+            html.Span("Finanzas", style={"fontSize":"18px","fontWeight":"800","color":"#1A1A2E"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
+        html.Div([
+            html.P("Masa salarial base: suma de salary_annual de todos los jugadores de la plantilla "
+                   "(salary_estimates.yaml + datos de SalaryLeaks/Capology). Los bonus se suman aparte.",
+                   style={"fontSize":"12px","color":"#374151"}),
+            html.P("Límite salarial LaLiga (FFP): dato publicado por LaLiga para la temporada actual. "
+                   "El % de uso = masa_salarial_base / límite × 100. Verde < 75% · Ámbar 75-90% · Rojo > 90%.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+            html.P("Presupuesto — ingresos estimados: TV LaLiga (reparto según clasificación previa), "
+                   "UEFA (primas de ronda), matchday (aforo × precio medio × partidos), "
+                   "comercial/patrocinio, otros. Los gastos incluyen masa salarial bruta, "
+                   "amortizaciones de traspasos (coste/años de contrato) y costes operativos.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"6px"}),
+            html.P("Score de riesgo de cláusula (0-100 por jugador):",
+                   style={"fontSize":"12px","color":"#374151","fontWeight":"600","marginTop":"6px"}),
+            html.Table([
+                html.Thead(html.Tr([html.Th("Factor", style=TH), html.Th("Peso", style=TH), html.Th("Detalle", style=TH)])),
+                html.Tbody([
+                    html.Tr([html.Td("Meses restantes de contrato", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("≤ 6m = 30 pts · ≤ 12m = 20 pts · ≤ 24m = 10 pts · > 24m = 0 pts", style=TD)]),
+                    html.Tr([html.Td("Ratio cláusula / valor TM", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("< 1× = 30 pts (cláusula barata) · 1-2× = 15 · > 3× = 0 pts", style=TD)]),
+                    html.Tr([html.Td("Edad (pico de demanda 24-28)", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700"}), html.Td("24-28 = 20 pts · 22-23 = 12 · < 22 o > 31 = 0 pts", style=TD)]),
+                    html.Tr([html.Td("Interés real confirmado (noticias)", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700"}), html.Td("Interés confirmado = 20 pts · sondeado = 10 pts · sin noticias = 0 pts", style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
+            html.P("Niveles: ≥ 70 MUY ALTO · 50-69 ALTO · 30-49 MEDIO · < 30 BAJO.",
+                   style={"fontSize":"11px","color":"#6B7280"}),
+            html.P("Simulador de fichajes: el score de viabilidad (0-100) combina impacto en la masa "
+                   "salarial (Δ vs límite), retorno esperado de MV a 3 años (potencial × años de contrato) "
+                   "y liberación de salario si hay un jugador cedido o vendido asociado a la operación.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"8px"}),
+        ], style=CARD),
     ])
