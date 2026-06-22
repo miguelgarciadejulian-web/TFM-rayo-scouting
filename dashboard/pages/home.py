@@ -32,9 +32,9 @@ _DARK  = "#1A1A2E"
 _GRAY  = "#6B7280"
 _WHITE = "#FFFFFF"
 
-_CORP_GRAD  = "linear-gradient(135deg,#0D0D0D 0%,#1A1A1A 100%)"
+_CORP_GRAD  = "linear-gradient(135deg,#E30613 0%,#C4000F 100%)"
 _CORP_LIGHT = "#FFFFFF"
-_CORP_ACC   = "#B8960C"   # amarillo oscuro — legible sobre fondo claro
+_CORP_ACC   = "#E30613"   # rojo corporativo Rayo
 
 MODULE_META = {
     "plantilla":    (_CORP_GRAD, _CORP_LIGHT, _CORP_ACC),
@@ -132,12 +132,12 @@ def _load_scouting_kpis() -> dict:
 
 def _kpi_card(icon: str, label: str, value: str, sub: str,
               danger: bool = False) -> html.Div:
-    icon_bg    = "linear-gradient(135deg,#DC2626,#EF4444)" if danger else "linear-gradient(135deg,#0D0D0D,#2A2A2A)"
-    top_border = "#DC2626" if danger else "#FFD600"
+    icon_bg    = "linear-gradient(135deg,#991B1B,#DC2626)" if danger else "linear-gradient(135deg,#E30613,#C4000F)"
+    top_border = "#991B1B" if danger else "#E30613"
     return html.Div([
         html.Div([
             html.I(className=f"ti {icon}",
-                   style={"fontSize": "20px", "color": "#FFD600" if not danger else _WHITE}),
+                   style={"fontSize": "20px", "color": _WHITE}),
         ], style={
             "background": icon_bg, "borderRadius": "10px",
             "width": "42px", "height": "42px",
@@ -235,7 +235,7 @@ def _chart_age(ages: list[int]) -> go.Figure:
     fig = go.Figure()
     fig.add_trace(go.Histogram(
         x=ages, xbins=dict(start=16, end=42, size=1),
-        marker=dict(color="#FFD600", line=dict(color=_WHITE, width=0.5)),
+        marker=dict(color="#E30613", line=dict(color=_WHITE, width=0.5)),
         opacity=0.85,
         hovertemplate="<b>Edad %{x}</b><br>%{y} jugadores<extra></extra>",
     ))

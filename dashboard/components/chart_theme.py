@@ -17,8 +17,8 @@ import plotly.graph_objects as go
 import plotly.io as pio
 
 # ── Paleta de colores ────────────────────────────────────────────────────────
-RAYO_YELLOW  = "#FFD600"   # amarillo corporativo Rayo Vallecano
-RAYO_RED     = "#FFD600"   # alias para compatibilidad con código existente
+RAYO_RED     = "#E30613"   # rojo corporativo Rayo Vallecano (color principal)
+RAYO_YELLOW  = "#FFD600"   # amarillo escudo (acento secundario)
 RAYO_DARK    = "#0D0D0D"   # negro corporativo
 RAYO_GRAY    = "#6B7280"
 RAYO_LIGHT   = "#F3F4F6"
@@ -33,7 +33,7 @@ C_PURPLE     = "#7C3AED"   # púrpura acento
 
 # Paleta para series múltiples (orden de prioridad visual)
 SERIES_COLORS = [
-    RAYO_YELLOW, RAYO_DARK, C_BLUE, C_POSITIVE, C_WARNING, C_PURPLE,
+    RAYO_RED, RAYO_DARK, C_BLUE, C_POSITIVE, C_WARNING, C_PURPLE,
     "#F97316", "#06B6D4", "#8B5CF6", "#10B981",
 ]
 
@@ -78,7 +78,7 @@ _TEMPLATE = go.layout.Template(
         ),
         margin=dict(l=48, r=24, t=48, b=40),
         colorscale=dict(
-            sequential=[[0, "#FFFDE7"], [0.5, RAYO_YELLOW], [1, RAYO_DARK]],
+            sequential=[[0, "#FEE2E2"], [0.5, RAYO_RED], [1, RAYO_DARK]],
         ),
     )
 )
@@ -138,8 +138,8 @@ def score_color(value: float, scale: float = 100.0) -> str:
 
 
 def sequential_reds(n: int) -> list[str]:
-    """n colores desde amarillo claro (#FFFDE7) a amarillo Rayo (#FFD600)."""
-    base = (255/255, 214/255, 0/255)      # FFD600 en RGB [0,1]
+    """n colores desde rojo claro (#FEE2E2) a rojo Rayo (#E30613)."""
+    base = (227/255, 6/255, 19/255)        # E30613 en RGB [0,1]
     result = []
     for i in range(n):
         t = i / max(n - 1, 1)

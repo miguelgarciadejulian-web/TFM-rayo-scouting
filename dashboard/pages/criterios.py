@@ -26,7 +26,7 @@ DNA = yaml.safe_load(open(ROOT / "config" / "rayo_dna.yaml", encoding="utf-8"))
 CARD = {"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "12px",
         "padding": "16px 20px", "marginBottom": "14px"}
 TH = {"fontSize": "10px", "fontWeight": "700", "color": "#9CA3AF", "textTransform": "uppercase",
-      "padding": "5px 10px", "textAlign": "left", "borderBottom": "2px solid #FFD600"}
+      "padding": "5px 10px", "textAlign": "left", "borderBottom": "2px solid #E30613"}
 TD = {"fontSize": "12px", "padding": "5px 10px", "color": "#374151", "borderBottom": "1px solid #F3F4F6"}
 
 
@@ -49,7 +49,7 @@ def _role_block(role):
             html.Strong(ROLE_LABELS.get(role, role), style={"fontSize": "13px", "color": "#1A1A2E"}),
             html.Span(f"  grupo {d['group']}", style={"fontSize": "10px", "color": "#9CA3AF"}),
         ], style={"marginBottom": "4px"}),
-        html.P(STYLE_BY_ROLE.get(role, ""), style={"fontSize": "11px", "color": "#1D4ED8", "margin": "0 0 6px"}),
+        html.P(STYLE_BY_ROLE.get(role, ""), style={"fontSize": "11px", "color": "#E30613", "margin": "0 0 6px"}),
         _weights_table(d["weights"]),
     ], style={**CARD, "marginBottom": "10px"})
 
@@ -126,10 +126,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 1 · PLANTILLA
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-users-group", "1 · METODOLOGÍA — PLANTILLA", "#B8960C"),
+        _section_chip("ti-users-group", "1 · METODOLOGÍA — PLANTILLA", "#E30613"),
         html.Div([
             html.Div([
-                html.Div("1", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
+                html.Div("1", style={"background":"linear-gradient(135deg,#E30613,#C4000F)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -157,10 +157,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 2 · SCOUTING + JUGADORES (perfil individual)
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-search", "2 · METODOLOGÍA — SCOUTING Y PERFIL DE JUGADOR", "#B8960C"),
+        _section_chip("ti-search", "2 · METODOLOGÍA — SCOUTING Y PERFIL DE JUGADOR", "#E30613"),
         html.Div([
             html.Div([
-                html.Div("2", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
+                html.Div("2", style={"background":"linear-gradient(135deg,#E30613,#C4000F)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -183,7 +183,7 @@ def layout(**_p):
         dbc.Row([dbc.Col(_role_block(r), md=6) for r in ROLE_DEFINITIONS if r != "portero"]),
         html.Div([
             html.Div([
-                html.Div("2b", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
+                html.Div("2b", style={"background":"linear-gradient(135deg,#E30613,#C4000F)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"13px","marginRight":"10px","flexShrink":"0"}),
@@ -211,10 +211,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 3 · COMPARADOR
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-arrows-left-right", "3 · METODOLOGÍA — COMPARADOR", "#B8960C"),
+        _section_chip("ti-arrows-left-right", "3 · METODOLOGÍA — COMPARADOR", "#E30613"),
         html.Div([
             html.Div([
-                html.Div("3", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
+                html.Div("3", style={"background":"linear-gradient(135deg,#E30613,#C4000F)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -239,10 +239,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 4 · ENTRENADORES
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-chalkboard", "4 · METODOLOGÍA — ENTRENADORES", "#B8960C"),
+        _section_chip("ti-chalkboard", "4 · METODOLOGÍA — ENTRENADORES", "#E30613"),
         html.Div([
             html.Div([
-                html.Div("4", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
+                html.Div("4", style={"background":"linear-gradient(135deg,#E30613,#C4000F)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -280,10 +280,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 5 · DECISIONES
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-checklist", "5 · METODOLOGÍA — DECISIONES", "#B8960C"),
+        _section_chip("ti-checklist", "5 · METODOLOGÍA — DECISIONES", "#E30613"),
         html.Div([
             html.Div([
-                html.Div("5", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
+                html.Div("5", style={"background":"linear-gradient(135deg,#E30613,#C4000F)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),
@@ -322,10 +322,10 @@ def layout(**_p):
         # ═══════════════════════════════════════════════════════════════
         # 6 · FINANZAS
         # ═══════════════════════════════════════════════════════════════
-        _section_chip("ti-coin", "6 · METODOLOGÍA — FINANZAS", "#B8960C"),
+        _section_chip("ti-coin", "6 · METODOLOGÍA — FINANZAS", "#E30613"),
         html.Div([
             html.Div([
-                html.Div("6", style={"background":"linear-gradient(135deg,#0D0D0D,#2A2A2A)",
+                html.Div("6", style={"background":"linear-gradient(135deg,#E30613,#C4000F)",
                     "color":"#fff","borderRadius":"50%","width":"28px","height":"28px",
                     "display":"flex","alignItems":"center","justifyContent":"center",
                     "fontWeight":"900","fontSize":"14px","marginRight":"10px","flexShrink":"0"}),

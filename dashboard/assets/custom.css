@@ -3,6 +3,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
+  --rayo-red:       #E30613;
+  --rayo-red-dk:    #C4000F;
   --rayo-yellow:    #FFD600;
   --rayo-yellow-dk: #E6C000;
   --rayo-black:     #0D0D0D;
@@ -96,18 +98,18 @@ body {
 }
 
 .nav-link-sidebar:hover {
-  background: rgba(255,214,0,.12);
-  color: var(--rayo-yellow) !important;
+  background: rgba(227,6,19,.10);
+  color: var(--rayo-red) !important;
 }
 
 .nav-link-sidebar.active {
-  background: var(--rayo-yellow) !important;
-  color: #0D0D0D !important;
+  background: var(--rayo-red) !important;
+  color: #ffffff !important;
   font-weight: 700;
 }
 
 .nav-link-sidebar.active .ti {
-  color: #0D0D0D !important;
+  color: #ffffff !important;
 }
 
 .nav-link-sidebar .ti {
@@ -184,7 +186,7 @@ body {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--rayo-yellow);
+  background: var(--rayo-red);
 }
 
 .kpi-modern .kpi-label {
@@ -251,12 +253,12 @@ body {
 }
 
 .dash-table-container tr:hover td {
-  background: #FFFCE6 !important;
+  background: #FEF2F2 !important;
 }
 
 .dash-table-container tr.row--selected td {
-  background: #FFF9C4 !important;
-  border-left: 3px solid var(--rayo-yellow) !important;
+  background: #FEE2E2 !important;
+  border-left: 3px solid var(--rayo-red) !important;
 }
 
 /* Paginación */
@@ -291,7 +293,7 @@ body {
   min-height: 34px !important;
 }
 
-.Select-control:hover { border-color: var(--rayo-yellow) !important; }
+.Select-control:hover { border-color: var(--rayo-red) !important; }
 
 /* ── Badges ──────────────────────────────────────────────────────────────── */
 .badge-pos {
