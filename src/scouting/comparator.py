@@ -74,6 +74,44 @@ DECLINE_AGE: dict[str, int] = {
     "RW": 29, "LW": 29, "ST": 31,
 }
 
+# ---------------------------------------------------------------------------
+# Dificultad de liga — multiplicador sobre score_rendimiento (0-1)
+# Un jugador de Segunda que juega igual que uno de Primera es menos valioso
+# porque la liga es más fácil. El rendimiento se escala por este factor.
+# ---------------------------------------------------------------------------
+LEAGUE_DIFFICULTY: dict[str, float] = {
+    # Top 5 ligas europeas → 1.00
+    "Spain_Primera_Division":    1.00,
+    "England_Premier_League":    1.00,
+    "Germany_Bundesliga":        0.97,
+    "Italy_Serie_A":             0.97,
+    "France_Ligue_1":            0.95,
+    # Ligas de nivel medio-alto
+    "Portugal_Primeira_Liga":    0.90,
+    "Netherlands_Eredivisie":    0.90,
+    "Belgium_First_Division_A":  0.88,
+    "Türkiye_Süper_Lig":         0.88,
+    "England_Championship":      0.87,
+    "Scotland_Premiership":      0.85,
+    "Germany_2_Bundesliga":      0.85,
+    # América y resto
+    "Brazil_Serie_A":            0.85,
+    "Argentina_Liga_Profesional":0.84,
+    "Mexico_Liga_MX":            0.82,
+    "USA_MLS":                   0.80,
+    "Colombia_Primera_A":        0.78,
+    "Chile_Primera_Division":    0.77,
+    # Segunda española
+    "Spain_Segunda_Division":    0.82,
+}
+_LEAGUE_DIFF_DEFAULT = 0.80  # para ligas no listadas
+
+
+def _league_difficulty(league: str | None) -> float:
+    if not league:
+        return 1.0  # sin dato → no penalizar
+    return LEAGUE_DIFFICULTY.get(str(league), _LEAGUE_DIFF_DEFAULT)
+
 
 # ---------------------------------------------------------------------------
 # Dataclass resultado
@@ -424,14 +462,17 @@ class FitRayoScorer:
         ga90   = (self._sf(row.get("goals")) + self._sf(row.get("assists"))) / max(mins/90, 1)
         ga_s   = min(100.0, ga90 * 300)
         duel_s = min(100.0, self._sf(row.get("tackles_won")) / max(mins/90, 1) * 150)
-        return round((0.5*min_s + 0.3*ga_s + 0.2*duel_s), 1)
+        raw    = 0.5*min_s + 0.3*ga_s + 0.2*duel_s
+        diff   = _league_difficulty(row.get("league"))
+        return round(raw * diff, 1)
 
     def score_rendimiento_breakdown(self, row: pd.Series) -> dict:
         """Desglosa el score de rendimiento para mostrar en la UI."""
         mins = self._sf(row.get("minutes"))
         if mins <= 0:
             return {"mins": 0, "goals": 0, "assists": 0, "tackles_won": 0,
-                    "min_s": 0, "ga_s": 0, "duel_s": 0, "score": 10.0}
+                    "min_s": 0, "ga_s": 0, "duel_s": 0, "score": 10.0,
+                    "league_diff": 1.0, "league": ""}
         goals   = self._sf(row.get("goals"))
         assists = self._sf(row.get("assists"))
         duels   = self._sf(row.get("tackles_won"))
@@ -439,11 +480,15 @@ class FitRayoScorer:
         ga90    = (goals + assists) / max(mins/90, 1)
         ga_s    = round(min(100.0, ga90 * 300), 1)
         duel_s  = round(min(100.0, duels / max(mins/90, 1) * 150), 1)
-        score   = round(0.5*min_s + 0.3*ga_s + 0.2*duel_s, 1)
+        raw     = round(0.5*min_s + 0.3*ga_s + 0.2*duel_s, 1)
+        diff    = _league_difficulty(row.get("league"))
+        score   = round(raw * diff, 1)
         return {
             "mins": int(mins), "goals": int(goals), "assists": int(assists),
             "tackles_won": int(duels),
-            "min_s": min_s, "ga_s": ga_s, "duel_s": duel_s, "score": score,
+            "min_s": min_s, "ga_s": ga_s, "duel_s": duel_s,
+            "raw_score": raw, "league_diff": diff,
+            "league": str(row.get("league", "") or ""), "score": score,
         }
 
     def _score_economico(self, mv: float) -> float:
@@ -771,46 +816,4 @@ class FitRayoScorer:
             rows = self.economic[mask]
             if not rows.empty:
                 v = rows.iloc[0].get("market_value_eur")
-                if v and float(v) > 0:
-                    return float(v)
-        # 2) por display_name
-        if "display_name" in self.economic.columns:
-            mask = self.economic["display_name"].apply(_n) == nl
-            rows = self.economic[mask]
-            if not rows.empty:
-                v = rows.iloc[0].get("market_value_eur")
-                if v and float(v) > 0:
-                    return float(v)
-        return 0.0
-
-    def _get_contract(self, name: str) -> str | None:
-        if self.economic is None or self.economic.empty:
-            return None
-        import unicodedata
-        def _n(s): return unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode().lower()
-        nl = _n(name)
-        for col in ("canonical_name", "display_name"):
-            if col not in self.economic.columns:
-                continue
-            mask = self.economic[col].apply(_n) == nl
-            rows = self.economic[mask]
-            if not rows.empty:
-                v = rows.iloc[0].get("contract_until")
-                if v and str(v) not in ("nan", "None", ""):
-                    return str(v)[:10]
-        return None
-
-
-# ---------------------------------------------------------------------------
-# Factory helper
-# ---------------------------------------------------------------------------
-
-def load_scorer(proc_path: Path, squad_info: list[dict] | None = None) -> "FitRayoScorer":
-    """Carga los parquets y devuelve un FitRayoScorer listo para usar."""
-    master_path   = proc_path / "master_players.parquet"
-    economic_path = proc_path / "player_economic.parquet"
-
-    master = pd.read_parquet(master_path) if master_path.exists() else pd.DataFrame()
-    economic = pd.read_parquet(economic_path) if economic_path.exists() else None
-
-    return FitRayoScorer(master_df=master, economic_df=economic, squad_info=squad_info or [])
+                if v a

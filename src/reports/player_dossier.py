@@ -34,6 +34,25 @@ from src.profiling.player_profile import (
 from src.fit.player_fit import evaluate_player_fit
 from src.utils.market import get_value
 
+
+def _comparator_fit(name: str, proc: Path) -> float | None:
+    """Devuelve el fit_score del comparador (0-100), mismo número que el perfil web."""
+    try:
+        import yaml
+        from src.scouting.comparator import load_scorer
+        cfg_path = proc.parent.parent / "config" / "club_profile.yaml"
+        with open(cfg_path, encoding="utf-8") as _f:
+            club = yaml.safe_load(_f)
+        squad = []
+        for section in club.get("squad_2025_26", {}).values():
+            if isinstance(section, list):
+                squad.extend(section)
+        scorer = load_scorer(proc, squad)
+        results = scorer.compare([name])
+        return float(results[0].fit_score) if results else None
+    except Exception:
+        return None
+
 # Paleta Rayo
 C_RED      = colors.HexColor("#E30613")
 C_RED_LT   = colors.HexColor("#FCA5A5")
@@ -270,7 +289,7 @@ def _fit_chart(fit, prof, w_cm=16.5, h_cm=3.2):
     for bar,score in zip(bars,scores):
         ax.text(min(score+2,111), bar.get_y()+bar.get_height()/2,
                 f"{score:.0f}", va="center", fontsize=9.5, fontweight="bold", color=M_WHITE)
-    fit_10 = fit.get("global_fit_10","?")
+    fit_10 = fit.get("_unified_10") or fit.get("global_fit_10","?")
     ax.set_title(f"FIT RAYO  {fit_10}/10", fontsize=11, color=M_RED, fontweight="bold", pad=6, loc="left")
     plt.tight_layout(pad=0.3)
     return _img(fig, w_cm, h_cm)
@@ -363,9 +382,10 @@ def _build_hero(cname, crow, mv, prof, fit, foto, sal_s, st):
         f"{age_v} anos" if age_v else None, ht_s or None,
         f"pie {foot_s}" if foot_s else None, pos_s or None,
     ]))
-    fit_10 = fit.get("global_fit_10","?") if fit else "?"
-    fit_v  = fit.get("global_fit",0) if fit else 0
-    fit_col_s = "#059669" if fit_v>=65 else ("#D97706" if fit_v>=45 else "#EF4444")
+    # Score unificado: leer del dict fit (inyectado en build_player_dossier)
+    fit_v_hero = fit.get("_unified_v", fit.get("global_fit", 0)) if fit else 0
+    fit_10     = fit.get("_unified_s", (f"{fit.get('global_fit_10','?')}/10" if fit else "n/d"))
+    fit_col_s  = "#059669" if fit_v_hero>=65 else ("#D97706" if fit_v_hero>=45 else "#EF4444")
     txt = [
         Paragraph(cname, st["hero_name"]), Spacer(1,3),
         Paragraph(f"{team_s}  .  {league_s}", st["hero_sub"]), Spacer(1,5),
@@ -452,8 +472,21 @@ def build_player_dossier(name, team=None):
     league_s = str(crow.get("league","")).replace("_"," ")
     pos_s    = str(mv.get("position") or pos or "")
     sal_s    = _est_salary(mv.get("value_eur",0), league_s, mins_v, age_v, pos_s)
-    fit_s    = f"{fit['global_fit_10']}/10" if fit else "n/d"
-    fit_v    = fit.get("global_fit",0) if fit else 0
+    # Score unificado: usar el mismo cálculo que el perfil web (comparador)
+    _comp_fit = _comparator_fit(cname, PROC)
+    if _comp_fit is not None:
+        fit_v    = _comp_fit
+        fit_s    = f"{round(_comp_fit/10,1)}/10"
+    elif fit:
+        fit_v    = fit.get("global_fit", 0)
+        fit_s    = f"{fit['global_fit_10']}/10"
+    else:
+        fit_v    = 0; fit_s = "n/d"
+    # Inyectar en fit dict para que _build_hero y _fit_chart lo usen
+    if fit:
+        fit["_unified_v"] = fit_v
+        fit["_unified_s"] = fit_s
+        fit["_unified_10"] = round(fit_v / 10, 1) if fit_v else "?"
     fit_bg   = (colors.HexColor("#064E3B") if fit_v>=65 else
                 colors.HexColor("#451A03") if fit_v>=45 else colors.HexColor("#450A0A"))
     fit_fg   = (C_GREEN if fit_v>=65 else C_AMBER if fit_v>=45 else colors.HexColor("#EF4444"))

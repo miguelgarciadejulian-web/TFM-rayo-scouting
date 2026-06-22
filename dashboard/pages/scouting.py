@@ -45,6 +45,9 @@ DISPLAY_COLS = [
 _CACHE: dict = {"df": None, "t": 0.0}
 _CACHE_TTL   = 300   # segundos
 
+_FOOT_LABELS = {"right": "Der.", "left": "Izq.", "both": "Ambas",
+                "Right": "Der.", "Left": "Izq.", "Both": "Ambas"}
+
 
 def _norm(s: str) -> str:
     return (unicodedata.normalize("NFKD", str(s))
@@ -182,7 +185,7 @@ def layout(**_params):
     player_opt = ([{"label": str(v), "value": str(v)}
                    for v in sorted(df["name"].dropna().unique())]
                   if not df.empty else [])
-    foot_opt = ([{"label": str(v), "value": str(v)}
+    foot_opt = ([{"label": _FOOT_LABELS.get(str(v), str(v)), "value": str(v)}
                  for v in sorted(df["foot"].dropna().unique()) if str(v) not in ("nan","")]
                 if not df.empty and "foot" in df.columns else [])
     # Filtro posicion lateral
@@ -413,6 +416,11 @@ def filter_table(player, lat_pos, role_types, leagues, teams, foot, age_max, mv_
         df_show["role_type"] = df_show["role_type"].apply(
             lambda x: ROLE_TYPE_LABELS.get(x, x) if x else x
         )
+    # Traducir pie dominante (right→Der., left→Izq.)
+    if "foot" in df_show.columns:
+        df_show["foot"] = df_show["foot"].apply(
+            lambda x: _FOOT_LABELS.get(str(x), str(x)) if pd.notna(x) and str(x) not in ("nan","None","") else ""
+        )
 
     if "market_value_eur" in df_show.columns:
         df_show["market_value_eur"] = df_show["market_value_eur"].apply(
@@ -451,21 +459,4 @@ def go_to_player(active_cell, view_data):
         return no_update
     row = view_data[idx]
     pid    = urllib.parse.quote(str(row.get("player_id") or row.get("player_id_src") or row.get("name", "")))
-    nombre = urllib.parse.quote(str(row.get("name", "")))
-    equipo = urllib.parse.quote(str(row.get("team", "")))
-    return f"/jugador?id={pid}&name={nombre}&team={equipo}"
-
-
-clientside_callback(
-    """
-    function(url) {
-        if (url) {
-            window.location.href = url;
-        }
-        return null;
-    }
-    """,
-    Output("scouting-nav-url", "data", allow_duplicate=True),
-       Input("scouting-nav-url", "data"),
-    prevent_initial_call=True,
-)
+    nombre = urllib.parse.quote(str(row.get("n
