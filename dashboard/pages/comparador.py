@@ -626,70 +626,113 @@ def _table_section(results, lat_dict: dict | None = None) -> html.Div:
 
 
 def _export_section(results) -> html.Div:
-    rows = []
-    for r in results:
-        rows.append({
-            "nombre":         r.name,
-            "posicion":       r.position,
-            "edad":           r.age,
-            "equipo":         r.team,
-            "liga":           r.league,
-            "temporada":      r.season,
-            "minutos":        r.minutes,
-            "goles":          r.goals,
-            "asistencias":    r.assists,
-            "disparos":       r.shots_on_target,
-            "duelos_ganados": r.tackles_won,
-            "pases":          r.passes_completed,
-            "valor_mercado":  r.market_value_eur,
-            "contrato_hasta": r.contract_until,
-            "fit_rayo":       r.fit_score,
-            "fit_rendimiento":r.score_rendimiento,
-            "fit_economico":  r.score_economico,
-            "fit_edad":       r.score_edad,
-            "fit_disponib":   r.score_disponibilidad,
-            "cedido_de":      r.loan_from,
-            "cantera":        r.homegrown,
-        })
-
+    """PDF export button — stores serialized result names for callback."""
     import json
-    data_json = json.dumps(rows, ensure_ascii=False, default=str)
+    names_json = json.dumps([getattr(r, "name", "") for r in results])
 
-    return html.Div(
-        [
-            html.H6("Exportar", className="fw-bold mb-2"),
-            html.Button(
-                [html.I(className="ti ti-download me-2"), "Descargar CSV"],
-                id="comp-export-btn",
-                n_clicks=0,
-                className="btn btn-outline-secondary btn-sm",
-            ),
-            dcc.Store(id="comp-export-data", data=data_json),
+    return html.Div([
+        html.Div([
+            html.I(className="ti ti-file-description",
+                   style={"fontSize":"16px","color":"#E30613","marginRight":"8px"}),
+            html.Span("Exportar comparativa",
+                      style={"fontSize":"13px","fontWeight":"700","color":"#1A1A2E"}),
+        ], style={"display":"flex","alignItems":"center","marginBottom":"10px"}),
+        dcc.Loading(html.Div([
+            html.Button([
+                html.I(className="ti ti-file-download",
+                       style={"marginRight":"6px"}),
+                "Descargar PDF",
+            ], id="comp-export-btn", n_clicks=0, style={
+                "background":"#1A1A2E","color":"#fff","border":"none",
+                "borderRadius":"8px","padding":"9px 18px",
+                "fontSize":"13px","fontWeight":"600","cursor":"pointer",
+            }),
             dcc.Download(id="comp-download"),
-        ]
-    )
+        ]), type="circle", color="#E30613"),
+        dcc.Store(id="comp-export-data", data=names_json),
+        html.Div(id="comp-export-error", style={"marginTop":"6px"}),
+    ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px",
+              "padding":"16px 20px"})
 
 
 # ---------------------------------------------------------------------------
-# Callback export
+# Callback export — genera PDF comparativo
 # ---------------------------------------------------------------------------
 
 @callback(
     Output("comp-download", "data"),
+    Output("comp-export-error", "children"),
     Input("comp-export-btn", "n_clicks"),
     State("comp-export-data", "data"),
     prevent_initial_call=True,
 )
-def _download(n, data_json):
-    if not n or not data_json:
+def _download(n, names_json):
+    if not n or not names_json:
         raise PreventUpdate
-    import io
-    import json
-    rows = json.loads(data_json)
-    df   = pd.DataFrame(rows)
-    buf  = io.StringIO()
-    df.to_csv(buf, index=False, sep=";", encoding="utf-8-sig")
-    return dcc.send_string(buf.getvalue(), "comparacion_fichajes.csv")
+    import json, sys
+    from pathlib import Path as _P
+    sys.path.insert(0, str(_P(__file__).resolve().parents[2]))
+    try:
+        names = json.loads(names_json)
+        scorer = _scorer()
+        results = scorer.compare(names)
+        if not results:
+            raise ValueError("No hay datos para los jugadores seleccionados")
+
+        # Build percentile map for each player
+        from src.profiling.player_profile import career_aggregate, add_role_percentiles
+        from src.utils.config import settings
+        enr_path = settings.data_dir / "processed" / "player_seasons_enriched.parquet"
+        pct_map: dict = {}
+        if enr_path.exists():
+            enr_all = pd.read_parquet(enr_path)
+            for r in results:
+                try:
+                    agg = career_aggregate(enr_all, r.name)
+                    if agg is not None and not agg.empty:
+                        grp = str(getattr(r, "position_group", "") or "MID")
+                        pool = enr_all[enr_all["position_group"] == grp].copy()
+                        pool_agg = pool.groupby("name").agg({
+                            c: "sum" for c in pool.select_dtypes("number").columns
+                        }).reset_index()
+                        pm: dict = {}
+                        for col in pool_agg.select_dtypes("number").columns:
+                            if col + "_p90" in enr_all.columns or col.endswith("_p90"):
+                                continue
+                            vals = pool_agg[col].dropna()
+                            player_v = pool_agg.loc[pool_agg["name"] == r.name, col]
+                            if len(player_v) > 0 and len(vals) > 5:
+                                rank = (vals < float(player_v.iloc[0])).sum() / len(vals) * 100
+                                pm[col] = round(rank, 1)
+                        # also try _p90 cols from enriched directly
+                        p90_cols = [c for c in enr_all.columns if c.endswith("_p90")]
+                        latest = enr_all[enr_all["name"] == r.name].sort_values("season",
+                                         ascending=False).head(1)
+                        if not latest.empty:
+                            for col in p90_cols:
+                                v = latest.iloc[0].get(col)
+                                if v is not None and not pd.isna(v):
+                                    pool_col = enr_all.loc[
+                                        enr_all["position_group"] == grp, col].dropna()
+                                    if len(pool_col) > 5:
+                                        pm[col] = round(
+                                            (pool_col < float(v)).sum() / len(pool_col) * 100, 1)
+                        pct_map[r.name] = pm
+                except Exception:
+                    pct_map[r.name] = {}
+
+        from src.reports.comparador_dossier import build_comparador_dossier
+        fname, data = build_comparador_dossier(results, pct_map=pct_map)
+        return dcc.send_bytes(data, fname), ""
+    except Exception as exc:
+        import traceback; traceback.print_exc()
+        err = html.Div([
+            html.I(className="ti ti-alert-circle",
+                   style={"color":"#E30613","marginRight":"6px"}),
+            html.Span(f"Error: {exc}",
+                      style={"fontSize":"11px","color":"#E30613"}),
+        ], style={"display":"flex","alignItems":"center"})
+        return no_update, err
 
 
 # ---------------------------------------------------------------------------

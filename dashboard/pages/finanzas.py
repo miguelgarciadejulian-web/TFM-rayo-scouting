@@ -422,7 +422,7 @@ def tab_presupuesto(fin):
 
     return html.Div([
         dbc.Row([
-            dbc.Col(_fkpi("ti-arrow-up","Ingresos estimados",_fmt(total_rev),"temporada 2025/26","#047857","#10B981"),md=3),
+            dbc.Col(_fkpi("ti-arrow-up","Ingresos estimados",_fmt(total_rev),"temporada 2026/27","#047857","#10B981"),md=3),
             dbc.Col(_fkpi("ti-arrow-down","Gastos estimados",_fmt(total_exp),"estructura + plantilla","#9F1239","#E30613"),md=3),
             dbc.Col(_fkpi("ti-scale","Balance operativo",_fmt(abs(balance)),"superávit" if balance>=0 else "déficit","#047857" if balance>=0 else "#9F1239","#10B981" if balance>=0 else "#E30613"),md=3),
             dbc.Col(_fkpi("ti-trophy","Conference League",_fmt(rev["conference_league_eur"]),"final 2024-25 (Crystal Palace 1-0)","#92400E","#F59E0B"),md=3),
@@ -430,7 +430,7 @@ def tab_presupuesto(fin):
         dbc.Row([
             dbc.Col(html.Div([
                 html.P("Ingresos",style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","marginBottom":"16px"}),
-                rev_row("Derechos TV LaLiga",    rev["tv_laliga_eur"],           "ti-tv",             "est. 2025-26"),
+                rev_row("Derechos TV LaLiga",    rev["tv_laliga_eur"],           "ti-tv",             "est. 2026-27"),
                 rev_row("Conference League UEFA",rev["conference_league_eur"],   "ti-trophy",         "final 24-25"),
                 rev_row("Taquilla / Matchday",   rev["matchday_eur"],            "ti-ticket",         "Vallecas ~14.700"),
                 rev_row("Comercial / Patrocinio",rev["commercial_sponsorship_eur"],"ti-building-store",""),
@@ -751,7 +751,7 @@ def layout(**_params):
                         "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
                     html.H1("Finanzas del Club", style={"fontSize":"22px","fontWeight":"900",
                         "color":"#fff","margin":"0 0 2px"}),
-                    html.Div("Salarios · Presupuesto · Riesgo de cláusulas · Simulador · 2025/26",
+                    html.Div("Salarios · Presupuesto · Riesgo de cláusulas · Simulador · 2026/27",
                         style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
                 ]),
             ], style={"display":"flex","alignItems":"center","flex":"1"}),

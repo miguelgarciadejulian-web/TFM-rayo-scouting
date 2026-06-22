@@ -366,7 +366,7 @@ def layout(**_p):
                         "color": "rgba(255,255,255,.55)",
                         "letterSpacing": ".14em", "marginBottom": "4px",
                     }),
-                    html.H1("Rayo Vallecano · 2025/26", style={
+                    html.H1("Rayo Vallecano · 2026/27", style={
                         "fontSize": "24px", "fontWeight": "900",
                         "color": _WHITE, "margin": "0 0 3px",
                     }),
@@ -418,7 +418,7 @@ def layout(**_p):
         dbc.Row([
             dbc.Col(_kpi_card(
                 "ti-users", "Jugadores", str(sq["n_players"]),
-                "Rayo Vallecano 2025/26",
+                "Rayo Vallecano 2026/27",
                 "linear-gradient(135deg,#1E40AF,#3B82F6)", "#EFF6FF",
             ), md=2),
             dbc.Col(_kpi_card(

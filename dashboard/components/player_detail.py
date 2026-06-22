@@ -399,9 +399,12 @@ def build_detail(name, team=None, league=None, age=None,
 
     _lat_label       = LATERAL_LABELS.get(_lat_code, "") if _lat_code else ""
     _role_type_label = role_type_label(_role_type_key)
-    _FOOT_TRANS = {"right": "Der.", "left": "Izq.", "both": "Ambos"}
+    _FOOT_TRANS = {"right": "Der.", "left": "Izq.", "both": "Ambos",
+                   "der.": "Der.", "izq.": "Izq.", "der": "Der.", "izq": "Izq.",
+                   "derecho": "Der.", "zurdo": "Izq.", "ambos": "Ambos",
+                   "r": "Der.", "l": "Izq."}
     _foot_raw  = (mvinfo.get("foot") or "").strip().lower()
-    _foot_val  = _FOOT_TRANS.get(_foot_raw, _foot_raw)
+    _foot_val  = _FOOT_TRANS.get(_foot_raw, "")  # empty if unknown → badge hidden
 
     header = html.Div([
         foto_elem,
@@ -458,7 +461,6 @@ def build_detail(name, team=None, league=None, age=None,
                     (f"Edad: {mvinfo['age']}" if mvinfo.get('age') else None),
                     (f"Altura: {mvinfo['height']} m" if mvinfo.get('height') else None),
                     (f"Pos. TM: {mvinfo['position']}" if mvinfo.get('position') else None),
-                    (f"Nac.: {mvinfo['nationality']}" if mvinfo.get('nationality') else None),
                 ] if t
             ], style={"marginTop": "6px"}),
             html.Div([

@@ -430,7 +430,7 @@ def layout(**_params):
                     style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
                            "padding":"10px","marginRight":"18px","flexShrink":"0"}),
                 html.Div([
-                    html.Div("PLANTILLA 2025/26", style={"fontSize":"9px","fontWeight":"700",
+                    html.Div("PLANTILLA 2026/27", style={"fontSize":"9px","fontWeight":"700",
                         "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
                     html.H1("Rayo Vallecano", style={"fontSize":"22px","fontWeight":"900",
                         "color":"#fff","margin":"0 0 2px"}),

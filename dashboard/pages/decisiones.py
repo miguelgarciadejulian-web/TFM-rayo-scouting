@@ -320,6 +320,23 @@ def layout(**_params):
                                marks={0:"libre", 1:"1", 2:"2", 3:"3", 4:"4", 5:"5", 6:"sin tope"},
                                tooltip={"placement": "bottom"})], md=5),
             ], className="g-2", style={"marginTop": "4px"}),
+            dbc.Row([
+                dbc.Col([html.Span("Posición", className="filter-label"),
+                    dcc.Dropdown(
+                        options=[
+                            {"label": "Todas las posiciones", "value": ""},
+                            {"label": "🧤 Portero",           "value": "GK"},
+                            {"label": "◀ Lateral Izq. (LI)",  "value": "LI"},
+                            {"label": "▶ Lateral Der. (LD)",  "value": "LD"},
+                            {"label": "🛡 Central (DC)",       "value": "DC"},
+                            {"label": "⚙ Mediocentro",        "value": "MC"},
+                            {"label": "↙ Extremo Izq. (MI)",  "value": "MI"},
+                            {"label": "↘ Extremo Der. (MD)",  "value": "MD"},
+                            {"label": "🎯 Delantero",          "value": "DL"},
+                        ],
+                        value="", id="exp-pos", clearable=False,
+                    )], md=4),
+            ], className="g-2", style={"marginTop": "4px"}),
 
             dcc.Loading(html.Div(id="exp-results", style={"marginTop": "12px"}),
                         type="dot", color="#E30613"),
@@ -567,22 +584,64 @@ def _est_salary(market_value_eur, league: str = "", minutes: float = 0,
 
 
 
+# TM position → our filter category
+_TM_POS_MAP = {
+    "GK": ["Goalkeeper"],
+    "LI": ["Left-Back"],
+    "LD": ["Right-Back"],
+    "DC": ["Centre-Back", "Defender"],
+    "MC": ["Defensive Midfield", "Central Midfield", "Attacking Midfield", "Midfielder"],
+    "MI": ["Left Winger", "Left Midfield"],
+    "MD": ["Right Winger", "Right Midfield"],
+    "DL": ["Centre-Forward", "Striker", "Second Striker", "Forward"],
+}
+# position_group that each filter key belongs to (for pre-filtering via rank_players_for_role)
+_POS_GROUP = {"GK": "GK", "LI": "DEF", "LD": "DEF", "DC": "DEF",
+              "MC": "MID", "MI": "MID", "MD": "MID", "DL": "FWD"}
+_POS_LATERAL = {"LI": "LI", "LD": "LD", "DC": "DC"}
+
+
 @callback(Output("exp-results", "children"),
           Input("exp-role", "value"), Input("exp-leagues", "value"), Input("exp-min", "value"),
           Input("exp-maxval", "value"), Input("exp-flags", "value"),
-          Input("exp-maxage", "value"), Input("exp-maxcontract", "value"))
-def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract):
+          Input("exp-maxage", "value"), Input("exp-maxcontract", "value"),
+          Input("exp-pos", "value"))
+def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_filter):
     enr = _enriched()
     if enr.empty:
         return html.P("Sin datos enriquecidos.", style={"fontSize": "12px", "color": "#9CA3AF"})
     flags = flags or []
     max_value_eur = None if (maxval is None or maxval >= 100) else maxval * 1e6
     seasons_filter = CURRENT_SEASONS  # 2026 + 2025-2026: todas las ligas actuales
+    # Auto lateral_filter from position dropdown
+    _lat_f = _POS_LATERAL.get(pos_filter or "", None)
     rk = rank_players_for_role(enr, role, top_n=200, min_minutes=int(min_min or 900),
                                leagues=leagues or None, seasons=seasons_filter,
                                max_value_eur=max_value_eur,
                                exclude_big_clubs=("big" in flags),
-                               only_expiring=("exp" in flags))
+                               only_expiring=("exp" in flags),
+                               lateral_filter=_lat_f)
+
+    # ── Filtro por posición TM (granular MI/MD/MC/DL/portero/lateral/central) ─
+    if pos_filter and pos_filter in _TM_POS_MAP and not rk.empty:
+        try:
+            import functools as _fc
+            @_fc.lru_cache(maxsize=1)
+            def _mv_pos_dict():
+                import pandas as _pd2
+                _mv = _pd2.read_csv(
+                    str(Path(__file__).resolve().parents[2] / "config" / "market_values.csv"),
+                    usecols=["name", "position"])
+                return dict(zip(_mv["name"], _mv["position"].fillna("")))
+            tm_pos = _mv_pos_dict()
+            allowed = set(_TM_POS_MAP[pos_filter])
+            # Keep players whose TM position matches; keep unknowns if no TM data
+            def _keep(name):
+                p = tm_pos.get(name, "")
+                return (not p) or (p in allowed)
+            rk = rk[rk["name"].map(_keep)]
+        except Exception:
+            pass  # si falla la carga del CSV, no filtra
     # Filtros post-ranking: edad y contrato restante
     if not rk.empty and max_age and max_age < 38:
         if "age" in rk.columns:

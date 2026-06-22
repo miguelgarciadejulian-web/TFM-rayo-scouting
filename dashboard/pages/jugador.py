@@ -749,15 +749,17 @@ def layout(**_params):
                              placeholder="Escribe un nombre...",
                              search_value="",
                              style={"width": "360px", "fontSize": "13px"}),
-                html.Button([
-                    html.I(className="ti ti-file-download", style={"marginRight": "6px"}),
-                    "Descargar PDF",
-                ], id="dl-pdf-btn", n_clicks=0, style={
-                    "marginLeft": "12px", "background": "#1A1A2E", "color": "#fff",
-                    "border": "none", "borderRadius": "8px", "padding": "8px 16px",
-                    "fontSize": "13px", "fontWeight": "600", "cursor": "pointer",
-                }),
-                dcc.Download(id="dl-pdf"),
+                dcc.Loading(html.Div([
+                    html.Button([
+                        html.I(className="ti ti-file-download", style={"marginRight": "6px"}),
+                        "Descargar PDF",
+                    ], id="dl-pdf-btn", n_clicks=0, style={
+                        "background": "#1A1A2E", "color": "#fff",
+                        "border": "none", "borderRadius": "8px", "padding": "8px 16px",
+                        "fontSize": "13px", "fontWeight": "600", "cursor": "pointer",
+                    }),
+                    dcc.Download(id="dl-pdf"),
+                ], style={"marginLeft": "12px"}), type="circle", color="#E30613"),
                 dcc.Store(id="current-player"),
                 dcc.Store(id="jugador-picked-store"),
             ], style={"display": "flex", "alignItems": "center", "marginTop": "6px"}),
@@ -847,21 +849,18 @@ _BTN_STYLE_LOADING = {
 @callback(
     Output("dl-pdf", "data"),
     Output("pdf-error-msg", "children"),
+    Output("dl-pdf-btn", "disabled"),
+    Output("dl-pdf-btn", "children"),
+    Output("dl-pdf-btn", "style"),
     Input("dl-pdf-btn", "n_clicks"),
     State("current-player", "data"),
     State("jugador-loc", "search"),
     State("jugador-search", "value"),
-    background=True,
-    running=[
-        (Output("dl-pdf-btn", "disabled"), True, False),
-        (Output("dl-pdf-btn", "children"), _PDF_BTN_LOADING, _PDF_BTN_DEFAULT),
-        (Output("dl-pdf-btn", "style"),    _BTN_STYLE_LOADING, _BTN_STYLE_DEFAULT),
-    ],
     prevent_initial_call=True,
 )
 def _download_pdf(n, cur, search, picked):
     if not n:
-        return no_update, no_update
+        return no_update, no_update, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
 
     # Resolver nombre: store → dropdown → URL
     name, team = "", ""
@@ -882,12 +881,12 @@ def _download_pdf(n, cur, search, picked):
             html.Span("Selecciona un jugador primero",
                       style={"fontSize": "11px", "color": "#92400E"}),
         ], style={"display": "flex", "alignItems": "center"})
-        return no_update, err
+        return no_update, err, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
 
     from src.reports.player_dossier import build_player_dossier
     try:
         fname, data = build_player_dossier(name, team=team or None)
-        return dcc.send_bytes(data, fname), ""
+        return dcc.send_bytes(data, fname), "", False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
     except Exception as exc:
         import traceback
         traceback.print_exc()
@@ -899,7 +898,7 @@ def _download_pdf(n, cur, search, picked):
             html.Span(" — Vuelve a intentarlo",
                       style={"fontSize": "11px", "color": "#6B7280"}),
         ], style={"display": "flex", "alignItems": "center"})
-        return no_update, err_msg
+        return no_update, err_msg, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
 
 
 @callback(Output("note-status", "children"),

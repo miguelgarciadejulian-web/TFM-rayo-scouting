@@ -356,7 +356,8 @@ def _build_hero(cname, crow, mv, prof, fit, foto, sal_s, st):
     pos_s    = str(mv.get("position") or crow.get("position_group") or "")
     age_v    = int(float(mv.get("age") or 0)) if mv.get("age") else 0
     ht_s     = str(mv.get("height") or "")
-    foot_s   = str(mv.get("foot") or "")
+    _ft = {"right":"Der.","left":"Izq.","both":"Ambos","derecho":"Der.","zurdo":"Izq."}
+    foot_s   = _ft.get(str(mv.get("foot") or "").strip().lower(), str(mv.get("foot") or ""))
     role_lbl = prof.get("primary_role_label","n/d")
     bio = "  .  ".join(filter(None,[
         f"{age_v} anos" if age_v else None, ht_s or None,

@@ -363,7 +363,7 @@ def _needs_panel() -> html.Div:
             html.Div([
                 html.I(className="ti ti-users-group",
                        style={"fontSize": "14px", "color": "#E30613", "marginRight": "6px"}),
-                html.Strong("Plantilla 2025/26 — análisis de necesidades",
+                html.Strong("Plantilla 2026/27 — análisis de necesidades",
                             style={"fontSize": "12px", "color": "#1A1A2E"}),
                 html.Span(f"  formación base: {formation}",
                           style={"fontSize": "10px", "color": "#9CA3AF", "marginLeft": "8px"}),
