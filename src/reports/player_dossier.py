@@ -306,9 +306,9 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
     )
 
     fit_v_raw = float(fit_10) * 10 if fit_10 else 0
-    gauge_svg  = svg_gauge(fit_10, size=105)
+    gauge_svg  = svg_gauge(fit_10, size=105, show_100=True)
     fit_interp = _fit_label(fit_v_raw)
-    fit_col    = GREEN if fit_v_raw >= 60 else (AMBER if fit_v_raw >= 45 else LOW)
+    fit_col    = GREEN if fit_v_raw >= 65 else (AMBER if fit_v_raw >= 50 else LOW)
 
     return (
         f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
@@ -334,11 +334,9 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
         f'<td width="130" style="width:130px;text-align:center;vertical-align:middle;'
         f'padding:10px 12px;border-left:1px solid #F3F4F6;">'
         f'{gauge_svg}'
-        f'<div style="font-size:10pt;font-weight:bold;color:{fit_col};margin-top:2px;">'
-        f'{int(round(float(fit_10 or 0)*10))}/100</div>'
         f'<div style="font-size:6pt;font-weight:bold;color:#E30613;text-transform:uppercase;'
-        f'letter-spacing:0.5px;">FIT RAYO</div>'
-        f'<div style="font-size:6.5pt;color:#374151;margin-top:3px;font-style:italic;">'
+        f'letter-spacing:0.5px;margin-top:1px;">FIT RAYO</div>'
+        f'<div style="font-size:6.5pt;color:{fit_col};margin-top:3px;font-weight:bold;">'
         f'{fit_interp}</div>'
         f'</td>'
         f'</tr>'
@@ -765,4 +763,8 @@ body {
     line-height: 1.4;
 }
 img { display: block; }
-ta
+table { border-spacing: 0; }
+"""
+
+
+# ─── Funcion principal ─────────────────�

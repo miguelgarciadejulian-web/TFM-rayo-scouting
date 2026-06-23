@@ -80,24 +80,36 @@ def photo_b64(img_bytes: bytes, max_w=360, max_h=480) -> str:
         return base64.b64encode(img_bytes).decode()
 
 
-def svg_gauge(score_10, size=88) -> str:
-    """SVG donut gauge inline para score 0-10. Sin dependencias externas."""
+def svg_gauge(score_10, size=88, show_100=False) -> str:
+    """SVG donut gauge inline para score 0-10. Sin dependencias externas.
+    show_100=True: muestra el score en escala 0-100 con numero en color segun umbral.
+    """
     v = round(float(score_10), 1) if score_10 else 0
     col = GREEN if v >= 7 else (AMBER if v >= 5 else LOW)
     r = 34; cx = cy = 50
-    circumference = 2 * math.pi * r   # ~213.6
+    circumference = 2 * math.pi * r
     filled = circumference * v / 10
-    score_txt = str(v) if v == int(v) else str(v)
+    if show_100:
+        score_txt  = str(int(round(v * 10)))
+        denom_txt  = "/ 100"
+        score_size = 21   # ligeramente menor para 2 digitos
+        score_fill = col  # coloreado segun umbral
+    else:
+        score_txt  = str(int(v)) if v == int(v) else str(v)
+        denom_txt  = "/ 10"
+        score_size = 19
+        score_fill = DARK
     return (
         f'<svg viewBox="0 0 100 100" width="{size}" height="{size}" xmlns="http://www.w3.org/2000/svg">'
         f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{GRID2}" stroke-width="10"/>'
         f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{col}" stroke-width="10"'
         f' stroke-dasharray="{filled:.2f} {circumference:.2f}"'
         f' transform="rotate(-90 {cx} {cy})"/>'
-        f'<text x="{cx}" y="47" text-anchor="middle" dominant-baseline="middle"'
-        f' font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="bold" fill="{DARK}">{score_txt}</text>'
+        f'<text x="{cx}" y="46" text-anchor="middle" dominant-baseline="middle"'
+        f' font-family="Arial,Helvetica,sans-serif" font-size="{score_size}" font-weight="bold"'
+        f' fill="{score_fill}">{score_txt}</text>'
         f'<text x="{cx}" y="63" text-anchor="middle"'
-        f' font-family="Arial,Helvetica,sans-serif" font-size="8" fill="{GREY}">/ 10</text>'
+        f' font-family="Arial,Helvetica,sans-serif" font-size="8" fill="{GREY}">{denom_txt}</text>'
         f'</svg>'
     )
 
@@ -346,4 +358,23 @@ def html_to_pdf(html: str) -> bytes:
     """Convierte HTML a bytes PDF. Usa WeasyPrint si disponible, xhtml2pdf como fallback."""
     import sys, io as _io
 
-    # I
+    # Intento 1: WeasyPrint (requiere libpango/libcairo — no disponible en Windows sin GTK3)
+    # En Windows lo saltamos directamente para evitar crashes de ctypes/SEH no capturables.
+    if sys.platform != "win32":
+        try:
+            import weasyprint
+            return weasyprint.HTML(string=html).write_pdf()
+        except BaseException:
+            # BaseException captura también OSError de ctypes y errores de DLL
+            pass
+
+    # Intento 2: xhtml2pdf (puro Python, sin dependencias de sistema, compatible Windows)
+    try:
+        from xhtml2pdf import pisa
+        buf = _io.BytesIO()
+        pisa.CreatePDF(html.encode("utf-8"), dest=buf, encoding="utf-8")
+        # No usamos result.err: xhtml2pdf reporta warnings como errores aunque el PDF sea valido.
+        # Solo comprobamos que el PDF tenga contenido real.
+        pdf_bytes = buf.getvalue()
+        if len(pdf_bytes) < 500:
+            raise RuntimeError("xhtml2pdf produjo un PDF 
