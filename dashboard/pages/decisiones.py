@@ -103,6 +103,24 @@ def _season_options() -> list[dict]:
 
 
 ROLE_OPTIONS = [{"label": v, "value": k} for k, v in ROLE_LABELS.items()]
+
+_LAT_ORDER = ["LI", "LD", "DC", "MC", "MI", "MD", "EI", "ED", "DL", "PO"]
+
+
+def _pos_filter_options() -> list[dict]:
+    """Opciones del filtro de posición — mismo sistema que scouting (lateral_pos)."""
+    from src.utils.lateral_position import build_lateral_map, LATERAL_LABELS as _LL
+    try:
+        _enr_p = PROC / "player_seasons_enriched.parquet"
+        _lat = build_lateral_map(_enr_p, _enr_p)
+        present = set(_lat["lateral_pos"].dropna()) - {"?"}
+    except Exception:
+        present = set(_LAT_ORDER)
+    opts = [{"label": "Todas las posiciones", "value": ""}]
+    for k in _LAT_ORDER:
+        if k in present:
+            opts.append({"label": _LL.get(k, k), "value": k})
+    return opts
 LEAGUE_OPTIONS = [
     {"label": "LaLiga", "value": "Spain_Primera_Division"},
     {"label": "Segunda", "value": "Spain_Segunda_Division"},
@@ -323,17 +341,7 @@ def layout(**_params):
             dbc.Row([
                 dbc.Col([html.Span("Posición", className="filter-label"),
                     dcc.Dropdown(
-                        options=[
-                            {"label": "Todas las posiciones", "value": ""},
-                            {"label": "🧤 Portero",           "value": "GK"},
-                            {"label": "◀ Lateral Izq. (LI)",  "value": "LI"},
-                            {"label": "▶ Lateral Der. (LD)",  "value": "LD"},
-                            {"label": "🛡 Central (DC)",       "value": "DC"},
-                            {"label": "⚙ Mediocentro",        "value": "MC"},
-                            {"label": "↙ Extremo Izq. (MI)",  "value": "MI"},
-                            {"label": "↘ Extremo Der. (MD)",  "value": "MD"},
-                            {"label": "🎯 Delantero",          "value": "DL"},
-                        ],
+                        options=_pos_filter_options(),
                         value="", id="exp-pos", clearable=False,
                     )], md=4),
             ], className="g-2", style={"marginTop": "4px"}),
@@ -584,21 +592,28 @@ def _est_salary(market_value_eur, league: str = "", minutes: float = 0,
 
 
 
-# TM position → our filter category
-_TM_POS_MAP = {
-    "GK": ["Goalkeeper"],
-    "LI": ["Left-Back"],
-    "LD": ["Right-Back"],
-    "DC": ["Centre-Back", "Defender"],
-    "MC": ["Defensive Midfield", "Central Midfield", "Attacking Midfield", "Midfielder"],
-    "MI": ["Left Winger", "Left Midfield"],
-    "MD": ["Right Winger", "Right Midfield"],
-    "DL": ["Centre-Forward", "Striker", "Second Striker", "Forward"],
-}
-# position_group that each filter key belongs to (for pre-filtering via rank_players_for_role)
-_POS_GROUP = {"GK": "GK", "LI": "DEF", "LD": "DEF", "DC": "DEF",
-              "MC": "MID", "MI": "MID", "MD": "MID", "DL": "FWD"}
-_POS_LATERAL = {"LI": "LI", "LD": "LD", "DC": "DC"}
+# Lateral filter passed to rank_players_for_role (DEF only; others filtered post-ranking)
+_POS_LATERAL = {"LI": "LI", "LD": "LD", "DC": "DC",
+                "MC": "MC", "MI": "MI", "MD": "MD",
+                "EI": "EI", "ED": "ED", "DL": "DL", "PO": "PO"}
+
+_LATERAL_MAP_CACHE: dict = {}
+
+
+def _get_lateral_map():
+    """Devuelve (lat_dict, role_type_dict) cacheados."""
+    if "data" in _LATERAL_MAP_CACHE:
+        return _LATERAL_MAP_CACHE["data"]
+    try:
+        from src.utils.lateral_position import build_lateral_map
+        _enr_p = PROC / "player_seasons_enriched.parquet"
+        _lat = build_lateral_map(_enr_p, _enr_p)
+        lat_d = dict(zip(_lat["name"], _lat["lateral_pos"]))
+        rt_d  = dict(zip(_lat["name"], _lat["role_type"]))
+    except Exception:
+        lat_d, rt_d = {}, {}
+    _LATERAL_MAP_CACHE["data"] = (lat_d, rt_d)
+    return lat_d, rt_d
 
 
 @callback(Output("exp-results", "children"),
@@ -613,8 +628,10 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
     flags = flags or []
     max_value_eur = None if (maxval is None or maxval >= 100) else maxval * 1e6
     seasons_filter = CURRENT_SEASONS  # 2026 + 2025-2026: todas las ligas actuales
-    # Auto lateral_filter from position dropdown
-    _lat_f = _POS_LATERAL.get(pos_filter or "", None)
+    # Lateral filter: passed to rank_players_for_role for DEF (LI/LD/DC);
+    # for MID/FWD/GK positions lateral_filter is ignored by rank_players_for_role
+    # and applied post-ranking via lateral map.
+    _lat_f = _POS_LATERAL.get(pos_filter or "", None) if pos_filter in ("LI", "LD", "DC") else None
     rk = rank_players_for_role(enr, role, top_n=200, min_minutes=int(min_min or 900),
                                leagues=leagues or None, seasons=seasons_filter,
                                max_value_eur=max_value_eur,
@@ -622,26 +639,20 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
                                only_expiring=("exp" in flags),
                                lateral_filter=_lat_f)
 
-    # ── Filtro por posición TM (granular MI/MD/MC/DL/portero/lateral/central) ─
-    if pos_filter and pos_filter in _TM_POS_MAP and not rk.empty:
-        try:
-            import functools as _fc
-            @_fc.lru_cache(maxsize=1)
-            def _mv_pos_dict():
-                import pandas as _pd2
-                _mv = _pd2.read_csv(
-                    str(Path(__file__).resolve().parents[2] / "config" / "market_values.csv"),
-                    usecols=["name", "position"])
-                return dict(zip(_mv["name"], _mv["position"].fillna("")))
-            tm_pos = _mv_pos_dict()
-            allowed = set(_TM_POS_MAP[pos_filter])
-            # Keep players whose TM position matches; keep unknowns if no TM data
-            def _keep(name):
-                p = tm_pos.get(name, "")
-                return (not p) or (p in allowed)
-            rk = rk[rk["name"].map(_keep)]
-        except Exception:
-            pass  # si falla la carga del CSV, no filtra
+    # ── Lateral map: lateral_pos + role_type por jugador ──────────────────────
+    _lat_dict, _rt_dict = _get_lateral_map()
+
+    # ── Filtro por lateral_pos (para posiciones MID/FWD/GK no cubiertas arriba) ─
+    if pos_filter and pos_filter not in ("", "LI", "LD", "DC") and not rk.empty:
+        rk = rk[rk["name"].map(lambda n: _lat_dict.get(n) == pos_filter
+                               or n not in _lat_dict)]
+
+    # ── Filtro por role_type: cada jugador solo pertenece a 1 estilo de juego ──
+    if role and _rt_dict and not rk.empty:
+        rk = rk[rk["name"].map(
+            lambda n: _rt_dict.get(n) == role or _rt_dict.get(n) is None
+        )]
+
     # Filtros post-ranking: edad y contrato restante
     if not rk.empty and max_age and max_age < 38:
         if "age" in rk.columns:
@@ -663,7 +674,7 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
     rk["_fit_rayo"] = rk["name"].map(lambda n: fit_map.get(n, -1))
     rk = rk.sort_values("_fit_rayo", ascending=False).head(25).reset_index(drop=True)
 
-    cols_h = ["#", "Jugador", "Equipo", "Liga", "Edad", "Min", "Valor", "Sal. est.", "Contrato", "Fit Rayo"]
+    cols_h = ["#", "Jugador", "Pos.", "Equipo", "Liga", "Edad", "Min", "Valor", "Sal. est.", "Contrato", "Fit Rayo"]
     head = html.Tr([html.Th(h, style={"fontSize": "10px", "color": "#9CA3AF", "padding": "5px 10px",
                     "textAlign": "left"}) for h in cols_h])
     body = []
@@ -678,11 +689,16 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
             style={"fontSize": "13px", "padding": "5px 10px",
                    "fontWeight": "700", "color": fit_color},
         )
+        _pos_label = _lat_dict.get(r.name, "—")
         body.append(html.Tr([
             html.Td(str(i), style={"fontSize": "11px", "padding": "5px 10px", "color": "#9CA3AF"}),
             html.Td(html.A(r.name, href=f"/jugador?name={r.name}&team={r.team}",
                     style={"color": "#1A1A2E", "fontWeight": "600", "textDecoration": "none"}),
                     style={"fontSize": "12px", "padding": "5px 10px"}),
+            html.Td(html.Span(_pos_label, style={
+                    "fontSize": "10px", "fontWeight": "700", "color": "#1D4ED8",
+                    "background": "#EFF6FF", "borderRadius": "4px", "padding": "1px 6px"}),
+                    style={"padding": "5px 10px"}),
             html.Td(r.team, style={"fontSize": "11px", "padding": "5px 10px", "color": "#374151"}),
             html.Td(_league_name(str(r.league)),
                     style={"fontSize": "10px", "padding": "5px 10px", "color": "#6B7280"}),
@@ -875,14 +891,4 @@ def _renewal_analysis(horizon):
                 "marginBottom": "10px",
             }),
             dbc.Row([
-                dbc.Col(_renewal_card(r), md=4, style={"marginBottom": "12px"})
-                for r in players
-            ], className="g-2"),
-        ], style={"marginBottom": "16px"})
-
-    secs = [
-        _sec("Vencen en <= 6 meses — DECISION URGENTE", g0, "#991B1B"),
-        _sec("Vencen en 7-12 meses", g1, "#92400E"),
-        _sec("Vencen en 13-24 meses", g2, "#1D4ED8"),
-    ]
-    return html.Div([s for s in secs if s is not None]), summary
+                dbc
