@@ -20,6 +20,7 @@ mplsoccer>=1.2
 
 # PDF
 reportlab>=4.1
+weasyprint>=60.0
 Pillow>=10.0
 
 # Scraping
@@ -37,5 +38,4 @@ scipy>=1.13
 jupyterlab>=4.2
 ipywidgets>=8.1
 
-# Testing
-pytest>=8.2
+# Tes
