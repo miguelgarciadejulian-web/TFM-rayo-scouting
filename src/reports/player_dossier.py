@@ -291,7 +291,8 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
         f'<div style="font-size:7.5pt;color:#374151;margin-top:5px;">{bio_s}</div>'
         f'<div style="font-size:7.5pt;color:#374151;margin-top:4px;">'
         f'<span style="color:#9CA3AF;">Rol: </span><strong>{role_lbl}</strong>'
-        f'&nbsp;&nbsp;<span style="color:#9CA3AF;">Pais: </span>{nation}</div>'
+        + (f'&nbsp;&nbsp;<span style="color:#9CA3AF;">Pais: </span>{nation}' if nation else "")
+        + f'</div>'
         f'<div style="font-size:7.5pt;color:#374151;margin-top:2px;">'
         f'<span style="color:#9CA3AF;">Contrato hasta: </span><strong>{contr}</strong>'
         f'&nbsp;&nbsp;<span style="color:#9CA3AF;">Valor TM: </span><strong>{val_s}</strong>'
@@ -470,26 +471,29 @@ def _html_table(headers, rows, total_row=None) -> str:
 
 
 def _career_table(tot_rows) -> str:
-    """Tabla totales de carrera con anchos FIJOS por celda (evita layout negativo en xhtml2pdf)."""
-    # Anchos en px explicitados en cada celda — xhtml2pdf ignora width:% del padre
-    # Pagina A4 - margenes 1.2cm = ~703px contenido; 350+175+178=703
-    W0, W1 = 350, 175  # Metrica, Total; /90' = resto
-    def _th(h, w=None):
-        wa = f'width="{w}" style="width:{w}px;' if w else 'style="'
-        return (f'<td {wa}background-color:#E30613;color:white;font-weight:bold;'
-                f'padding:3px 4px;font-size:6.5pt;text-transform:uppercase;">{h}</td>')
-    def _td(c, w=None, align="left"):
-        wa = f'width="{w}" style="width:{w}px;' if w else 'style="'
-        return (f'<td {wa}padding:3px 4px;color:#111827;'
-                f'border-bottom:0.3px solid #E5E7EB;font-size:7pt;text-align:{align};">{c}</td>')
-    head = _th("Metrica", W0) + _th("Total", W1) + _th("/90'")
+    """Tabla totales de carrera — las TRES columnas con ancho px explicito.
+    xhtml2pdf con table-layout:fixed asigna 0px a columnas sin width explicito,
+    haciendo que los valores se solapen. Solucion: anchos fijos en todas las celdas
+    y anchura absoluta en la tabla (no %).
+    A4 - margenes 1.2cm ≈ 703px: W0+W1+W2 = 345+180+178 = 703px.
+    """
+    W0, W1, W2 = 345, 180, 178  # Metrica | Total | /90'
+    def _th(h, w):
+        return (f'<td width="{w}" style="width:{w}px;background-color:#E30613;color:white;'
+                f'font-weight:bold;padding:3px 4px;font-size:6.5pt;text-transform:uppercase;">'
+                f'{h}</td>')
+    def _td(c, w, align="left"):
+        return (f'<td width="{w}" style="width:{w}px;padding:3px 4px;color:#111827;'
+                f'border-bottom:0.3px solid #E5E7EB;font-size:7pt;text-align:{align};">'
+                f'{c}</td>')
+    head = _th("Metrica", W0) + _th("Total", W1) + _th("/90'", W2)
     body = ""
     for i, (lab, total, p90) in enumerate(tot_rows):
         bg = "#ffffff" if i % 2 == 0 else "#F9FAFB"
         body += (f'<tr style="background-color:{bg};">'
-                 f'{_td(lab, W0)}{_td(total, W1, "right")}{_td(p90, align="right")}'
+                 f'{_td(lab, W0)}{_td(total, W1, "right")}{_td(p90, W2, "right")}'
                  f'</tr>')
-    return (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
+    return (f'<table cellpadding="0" cellspacing="0" border="0" width="703" '
             f'style="border-collapse:collapse;margin:3px 0;table-layout:fixed;">'
             f'<thead><tr>{head}</tr></thead>'
             f'<tbody>{body}</tbody>'
@@ -767,6 +771,4 @@ def build_player_dossier(name, team=None):
         except Exception:
             foto_b64_str = None
 
-    # Scores
-    val_s     = f"{mv['value_eur']/1e6:.1f}M EUR" if mv.get("value_eur") else "n/d"
-    c
+    # Sc
