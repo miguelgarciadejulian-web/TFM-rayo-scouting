@@ -783,26 +783,34 @@ def _fill_search(search):
 
 @callback(Output("jugador-picked-store", "data"),
           Input("jugador-search", "value"),
-          Input("jugador-loc", "search"),
           prevent_initial_call=True)
-def _save_pick(val, search):
-    from dash import ctx
-    # Si el trigger es la URL (navegación desde Scouting), limpiar el store
-    # para que no quede el jugador anterior bloqueando render_player y _track_player
-    if ctx.triggered_id == "jugador-loc":
-        return None
+def _save_pick(val):
     if val and "|||" in val:
         return val
     return no_update
 
 
+# Cuando el dropdown selecciona un jugador → actualizar la URL
+# Así la URL es siempre la única fuente de verdad para el PDF y el render
+@callback(Output("jugador-loc", "search"),
+          Input("jugador-search", "value"),
+          prevent_initial_call=True)
+def _sync_url_from_dropdown(val):
+    if val and "|||" in val:
+        parts = val.split("|||", 1)
+        name = parts[0].strip()
+        team = parts[1].strip() if len(parts) > 1 else ""
+        return f"?name={urllib.parse.quote(name)}&team={urllib.parse.quote(team)}"
+    return no_update
+
+
 @callback(Output("jugador-content", "children"),
-          Input("jugador-loc", "search"), Input("jugador-picked-store", "data"))
-def render_player(search, picked):
+          Input("jugador-loc", "search"))
+def render_player(search):
+    # URL es la única fuente de verdad — siempre actualizada tanto desde
+    # Scouting (navegación) como desde el dropdown (_sync_url_from_dropdown)
     name, team = "", ""
-    if picked and "|||" in picked:
-        name, team = picked.split("|||", 1)
-    elif search and search.startswith("?"):
+    if search and search.startswith("?"):
         params = dict(urllib.parse.parse_qsl(search[1:]))
         name = params.get("name", "")
         team = params.get("team", "")
@@ -824,20 +832,9 @@ def render_player(search, picked):
 
 
 @callback(Output("current-player", "data"),
-          Input("jugador-loc", "search"), Input("jugador-search", "value"))
-def _track_player(search, picked):
-    from dash import ctx
-    # Si el trigger es la URL → usar URL (navegación desde Scouting)
-    if ctx.triggered_id == "jugador-loc" and search and search.startswith("?"):
-        import urllib.parse as _u
-        pr = dict(_u.parse_qsl(search[1:]))
-        if pr.get("name"):
-            return {"name": pr["name"], "team": pr.get("team", "")}
-    # Si el trigger es el dropdown → usar dropdown
-    if picked and "|||" in picked:
-        n, t = picked.split("|||", 1)
-        return {"name": n, "team": t}
-    # Fallback: URL
+          Input("jugador-loc", "search"))
+def _track_player(search):
+    # URL es la única fuente — siempre correcta
     if search and search.startswith("?"):
         import urllib.parse as _u
         pr = dict(_u.parse_qsl(search[1:]))
@@ -875,22 +872,17 @@ _BTN_STYLE_LOADING = {
     Output("dl-pdf-btn", "children"),
     Output("dl-pdf-btn", "style"),
     Input("dl-pdf-btn", "n_clicks"),
-    State("current-player", "data"),
     State("jugador-loc", "search"),
-    State("jugador-search", "value"),
     prevent_initial_call=True,
 )
-def _download_pdf(n, cur, search, picked):
+def _download_pdf(n, search):
     if not n:
         return no_update, no_update, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
 
-    # Resolver nombre: store → dropdown → URL
+    # URL es la única fuente — siempre refleja el jugador visible
+    # (actualizada tanto por navegación como por _sync_url_from_dropdown)
     name, team = "", ""
-    if cur and cur.get("name"):
-        name, team = cur["name"], cur.get("team") or ""
-    elif picked and "|||" in picked:
-        name, team = picked.split("|||", 1)
-    elif search and search.startswith("?"):
+    if search and search.startswith("?"):
         import urllib.parse as _up
         pr = dict(_up.parse_qsl(search[1:]))
         name = pr.get("name", "")
@@ -979,4 +971,24 @@ def save_market(n, value_m, clause_m, contract, foot, height, key):
 
 @callback(Output("lateral-status", "children"),
           Input("save-lateral", "n_clicks"),
-          State("mkt-lat
+          State("mkt-lateral-pos", "value"),
+          State("mkt-role-type", "value"),
+          State("player-note-key", "data"),
+          prevent_initial_call=True)
+def save_lateral(n, lateral_pos, role_type, key):
+    if not n or not key:
+        return no_update
+    name = key.split("|")[0]
+    ov = _load_overrides()
+    entry = ov.get(_norm(name), {})
+    if lateral_pos:
+        entry["lateral_pos"] = lateral_pos
+    elif "lateral_pos" in entry:
+        del entry["lateral_pos"]   # borrar override → vuelve al inferido
+    if role_type:
+        entry["role_type"] = role_type
+    elif "role_type" in entry:
+        del entry["role_type"]   # borrar override → vuelve al inferido
+    ov[_norm(name)] = entry
+    _save_overrides(ov)
+    return "Guardado"

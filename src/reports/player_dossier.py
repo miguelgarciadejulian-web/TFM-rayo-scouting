@@ -148,7 +148,8 @@ def _est_salary(mv_eur, league="", minutes=0, age=25, position=""):
     except Exception:
         return "n/d"
 
-def _comparator_fit(name: str, proc: Path) -> float | None:
+def _comparator_result(name: str, proc: Path):
+    """Devuelve el objeto result completo del comparador (misma fuente que el perfil web)."""
     try:
         import yaml
         from src.scouting.comparator import load_scorer
@@ -161,7 +162,7 @@ def _comparator_fit(name: str, proc: Path) -> float | None:
                 squad.extend(section)
         scorer = load_scorer(proc, squad)
         results = scorer.compare([name])
-        return float(results[0].fit_score) if results else None
+        return results[0] if results else None
     except Exception:
         return None
 
@@ -420,42 +421,43 @@ def _sw_section(strengths, weaknesses) -> str:
 
 
 # ─── Fit Rayo ─────────────────────────────────────────────────────────────────
-def _fit_section(fit, prof, fit_10) -> str:
-    pot_map = {"muy alto":95,"alto":80,"estable":65,"en meseta":50,"veterania":35}
-    pot_s   = pot_map.get(prof.get("potential",""), 55)
-    comps   = [
-        ("Compatib. plantilla  (40%)",  float(fit.get("compatibilidad_plantilla", 0))),
-        ("Compatib. entrenador  (25%)", float(fit.get("compatibilidad_entrenador", 0))),
-        ("Rendimiento en rol  (20%)",   float(prof.get("primary_score") or 50)),
-        ("Potencial / edad  (15%)",     float(pot_s)),
-    ]
-    fit_col = score_color(float(fit_10) * 10 if fit_10 else 0, hi=70, lo=50)
-    bars    = "".join(_pbar(lab, val, label_w=200) for lab, val in comps)
+def _fit_section(comp_result) -> str:
+    """Desglose Fit Rayo usando exactamente los mismos scores que el perfil web
+    (comparator.py): rendimiento(40%) + economico(30%) + edad(15%) + disponibilidad(15%)."""
+    r = comp_result
+    s_r = float(r.score_rendimiento)
+    s_e = float(r.score_economico)
+    s_a = float(r.score_edad)
+    s_d = float(r.score_disponibilidad)
+    total = round(0.40*s_r + 0.30*s_e + 0.15*s_a + 0.15*s_d, 1)
 
-    # Breakdown table (HTML puro)
+    comps = [
+        ("Rendimiento (40%)",     s_r),
+        ("Enc. economico (30%)",  s_e),
+        ("Perfil de edad (15%)",  s_a),
+        ("Disponibilidad (15%)",  s_d),
+    ]
+    bars = "".join(_pbar(lab, val, label_w=190) for lab, val in comps)
+
     def _trow(cells, bold=False, bg="#ffffff"):
-        style = f'style="background-color:{bg};"'
-        tds   = "".join(
+        tds = "".join(
             f'<td style="padding:3.5px 5px;color:#111827;border-bottom:0.3px solid #E5E7EB;'
             f'font-size:7pt;{"font-weight:bold;" if bold else ""}">{c}</td>'
             for c in cells
         )
-        return f'<tr {style}>{tds}</tr>'
+        return f'<tr style="background-color:{bg};">{tds}</tr>'
 
     thead = "".join(
         f'<td style="background-color:#E30613;color:white;font-weight:bold;'
         f'padding:4px 5px;font-size:6.5pt;text-transform:uppercase;">{h}</td>'
-        for h in ["Componente","Peso","Score","Contribucion"]
+        for h in ["Componente", "Peso", "Score", "Contribucion"]
     )
     rows_html = (
-        _trow(["Compatibilidad plantilla","40%",str(int(fit.get("compatibilidad_plantilla",0))),
-               f"{fit.get('compatibilidad_plantilla',0)*0.40:.1f}"], bg="#ffffff")
-        + _trow(["Compatibilidad entrenador","25%",str(int(fit.get("compatibilidad_entrenador",0))),
-                 f"{fit.get('compatibilidad_entrenador',0)*0.25:.1f}"], bg="#F9FAFB")
-        + _trow(["Rendimiento en rol","20%",str(int(prof.get("primary_score") or 50)),
-                 f"{(prof.get('primary_score') or 50)*0.20:.1f}"], bg="#ffffff")
-        + _trow(["Potencial / edad","15%",str(pot_s),f"{pot_s*0.15:.1f}"], bg="#F9FAFB")
-        + _trow(["TOTAL FIT RAYO","100%","—",f"{fit.get('global_fit',0):.1f}"],
+        _trow(["Rendimiento",       "40%", f"{s_r:.0f}", f"{s_r*0.40:.1f}"], bg="#ffffff")
+        + _trow(["Enc. economico",  "30%", f"{s_e:.0f}", f"{s_e*0.30:.1f}"], bg="#F9FAFB")
+        + _trow(["Perfil de edad",  "15%", f"{s_a:.0f}", f"{s_a*0.15:.1f}"], bg="#ffffff")
+        + _trow(["Disponibilidad",  "15%", f"{s_d:.0f}", f"{s_d*0.15:.1f}"], bg="#F9FAFB")
+        + _trow(["TOTAL FIT RAYO",  "100%", "—",          f"{total:.1f}"],
                 bold=True, bg="#F8FAFC")
     )
     tbl = (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
@@ -464,8 +466,8 @@ def _fit_section(fit, prof, fit_10) -> str:
            f'<tbody>{rows_html}</tbody>'
            f'</table>')
     note = (f'<div style="font-size:6pt;color:#9CA3AF;font-style:italic;margin-top:3px;">'
-            f'Formula: Fit = (Plantilla*0.40) + (Entrenador*0.25) + (Rol*0.20) + (Potencial*0.15). '
-            f'Potencial: muy alto=95, alto=80, estable=65, en meseta=50, veterania=35.</div>')
+            f'Formula identica al perfil web: Fit = (Rendimiento*0.40) + (Economico*0.30) '
+            f'+ (Edad*0.15) + (Disponibilidad*0.15).</div>')
     return _S("Fit Rayo — Encaje con el club") + bars + tbl + note
 
 
@@ -843,10 +845,14 @@ def build_player_dossier(name, team=None):
     goals_tot = float(crow.get("goals") or 0)
     asist_tot = float(crow.get("goal_assists") or 0)
 
-    # Usar siempre global_fit de player_fit para que gauge y tabla sean consistentes.
-    # _comparator_fit usa fórmula diferente (rendimiento/económico/edad/disponibilidad)
-    # mientras que la tabla desglose muestra plantilla/entrenador/rol/potencial.
-    if fit:
+    # Fit Rayo: usar el comparador — MISMA fuente que el perfil web
+    # Formula: 0.40*rendimiento + 0.30*economico + 0.15*edad + 0.15*disponibilidad
+    comp_result = _comparator_result(cname, PROC)
+    if comp_result is not None:
+        fit_v  = float(comp_result.fit_score)
+        fit_10 = round(fit_v / 10, 1)
+        fit_s  = f"{fit_10}/10"
+    elif fit:
         fit_v  = fit.get("global_fit", 0)
         fit_10 = round(fit_v / 10, 1)
         fit_s  = f"{fit_10}/10"
@@ -877,8 +883,8 @@ def build_player_dossier(name, team=None):
     body += _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str)
     body += _kpi_strip(fit_s, fit_v, val_s, sal_s, con_s, mins_s, goals_tot, asist_tot)
     body += _sw_section(prof.get("strengths",[]), prof.get("weaknesses",[]))
-    if fit:
-        body += _fit_section(fit, prof, fit_10)
+    if comp_result is not None:
+        body += _fit_section(comp_result)
 
     body += _page_break()
 
@@ -909,4 +915,6 @@ def build_player_dossier(name, team=None):
         f'</head><body>{body}</body></html>'
     )
 
-  
+    pdf_bytes = html_to_pdf(full_html)
+    fname = f"informe_{_n(cname).replace(' ', '_')}.pdf"
+    return fname, pdf_bytes
