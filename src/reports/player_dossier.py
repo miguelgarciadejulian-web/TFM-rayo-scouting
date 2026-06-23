@@ -83,12 +83,17 @@ CAREER_TOTALS = [
 ]
 
 SEASON_COLS = [
-    ("season", "Temp."), ("team", "Equipo"), ("minutes", "Min"),
-    ("goals", "G"), ("goal_assists", "A"), ("total_shots", "Tir"),
-    ("shots_on_target_inc_goals", "TaP"), ("key_passes_attempt_assists", "PC"),
-    ("successful_dribbles", "Reg"), ("total_touches_in_opposition_box", "ToqA"),
-    ("tackles_won", "Ent"), ("interceptions", "Int"), ("recoveries", "Rec"),
-    ("aerial_duels_won", "Aer"), ("total_clearances", "Desp"),
+    # (campo, etiqueta, ancho_px)  — 10 cols, suma ~650px (deja margen en A4 703px)
+    ("season",                    "Temporada", 68),
+    ("team",                      "Equipo",   183),
+    ("minutes",                   "Min",       58),
+    ("goals",                     "G",         36),
+    ("goal_assists",               "A",         36),
+    ("total_shots",                "Tir",       36),
+    ("shots_on_target_inc_goals",  "TaP",       36),
+    ("tackles_won",                "Ent",       36),
+    ("interceptions",              "Int",       36),
+    ("recoveries",                 "Rec",       36),
 ]
 
 MATRIX_METRICS = [
@@ -341,29 +346,35 @@ def _sw_section(strengths, weaknesses) -> str:
     if not strengths and not weaknesses:
         return ""
 
-    def _pills(items, bg, color):
-        return "".join(
-            f'<span style="background-color:{bg};color:{color};font-size:6.5pt;'
-            f'padding:2px 7px;border-radius:9px;margin:2px 2px;display:inline-block;">'
-            f'{s}</span>'
-            for s in items
-        ) if items else ""
+    def _item_rows(items, color, bg_even, bg_odd):
+        rows = ""
+        for i, s in enumerate(items):
+            bg = bg_even if i % 2 == 0 else bg_odd
+            rows += (
+                f'<tr style="background-color:{bg};">'
+                f'<td style="padding:3px 8px 3px 10px;font-size:7pt;color:#374151;'
+                f'border-left:2.5px solid {color};border-bottom:0.3px solid #E5E7EB;">'
+                f'{s}</td>'
+                f'</tr>'
+            )
+        return (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
+                f'style="border-collapse:collapse;">{rows}</table>')
 
     s_td = (
-        f'<td width="260" style="background-color:#F0FDF4;border:0.5px solid #E5E7EB;'
-        f'padding:6px 8px;width:260px;vertical-align:top;">'
+        f'<td width="260" style="width:260px;background-color:#F0FDF4;'
+        f'border:0.5px solid #D1FAE5;padding:6px 8px;vertical-align:top;">'
         f'<div style="font-size:5.5pt;font-weight:bold;color:{GREEN};'
-        f'text-transform:uppercase;margin-bottom:4px;">Fortalezas</div>'
-        f'{_pills(strengths, "#DCFCE7", GREEN)}'
+        f'text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Fortalezas</div>'
+        f'{_item_rows(strengths, GREEN, "#F0FDF4", "#DCFCE7")}'
         f'</td>'
-    ) if strengths else '<td></td>'
+    ) if strengths else '<td width="260" style="width:260px;"></td>'
 
     w_td = (
-        f'<td style="background-color:#FFFBEB;border:0.5px solid #E5E7EB;'
-        f'border-left:2px solid white;padding:6px 8px;vertical-align:top;">'
+        f'<td style="background-color:#FFFBEB;border:0.5px solid #FDE68A;'
+        f'border-left:3px solid white;padding:6px 8px;vertical-align:top;">'
         f'<div style="font-size:5.5pt;font-weight:bold;color:{AMBER};'
-        f'text-transform:uppercase;margin-bottom:4px;">Debilidades</div>'
-        f'{_pills(weaknesses, "#FEF3C7", AMBER)}'
+        f'text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Debilidades</div>'
+        f'{_item_rows(weaknesses, AMBER, "#FFFBEB", "#FEF3C7")}'
         f'</td>'
     ) if weaknesses else '<td></td>'
 
@@ -632,21 +643,62 @@ def _group_section(crow, pool) -> str:
 # ─── Estadisticas por temporada ───────────────────────────────────────────────
 def _seasons_section(enr, cname) -> str:
     prows = enr[enr["name"] == cname].copy()
+    if prows.empty:
+        return ""
     order = {"2025-2026":6,"2025":5,"2024-2025":4,"2023-2024":3,"2022-2023":2,"2021-2022":1}
     prows["_o"] = prows["season"].map(order).fillna(0)
     prows = prows.sort_values("_o", ascending=False)
-    cols    = [(c, lbl) for c, lbl in SEASON_COLS if c in prows.columns]
-    headers = [lbl for _, lbl in cols]
-    rows    = []
+
+    # Solo columnas presentes en los datos
+    cols = [(c, lbl, w) for c, lbl, w in SEASON_COLS if c in prows.columns]
+
+    # Cabecera con anchos explícitos (px) — imprescindible para xhtml2pdf
+    def _th(lbl, w):
+        return (f'<td width="{w}" style="width:{w}px;background-color:#E30613;color:white;'
+                f'font-weight:bold;padding:3px 5px;font-size:6pt;text-transform:uppercase;'
+                f'white-space:nowrap;">{lbl}</td>')
+
+    def _td(val, w, align="left"):
+        return (f'<td width="{w}" style="width:{w}px;padding:3px 5px;font-size:7pt;'
+                f'color:#111827;border-bottom:0.3px solid #E5E7EB;text-align:{align};'
+                f'white-space:nowrap;">{val}</td>')
+
+    head_html = "".join(_th(lbl, w) for _, lbl, w in cols)
+    body_html = ""
+    row_count  = 0
     for _, rw in prows.iterrows():
-        row = []
-        for c, _ in cols:
+        # Omitir filas sin minutos (temporadas sin datos)
+        raw_min = rw.get("minutes")
+        if pd.isna(raw_min) or float(raw_min or 0) < 1:
+            continue
+        bg = "#ffffff" if row_count % 2 == 0 else "#F9FAFB"
+        row_cells = ""
+        for c, _, w in cols:
             v = rw.get(c)
-            if c == "minutes" and pd.notna(v):                   v = int(v)
-            elif isinstance(v, float) and pd.notna(v) and c != "season": v = int(v)
-            row.append("" if pd.isna(v) else str(v))
-        rows.append(row)
-    return _S("Estadisticas por temporada (OPTA)") + _html_table(headers, rows)
+            if c == "minutes" and pd.notna(v):
+                v = int(float(v))
+            elif c not in ("season", "team") and isinstance(v, float) and pd.notna(v):
+                v = int(v)
+            val   = "" if pd.isna(v) else str(v)
+            align = "left" if c in ("season", "team") else "right"
+            row_cells += _td(val, w, align)
+        body_html += f'<tr style="background-color:{bg};">{row_cells}</tr>'
+        row_count += 1
+
+    if not body_html:
+        return ""
+
+    tbl = (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
+           f'style="border-collapse:collapse;margin:3px 0;table-layout:fixed;">'
+           f'<thead><tr>{head_html}</tr></thead>'
+           f'<tbody>{body_html}</tbody>'
+           f'</table>')
+    leyenda = (f'<div style="font-size:5.5pt;color:#9CA3AF;font-style:italic;margin-top:3px;">'
+               f'G=Goles &middot; A=Asistencias &middot; Tir=Tiros totales &middot; '
+               f'TaP=Tiros a puerta &middot; Ent=Entradas ganadas &middot; '
+               f'Int=Intercepciones &middot; Rec=Recuperaciones'
+               f'</div>')
+    return _S("Estadisticas por temporada (OPTA)") + tbl + leyenda
 
 
 # ─── Footer ───────────────────────────────────────────────────────────────────
@@ -717,69 +769,4 @@ def build_player_dossier(name, team=None):
 
     # Scores
     val_s     = f"{mv['value_eur']/1e6:.1f}M EUR" if mv.get("value_eur") else "n/d"
-    con_s     = str(mv.get("contract_until",""))[:10] or "n/d"
-    age_v     = int(float(mv.get("age") or 0))
-    mins_v    = float(crow.get("minutes") or 0)
-    league_s  = str(crow.get("league","")).replace("_"," ")
-    pos_s     = str(mv.get("position") or pos or "")
-    sal_s     = _est_salary(mv.get("value_eur",0), league_s, mins_v, age_v, pos_s)
-    mins_s    = f"{int(mins_v):,}".replace(",",".")
-    goals_tot = float(crow.get("goals") or 0)
-    asist_tot = float(crow.get("goal_assists") or 0)
-
-    _comp_fit = _comparator_fit(cname, PROC)
-    if _comp_fit is not None:
-        fit_v  = _comp_fit
-        fit_10 = round(_comp_fit / 10, 1)
-        fit_s  = f"{fit_10}/10"
-    elif fit:
-        fit_v  = fit.get("global_fit", 0)
-        fit_10 = round(fit_v / 10, 1)
-        fit_s  = f"{fit_10}/10"
-    else:
-        fit_v = 0; fit_10 = 0; fit_s = "n/d"
-
-    if fit:
-        fit["_unified_v"]  = fit_v
-        fit["_unified_10"] = fit_10
-
-    # Pool avg para radar
-    try:
-        pool_profiles = [
-            profile_player_row(r)
-            for _, r in add_role_percentiles(pool).iterrows()
-            if r.get("name") != cname
-        ]
-        pool_role_avg: dict = {}
-        for rp in pool_profiles:
-            for k, v in (rp.get("role_scores") or {}).items():
-                pool_role_avg.setdefault(k, []).append(float(v))
-        pool_role_avg = {k: sum(vs)/len(vs) for k, vs in pool_role_avg.items()}
-    except Exception:
-        pool_role_avg = {}
-
-    # Construir HTML
-    body = ""
-    body += _topbar()
-    body += _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str)
-    body += _kpi_strip(fit_s, fit_v, val_s, sal_s, con_s, mins_s, goals_tot, asist_tot)
-    body += _sw_section(prof.get("strengths",[]), prof.get("weaknesses",[]))
-    if fit:
-        body += _fit_section(fit, prof, fit_10)
-    body += _radar_section(prof, pool_role_avg, crow, pool, crow)
-    body += _strength_matrix(crow, pool)
-    body += _top_pct_section(crow, pool, top_n=12)
-    body += _group_section(crow, pool)
-    body += _seasons_section(enr, cname)
-    body += _footer(prof)
-
-    full_html = (
-        f'<!DOCTYPE html><html lang="es"><head>'
-        f'<meta charset="utf-8"><title>Informe {cname}</title>'
-        f'<style>{_CSS}</style>'
-        f'</head><body>{body}</body></html>'
-    )
-
-    pdf_bytes = html_to_pdf(full_html)
-    fname = f"informe_{_n(cname).replace(' ', '_')}.pdf"
-    return fname, pdf_bytes
+    c
