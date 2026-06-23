@@ -189,6 +189,27 @@ def _S(title: str) -> str:
     )
 
 
+def _page_break() -> str:
+    """Salto de pagina explicito — compatible con xhtml2pdf y WeasyPrint."""
+    return '<div style="page-break-after:always;margin:0;padding:0;height:0;"></div>'
+
+
+def _mini_header(cname: str, section: str) -> str:
+    """Cabecera minima para paginas 2 y 3 — identifica al jugador."""
+    d = date.today().strftime("%d/%m/%Y")
+    return (
+        f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
+        f'style="border-bottom:2px solid #E30613;margin-bottom:8px;">'
+        f'<tr>'
+        f'<td style="font-size:8.5pt;font-weight:bold;color:#0D0D0D;padding-bottom:4px;">'
+        f'{cname} &mdash; <span style="color:#E30613;">{section}</span></td>'
+        f'<td style="text-align:right;font-size:7pt;color:#9CA3AF;padding-bottom:4px;">'
+        f'Rayo Vallecano &middot; Confidencial &middot; {d}</td>'
+        f'</tr>'
+        f'</table>'
+    )
+
+
 def _pbar(label: str, pct: float, note: str = "", label_w: int = 155) -> str:
     """Barra de percentil horizontal — tabla anidada, compatible xhtml2pdf."""
     pct = max(0.0, min(float(pct), 100.0))
@@ -494,7 +515,8 @@ def _career_table(tot_rows) -> str:
                  f'{_td(lab, W0)}{_td(total, W1, "right")}{_td(p90, W2, "right")}'
                  f'</tr>')
     return (f'<table cellpadding="0" cellspacing="0" border="0" width="703" '
-            f'style="border-collapse:collapse;margin:3px 0;table-layout:fixed;">'
+            f'style="border-collapse:collapse;margin:3px 0;table-layout:fixed;'
+            f'page-break-inside:avoid;">'
             f'<thead><tr>{head}</tr></thead>'
             f'<tbody>{body}</tbody>'
             f'</table>') if tot_rows else ""
@@ -614,7 +636,7 @@ def _group_section(crow, pool) -> str:
     grp_items = list(METRIC_GROUPS.items())
     html = _S("Percentiles por grupo de metricas")
     html += (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
-             f'style="margin-top:4px;">')
+             f'style="margin-top:4px;page-break-inside:avoid;">')
     for i in range(0, len(grp_items), 2):
         html += '<tr valign="top">'
         pair = grp_items[i:i+2]
@@ -745,30 +767,4 @@ def build_player_dossier(name, team=None):
     if cand.empty:
         cand = career[career["name"].map(_n).str.contains(_n(name).split()[-1], na=False)]
     if cand.empty:
-        raise ValueError(f"Jugador '{name}' no encontrado")
-
-    crow  = cand.iloc[0]; cname = crow["name"]
-    enrp  = add_role_percentiles(career)
-    prow  = enrp[enrp["name"] == cname].iloc[0]
-    prof  = profile_player_row(prow)
-    mv    = get_value(cname)
-    fit   = evaluate_player_fit(prof, _needs(), "Bloque medio / Equilibrado") if prof.get("primary_role") else {}
-    pos   = prow.get("position_group")
-    pool  = career[career["position_group"] == pos]
-
-    # Foto
-    foto_b64_str = None
-    purl = mv.get("photo_url") or (
-        f"https://img.a.transfermarkt.technology/portrait/big/{mv['tm_id']}.jpg"
-        if mv.get("tm_id") else None
-    )
-    if purl:
-        try:
-            import requests
-            r = requests.get(purl, timeout=4, headers={"User-Agent": "RayoScoutingTool/1.0"})
-            if r.status_code == 200 and r.content:
-                foto_b64_str = photo_b64(r.content)
-        except Exception:
-            foto_b64_str = None
-
-    # Sc
+        raise Va
