@@ -350,8 +350,8 @@ def _sw_section(strengths, weaknesses) -> str:
         ) if items else ""
 
     s_td = (
-        f'<td style="background-color:#F0FDF4;border:0.5px solid #E5E7EB;'
-        f'padding:6px 8px;width:50%;vertical-align:top;">'
+        f'<td width="260" style="background-color:#F0FDF4;border:0.5px solid #E5E7EB;'
+        f'padding:6px 8px;width:260px;vertical-align:top;">'
         f'<div style="font-size:5.5pt;font-weight:bold;color:{GREEN};'
         f'text-transform:uppercase;margin-bottom:4px;">Fortalezas</div>'
         f'{_pills(strengths, "#DCFCE7", GREEN)}'
@@ -411,4 +411,3 @@ def _fit_section(fit, prof, fit_10) -> str:
         + _trow(["Compatibilidad entrenador","25%",str(int(fit.get("compatibilidad_entrenador",0))),
                  f"{fit.get('compatibilidad_entrenador',0)*0.25:.1f}"], bg="#F9FAFB")
         + _trow(["Rendimiento en rol","20%",str(int(prof.get("primary_score") or 50)),
-              
