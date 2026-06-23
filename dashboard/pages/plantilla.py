@@ -84,7 +84,7 @@ def market_val(v):
     return f"{v/1e6:.1f}M€" if v >= 1e6 else f"{v/1e3:.0f}K€"
 
 
-def player_row(p, i):
+def player_row(p, i, role_map=None, role_labels=None):
     name = p.get("name", "")
     pos  = p.get("position", "")
     age  = p.get("age", "")
@@ -95,6 +95,8 @@ def player_row(p, i):
     initials = "".join(w[0].upper() for w in name.split()[:2] if w)
     year = int(str(end)[:4]) if end else 9999
     row_bg = "#FFF5F5" if year <= 2026 else ("#FFFFFF" if i % 2 == 0 else "#FAFAFA")
+    role_key   = (role_map or {}).get(name, "")
+    role_label = (role_labels or {}).get(role_key, "")
     return html.Tr([
         html.Td(html.Div([
             html.Div(initials, style={
@@ -116,11 +118,17 @@ def player_row(p, i):
         html.Td(nat, style={"fontSize": "12px", "color": "#6B7280"}),
         html.Td(contract_bar(end)),
         html.Td(html.Span(market_val(mv), style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL})),
+        html.Td(
+            html.Span(role_label, style={
+                "fontSize": "10px", "color": "#1D4ED8", "background": "#EFF6FF",
+                "borderRadius": "6px", "padding": "2px 7px", "whiteSpace": "nowrap",
+            }) if role_label else html.Span("—", style={"fontSize": "11px", "color": "#D1D5DB"}),
+        ),
     ], id={"type": "plantilla-row", "name": name}, n_clicks=0,
        style={"background": row_bg, "transition": "background .1s", "cursor": "pointer"})
 
 
-def group_table(group_key, players):
+def group_table(group_key, players, role_map=None, role_labels=None):
     label, icon = GROUP_LABELS[group_key]
     return html.Div([
         html.Div([
@@ -137,8 +145,9 @@ def group_table(group_key, players):
                     html.Th("Nacionalidad", style=th),
                     html.Th("Contrato", style={**th, "width": "90px"}),
                     html.Th("Valor TM", style={**th, "width": "90px"}),
+                    html.Th("Estilo de juego", style={**th, "width": "160px"}),
                 ], style={"borderBottom": f"2px solid {_ROJO}"})),
-                html.Tbody([player_row(p, i) for i, p in enumerate(players)]),
+                html.Tbody([player_row(p, i, role_map, role_labels) for i, p in enumerate(players)]),
             ], style={"width": "100%", "borderCollapse": "collapse"}),
         ], style={"overflowX": "auto"}),
     ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
@@ -277,35 +286,74 @@ _POS_TARGETS: dict[str, dict[str, int]] = {
 
 def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
     """Panel de transparencia: formación → objetivo por posición → actual."""
+    from datetime import date as _date
+    today = _date.today()
+
     formation = (cp.get("tactics", {}) or {}).get("base_formation", "4-2-3-1") or "4-2-3-1"
     formation = str(formation).strip().replace(" ", "-")
     target = _POS_TARGETS.get(formation, _POS_TARGETS["4-2-3-1"])
 
-    # Contar jugadores actuales por posición (solo propietarios, no cedidos de fuera)
+    # Contar jugadores actuales por posición y agrupar para alertas de contrato
     counts: dict[str, int] = {}
+    pos_players: dict[str, list] = {}
     for p in players_all:
         pos = str(p.get("position", "")).upper()
         if pos in target:
             counts[pos] = counts.get(pos, 0) + 1
+            pos_players.setdefault(pos, []).append(p)
 
     rows = []
     for pos, needed in sorted(target.items(), key=lambda x: list(target.keys()).index(x[0])):
         if needed == 0:
             continue
-        have    = counts.get(pos, 0)
-        delta   = have - needed
+        have  = counts.get(pos, 0)
+        delta = have - needed
+
         if delta >= 0:
             status_color = "#166534"
             status_bg    = "#F0FDF4"
             status_txt   = "✓ Cubierto"
+            # Alerta de contratos en posiciones cubiertas
+            plist = pos_players.get(pos, [])
+            _years = []
+            for _p in plist:
+                try:
+                    _years.append(int(str(_p.get("contract_end", "9999"))[:4]))
+                except (ValueError, TypeError):
+                    _years.append(9999)
+            urgent = sum(1 for y in _years if y <= today.year + 1)
+            warn   = sum(1 for y in _years if today.year + 1 < y <= today.year + 2)
+            if urgent > 0:
+                contract_chip = html.Span(
+                    f"⚠ {urgent} expira{'n' if urgent > 1 else ''} ≤{today.year + 1}",
+                    title="Posición cubierta pero con contratos urgentes",
+                    style={"fontSize": "9px", "fontWeight": "600", "color": "#991B1B",
+                           "background": "#FEE2E2", "borderRadius": "4px",
+                           "padding": "1px 6px", "marginLeft": "5px",
+                           "whiteSpace": "nowrap"},
+                )
+            elif warn > 0:
+                contract_chip = html.Span(
+                    f"~ {warn} expira{'n' if warn > 1 else ''} {today.year + 2}",
+                    title="Posición cubierta pero hay contratos por vigilar",
+                    style={"fontSize": "9px", "fontWeight": "600", "color": "#92400E",
+                           "background": "#FEF3C7", "borderRadius": "4px",
+                           "padding": "1px 6px", "marginLeft": "5px",
+                           "whiteSpace": "nowrap"},
+                )
+            else:
+                contract_chip = html.Span()
         elif delta == -1:
-            status_color = "#92400E"
-            status_bg    = "#FFFBEB"
-            status_txt   = "⚠ Reforzar"
+            status_color  = "#92400E"
+            status_bg     = "#FFFBEB"
+            status_txt    = "⚠ Reforzar"
+            contract_chip = html.Span()
         else:
-            status_color = "#991B1B"
-            status_bg    = "#FFF1F2"
-            status_txt   = "✗ Falta"
+            status_color  = "#991B1B"
+            status_bg     = "#FFF1F2"
+            status_txt    = "✗ Falta"
+            contract_chip = html.Span()
+
         rows.append(html.Tr([
             html.Td(html.Span(pos, style={
                 "background": POS_COLOR.get(pos, ("#F3F4F6", "#374151"))[0],
@@ -318,10 +366,13 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
                                         "color": "#6B7280", "padding": "5px 8px"}),
             html.Td(str(have), style={"fontSize": "11px", "textAlign": "center",
                                       "fontWeight": "700", "color": "#1A1A2E", "padding": "5px 8px"}),
-            html.Td(html.Span(status_txt, style={
-                "fontSize": "10px", "fontWeight": "600", "color": status_color,
-                "background": status_bg, "padding": "2px 8px", "borderRadius": "99px",
-            })),
+            html.Td([
+                html.Span(status_txt, style={
+                    "fontSize": "10px", "fontWeight": "600", "color": status_color,
+                    "background": status_bg, "padding": "2px 8px", "borderRadius": "99px",
+                }),
+                contract_chip,
+            ], style={"padding": "5px 8px", "whiteSpace": "nowrap"}),
         ], style={"borderBottom": "1px solid #F3F4F6"}))
 
     return html.Div([
@@ -389,6 +440,19 @@ def layout(**_params):
     for grp in sq.values():
         if isinstance(grp, list):
             players_all.extend(p for p in grp if isinstance(p, dict))
+
+    # Estilos de juego desde lateral map
+    try:
+        from src.utils.lateral_position import build_lateral_map, ROLE_TYPE_LABELS as _RTL
+        _proc = Path(settings()["paths"]["data_processed"])
+        _lat = build_lateral_map(
+            _proc / "player_seasons_enriched.parquet",
+            _proc / "master_players.parquet",
+        )
+        _role_map = dict(zip(_lat["name"], _lat["role_type"]))
+    except Exception:
+        _role_map = {}
+        _RTL = {}
 
     total_mv   = sum(p.get("market_value", 0) for p in players_all)
     today = date.today()
@@ -495,10 +559,10 @@ def layout(**_params):
 
         dbc.Row([
             dbc.Col([
-                group_table("goalkeepers", sq.get("goalkeepers", [])),
-                group_table("defenders",   sq.get("defenders", [])),
-                group_table("midfielders", sq.get("midfielders", [])),
-                group_table("forwards",    sq.get("forwards", [])),
+                group_table("goalkeepers", sq.get("goalkeepers", []), _role_map, _RTL),
+                group_table("defenders",   sq.get("defenders",   []), _role_map, _RTL),
+                group_table("midfielders", sq.get("midfielders", []), _role_map, _RTL),
+                group_table("forwards",    sq.get("forwards",    []), _role_map, _RTL),
             ], md=8),
 
             dbc.Col([
