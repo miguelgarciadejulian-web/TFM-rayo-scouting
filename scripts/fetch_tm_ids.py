@@ -115,27 +115,70 @@ def _norm_club(team: str) -> str:
     return re.sub(r"[^a-z0-9]", "", _norm(team))
 
 
+# Palabras que NO son distintivas en un nombre de club
+_CLUB_STOP = {
+    "fc", "cf", "ac", "ca", "sc", "rc", "cd", "ud", "sd", "as", "rcd",
+    "vfb", "bsc", "psv", "ajax", "club", "atletico", "athletic", "deportivo",
+    "sporting", "racing", "union", "united", "city", "real", "de", "la",
+    "el", "los", "las", "del", "and", "und", "van", "den",
+}
+
+
+def _club_tokens(team: str) -> set[str]:
+    tokens = set(_norm(team).split())
+    return tokens - _CLUB_STOP
+
+
+def _club_keyword(team: str) -> str:
+    """Palabra mas distintiva del club para incluir en la busqueda TM."""
+    tokens = [t for t in _club_tokens(team) if len(t) > 3]
+    if not tokens:
+        return ""
+    return max(tokens, key=len)
+
+
 def _club_match(opta_team: str, tm_team: str) -> float:
     """
-    Similitud de clubs entre 0 y 1, tolerante con diferencias de nombre.
-    "CA Tigre" vs "Tigre" -> 0.5 (uno contiene al otro)
+    Similitud de clubs entre 0 y 1.
+    Ejemplos:
+      "CA Rosario Central" vs "Rosario Central"  -> 1.0 (tokens iguales tras quitar stopwords)
+      "CA Tigre"           vs "Tigre"             -> 1.0
+      "CA River Plate"     vs "River Plate"       -> 1.0
+      "Bayern Munich"      vs "FC Bayern Munchen" -> 0.8 (token overlap)
     """
+    if not opta_team or not tm_team:
+        return 0.0
+
+    # Comparacion directa normalizada
     a = _norm_club(opta_team)
     b = _norm_club(tm_team)
-    if not a or not b:
-        return 0.0
     if a == b:
         return 1.0
     if a in b or b in a:
-        return 0.5
-    ta = set(re.sub(r"[^a-z0-9]", " ", _norm(opta_team)).split())
-    tb = set(re.sub(r"[^a-z0-9]", " ", _norm(tm_team)).split())
-    ta -= {"fc", "cf", "ac", "ca", "sc", "rc", "vfb", "de", "la", "el"}
-    tb -= {"fc", "cf", "ac", "ca", "sc", "rc", "vfb", "de", "la", "el"}
+        return 0.8
+
+    # Comparacion por tokens significativos
+    ta = _club_tokens(opta_team)
+    tb = _club_tokens(tm_team)
+    ta = {t for t in ta if len(t) > 2}
+    tb = {t for t in tb if len(t) > 2}
     if not ta or not tb:
         return 0.0
-    overlap = len(ta & tb) / max(len(ta), len(tb))
-    return round(overlap * 0.8, 2)
+
+    # Match exacto de tokens
+    exact_overlap = len(ta & tb) / max(len(ta), len(tb))
+    if exact_overlap > 0:
+        return round(exact_overlap, 2)
+
+    # Match parcial: un token de 'a' empieza igual que un token de 'b' (primeros 4 chars)
+    partial = sum(
+        1 for t in ta
+        if any(t[:4] == u[:4] for u in tb if len(u) >= 4)
+    )
+    if partial:
+        return round(partial / max(len(ta), len(tb)) * 0.6, 2)
+
+    return 0.0
 
 
 # ── Parsing del nombre OPTA ───────────────────────────────────────────────────
@@ -311,105 +354,112 @@ def _tm_get(sess, query: str, retries: int) -> tuple[int, str]:
     return -1, "max_retries"
 
 
+def _search_and_filter(sess, query: str, sur_norm: str, opta_initial: str,
+                       retries: int) -> tuple[list[dict], list[dict]]:
+    """
+    Hace GET a TM con `query`, devuelve (pool_filtrado, candidates_raw).
+    pool_filtrado = candidatos que pasan filtro de apellido + inicial.
+    """
+    status, html = _tm_get(sess, query, retries)
+    if status != 200:
+        return [], []
+    candidates = _parse_search_results(html)
+    if not candidates:
+        return [], []
+
+    # Filtro apellido
+    surname_pool = [c for c in candidates if _norm(_surname(c["tm_name"])) == sur_norm]
+    pool = surname_pool if surname_pool else []
+
+    # Filtro inicial
+    if pool and opta_initial:
+        ip = [c for c in pool if _initial_matches(opta_initial, c["tm_name"])]
+        if ip:
+            pool = ip
+
+    return pool, candidates
+
+
 def search_player(
     sess, name: str, opta_team: str, retries: int = MAX_RETRIES
 ) -> tuple[str | None, str, list[dict]]:
     """
     Busca el jugador en TM y devuelve (tm_id, reason, candidates).
 
-    Flujo:
-      1. Extraer inicial y apellido del nombre OPTA
-         "S. Galesio" -> inicial=S, apellido=Galesio
-      2. Buscar en TM por apellido solo -> encuentra "Santiago Galesio"
-      3. Filtrar candidatos cuyo apellido coincida con el apellido OPTA
-      4. De esos, filtrar los que la inicial del nombre TM coincida con la inicial OPTA
-         -> si queda uno solo: match 100% confirmado
-      5. Si quedan varios con misma inicial y mismo apellido:
-         -> desambiguar por club (tolerante con diferencias OPTA/TM)
-         -> si el club desempata: match confirmado
-      6. Si no se puede resolver: marcar como ambiguo -> CSV de revision manual
-      7. Si sin resultados por apellido: reintentar con nombre completo
+    Flujo de busquedas (de mas a menos especifica):
+      1. Apellido + palabra clave del club  ("Fernandez Rosario")
+         -> Si unico match: 100% confirmado
+      2. Solo apellido                      ("Fernandez")
+         -> Filtrar por apellido + inicial
+         -> Si unico: confirmado
+         -> Si varios: desambiguar por club
+      3. Nombre completo OPTA               ("G. Fernandez")
+         -> Para casos donde apellido = nombre de ciudad/club
+      4. Si siguen varios con mismo score de club -> ambiguo
     """
     opta_initial, opta_surname = _parse_opta_name(name)
-    sur_norm = _norm(opta_surname)
+    sur_norm    = _norm(opta_surname)
+    club_kw     = _club_keyword(opta_team)
 
-    # Paso 1: buscar por apellido
-    status, html = _tm_get(sess, opta_surname, retries)
-    if status not in (200,):
-        # Fallo HTTP - intentar con nombre completo
-        if status == -1:
-            return None, "error:{}".format(html[:80]), []
-        # Para 5xx reintentar con nombre completo
+    # ── Busqueda 1: apellido + palabra clave del club ────────────────────────
+    # "Fernandez Rosario" -> mucho mas especifico que solo "Fernandez"
+    if club_kw:
+        query1 = "{} {}".format(opta_surname, club_kw)
+        pool, candidates = _search_and_filter(sess, query1, sur_norm, opta_initial, retries)
+        if len(pool) == 1:
+            return pool[0]["tm_id"], "found_exact", pool
+        if len(pool) > 1:
+            # Con nombre de club en query, intentar desambiguar directamente
+            scored = sorted(
+                [(c, _club_match(opta_team, c["tm_club"])) for c in pool],
+                key=lambda x: x[1], reverse=True,
+            )
+            best, second = scored[0][1], (scored[1][1] if len(scored) > 1 else 0.0)
+            if best > second:
+                return scored[0][0]["tm_id"], "found_club", pool
         time.sleep(SLEEP_BETWEEN)
-        status2, html2 = _tm_get(sess, name, retries)
-        if status2 != 200:
-            return None, "error:http{}".format(status), []
-        html = html2
 
-    candidates = _parse_search_results(html)
+    # ── Busqueda 2: solo apellido ────────────────────────────────────────────
+    pool, candidates = _search_and_filter(sess, opta_surname, sur_norm, opta_initial, retries)
 
-    # Paso 1b: sin resultados por apellido -> probar nombre completo
-    if not candidates and opta_initial:
+    # Si no hay resultados con apellido correcto, probar con nombre completo OPTA
+    if not pool:
         time.sleep(SLEEP_BETWEEN)
-        status2, html2 = _tm_get(sess, name, retries)
-        if status2 == 200:
-            candidates = _parse_search_results(html2)
-
-    if not candidates:
-        return None, "not_found", []
-
-    # Paso 2: filtrar por apellido coincidente
-    sur_norm = _norm(opta_surname)
-    surname_pool = [
-        c for c in candidates
-        if _norm(_surname(c["tm_name"])) == sur_norm
-    ]
-
-    # Si ninguno tiene ese apellido (ej. "Monza" es un club, no un apellido en TM)
-    # reintentar con el nombre completo en lugar de usar todos los candidatos
-    if not surname_pool and opta_initial:
-        time.sleep(SLEEP_BETWEEN)
-        status2, html2 = _tm_get(sess, name, retries)
-        if status2 == 200:
-            candidates2 = _parse_search_results(html2)
-            surname_pool2 = [
-                c for c in candidates2
-                if _norm(_surname(c["tm_name"])) == sur_norm
-            ]
-            if surname_pool2:
-                candidates = candidates2
-                surname_pool = surname_pool2
-            elif candidates2:
-                # Fallback: usar resultados del nombre completo aunque no coincida apellido
-                candidates = candidates2
-                surname_pool = candidates2
-
-    if not surname_pool:
-        return None, "not_found", candidates
-
-    pool = surname_pool
-
-    # Paso 3: filtrar por inicial
-    if opta_initial:
-        initial_pool = [c for c in pool if _initial_matches(opta_initial, c["tm_name"])]
-        if initial_pool:
-            pool = initial_pool
+        pool, candidates = _search_and_filter(sess, name, sur_norm, opta_initial, retries)
+        # Si aun sin apellido en resultados, usar todos los del nombre completo
+        if not pool and candidates:
+            ip = [c for c in candidates if _initial_matches(opta_initial, c["tm_name"])]
+            pool = ip if ip else candidates
 
     if not pool:
         return None, "not_found", candidates
 
-    # Paso 4: unico resultado -> 100% confirmado
+    # ── Un solo resultado -> confirmado ──────────────────────────────────────
     if len(pool) == 1:
         return pool[0]["tm_id"], "found_exact", pool
 
-    # Paso 5: varios -> desambiguar por club
-    scored = [(c, _club_match(opta_team, c["tm_club"])) for c in pool]
-    scored.sort(key=lambda x: x[1], reverse=True)
+    # ── Varios -> desambiguar por club ───────────────────────────────────────
+    scored = sorted(
+        [(c, _club_match(opta_team, c["tm_club"])) for c in pool],
+        key=lambda x: x[1], reverse=True,
+    )
     best_score   = scored[0][1]
     second_score = scored[1][1] if len(scored) > 1 else 0.0
 
-    if best_score >= 0.5 and best_score > second_score:
+    # Si hay UN ganador claro (cualquier margen con al menos algo de score)
+    if best_score > 0 and best_score > second_score:
         return scored[0][0]["tm_id"], "found_club", pool
+
+    # Si quedan solo 2 y los scores son iguales pero uno tiene club info y el otro no
+    if len(pool) == 2 and best_score == second_score and best_score == 0.0:
+        # Intentar una tercera busqueda con nombre completo + club keyword
+        if club_kw:
+            time.sleep(SLEEP_BETWEEN)
+            pool3, _ = _search_and_filter(
+                sess, "{} {}".format(name, club_kw), sur_norm, opta_initial, retries
+            )
+            if len(pool3) == 1:
+                return pool3[0]["tm_id"], "found_exact", pool3
 
     # Paso 6: ambiguo -> CSV de revision manual
     return None, "ambiguous", pool
@@ -685,10 +735,14 @@ def main():
     print("RESUMEN FINAL")
     print("=" * 60)
     print("  Buscados         : {:>8,}".format(total))
-    print("  Encontrados      : {:>8,}  ({:.1f}%)".format(stats["found"], stats["found"] / total * 100))
-    print("  No encontrados   : {:>8,}  ({:.1f}%)".format(stats["not_found"], stats["not_found"] / total * 100))
-    print("  Ambiguos         : {:>8,}  ({:.1f}%)".format(stats["ambiguous"], stats["ambiguous"] / total * 100))
-    print("  Errores          : {:>8,}  ({:.1f}%)".format(stats["error"], stats["error"] / total * 100))
+    print("  Encontrados      : {:>8,}  ({:.1f}%)".format(
+        stats["found"], stats["found"] / total * 100))
+    print("  No encontrados   : {:>8,}  ({:.1f}%)".format(
+        stats["not_found"], stats["not_found"] / total * 100))
+    print("  Ambiguos         : {:>8,}  ({:.1f}%)".format(
+        stats["ambiguous"], stats["ambiguous"] / total * 100))
+    print("  Errores          : {:>8,}  ({:.1f}%)".format(
+        stats["error"], stats["error"] / total * 100))
     print()
     print("  entity_map    ->", ENTITY_MAP)
     print("  market_values ->", MV_CSV)
