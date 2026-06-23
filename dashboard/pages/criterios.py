@@ -390,4 +390,16 @@ def layout(**_p):
                 html.Thead(html.Tr([html.Th("Factor", style=TH), html.Th("Peso", style=TH), html.Th("Detalle", style=TH)])),
                 html.Tbody([
                     html.Tr([html.Td("Meses restantes de contrato", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("6m o menos = 30 pts, 12m o menos = 20 pts, 24m o menos = 10 pts, mas de 24m = 0 pts", style=TD)]),
-                    html.Tr([html.Td("Ratio clausula / valor TM", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("menor de 1x = 30 pts (clausula barata), 1-2x = 15 pts, mayor de 3x =
+                    html.Tr([html.Td("Ratio clausula / valor TM", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("menor de 1x = 30 pts, 1-2x = 15 pts, mayor de 3x = 0 pts", style=TD)]),
+
+                    html.Tr([html.Td("Edad (pico de demanda 24-28)", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700"}), html.Td("24-28 = 20 pts, 22-23 = 12 pts, menor de 22 o mayor de 31 = 0 pts", style=TD)]),
+                    html.Tr([html.Td("Interes real confirmado", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700"}), html.Td("Confirmado = 20 pts, Sondeado = 10 pts, Sin noticias = 0 pts", style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
+            html.P("Niveles: 70 o mas MUY ALTO, 50-69 ALTO, 30-49 MEDIO, menos de 30 BAJO.",
+                   style={"fontSize":"11px","color":"#6B7280"}),
+            html.P("Simulador de fichajes: el score de viabilidad combina el impacto en la masa salarial, "
+                   "el retorno esperado de valor de mercado a 3 anos y la liberacion de salario si hay una salida asociada.",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"8px"}),
+        ], style=CARD),
+    ])
