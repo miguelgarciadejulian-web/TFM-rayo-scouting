@@ -414,14 +414,18 @@ def _radar_section(axes, dna_target) -> str:
                      f'<span style="color:{diff_col};font-weight:bold;">{ds}</span>'))
     ax_tbl = _html_table(["Eje","Tecnico","ADN Rayo","Dif."], rows,
                          note="100=elite  |  50=media  |  0=peor. Percentil equipo dirigido vs liga.")
-    radar_img = (f'<img src="data:image/png;base64,{radar_b64}" width="265" style="display:block;margin-bottom:5px;"/>'
+    # Imagen con ancho Y alto fijos — xhtml2pdf requiere ambos atributos
+    radar_img = (f'<img src="data:image/png;base64,{radar_b64}" width="255" height="200" '
+                 f'style="display:block;margin-bottom:5px;"/>'
                  if radar_b64 else "")
     return (
         _S("Estilo de juego — Radar tactico") +
         f'<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:4px;">'
         f'<tr valign="top">'
-        f'<td style="width:52%;padding-right:10px;">{radar_img}</td>'
-        f'<td><div style="font-size:7.5pt;font-weight:bold;color:#E30613;margin-bottom:4px;">Ejes vs ADN Rayo</div>'
+        # Ancho en px (atributo width), no solo CSS, para que xhtml2pdf lo respete
+        f'<td width="265" style="width:265px;padding-right:10px;vertical-align:top;">{radar_img}</td>'
+        f'<td style="vertical-align:top;">'
+        f'<div style="font-size:7.5pt;font-weight:bold;color:#E30613;margin-bottom:4px;">Ejes vs ADN Rayo</div>'
         f'{ax_tbl}</td>'
         f'</tr></table>'
     )
@@ -432,7 +436,8 @@ def _adn_section(axes, dna_target) -> str:
     if not b64: return ""
     return (
         _S("Comparativa tactica vs ADN Rayo") +
-        f'<img src="data:image/png;base64,{b64}" width="100%" style="display:block;max-width:530px;"/>'
+        # Ancho fijo en px para xhtml2pdf (width="100%" no funciona en img con xhtml2pdf)
+        f'<img src="data:image/png;base64,{b64}" width="527" height="130" style="display:block;"/>'
         f'<div style="font-size:6pt;color:#9CA3AF;font-style:italic;margin-top:3px;">'
         f'Verde: dif &le;12 pts (alineado)  |  Rojo: &gt;12 pts (desajuste). Delta=Tecnico-ADN.</div>'
     )
@@ -525,11 +530,4 @@ def build_coach_dossier(name):
     body += _fit_eval_section(ev, score_10, score_num)
     body += _seasons_section(c)
     body += _footer(c)
-    full_html = (
-        '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">'
-        f'<title>Informe Entrenador {c["name"]}</title>'
-        f'<style>{_CSS}</style></head><body>{body}</body></html>'
-    )
-    pdf_bytes = html_to_pdf(full_html)
-    fname = f"informe_entrenador_{_n(c['name']).replace(' ','_')}.pdf"
-    return fname, pdf_bytes
+    
