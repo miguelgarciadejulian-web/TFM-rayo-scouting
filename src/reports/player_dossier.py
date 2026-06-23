@@ -636,45 +636,55 @@ def _top_pct_section(crow, pool, top_n=12) -> str:
     if not all_m:
         return ""
     all_m.sort(key=lambda x: -x[1])
-    bars = "".join(_pbar(lab, pct, label_w=180) for lab, pct in all_m[:top_n])
-    return _S(f"Top {top_n} percentiles vs posicion") + bars
+    bars = "".join(_pbar(lab, pct, label_w=175) for lab, pct in all_m[:top_n])
+    return (_S(f"Top {top_n} metricas destacadas vs posicion") +
+        f'<table cellpadding="0" cellspacing="0" border="0" width="100%" style="page-break-inside:avoid;"><tr><td>' + bars + '</td></tr></table>')
 
 
 # --- Percentiles por grupo de metricas ---
 def _group_section(crow, pool) -> str:
-    grp_items = list(METRIC_GROUPS.items())
-    html = _S("Percentiles por grupo de metricas")
-    html += (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
-             f'style="margin-top:4px;page-break-inside:avoid;">')
-    for i in range(0, len(grp_items), 2):
-        html += '<tr valign="top">'
-        pair = grp_items[i:i+2]
-        for j, (grp, metrics) in enumerate(pair):
-            rows = []
-            for m in metrics:
-                pct = _pct_rank(crow, pool, m)
-                v90 = float(crow[m]) if m in crow.index and pd.notna(crow.get(m)) else None
-                if pct is not None:
-                    label = ALL_LABELS.get(m, m.replace("_p90","").replace("_"," "))
-                    note  = f"{v90:.2f}/90" if v90 is not None else ""
-                    rows.append((label, pct, note))
-            # width en atributo px (xhtml2pdf ignora width:% en CSS)
-            col_w = 255 if j == 0 else 256
-            pad_r = "padding-right:8px;" if j == 0 else ""
-            grp_header = (
-                f'<div style="font-size:7pt;font-weight:bold;color:#374151;'
-                f'background-color:#F3F4F6;border-left:3px solid #E30613;'
-                f'padding:3px 8px;margin-bottom:4px;margin-top:6px;">{grp.upper()}</div>'
-            )
-            content = grp_header
-            if rows:
-                content += "".join(_pbar(lab, pct, note, label_w=110) for lab, pct, note in rows)
-            html += f'<td width="{col_w}" style="width:{col_w}px;{pad_r}vertical-align:top;">{content}</td>'
-        if len(pair) == 1:
-            html += '<td></td>'
-        html += '</tr>'
-    html += '</table>'
-    return html
+    """Layout 3 columnas: [Ataque|Creacion|Pase] + [Defensa|Duelos|vacio]."""
+    grp_data = {}
+    for grp, metrics in METRIC_GROUPS.items():
+        rows = []
+        for m in metrics:
+            pct = _pct_rank(crow, pool, m)
+            v90 = float(crow[m]) if m in crow.index and pd.notna(crow.get(m)) else None
+            if pct is not None:
+                label = ALL_LABELS.get(m, m.replace("_p90","").replace("_"," "))
+                note  = f"{v90:.2f}/90" if v90 is not None else ""
+                rows.append((label, pct, note))
+        grp_data[grp] = rows
+
+    def _grp_cell(grp, w, pad=""):
+        rows = grp_data.get(grp, [])
+        header = (
+            f'<div style="font-size:6.5pt;font-weight:bold;color:#374151;'
+            f'background-color:#F3F4F6;border-left:3px solid #E30613;'
+            f'padding:3px 7px;margin-bottom:3px;margin-top:5px;">{grp.upper()}</div>'
+        )
+        bars = "".join(_pbar(lab, pct, note, label_w=88) for lab, pct, note in rows)
+        return (f'<td width="{w}" style="width:{w}px;vertical-align:top;{pad}">'
+                f'{header}{bars}</td>')
+
+    row1 = (
+        _grp_cell("Ataque",   224, "padding-right:6px;") +
+        _grp_cell("Creacion", 224, "padding-right:6px;") +
+        _grp_cell("Pase",     224)
+    )
+    row2 = (
+        _grp_cell("Defensa",  224, "padding-right:6px;") +
+        _grp_cell("Duelos",   224, "padding-right:6px;") +
+        '<td width="224" style="width:224px;vertical-align:top;"></td>'
+    )
+    return (
+        _S("Percentiles por grupo de metricas") +
+        f'<table cellpadding="0" cellspacing="0" border="0" width="672" '
+        f'style="margin-top:4px;page-break-inside:avoid;">'
+        f'<tr valign="top">{row1}</tr>'
+        f'<tr valign="top">{row2}</tr>'
+        f'</table>'
+    )
 
 
 # --- Estadisticas por temporada ---
@@ -863,21 +873,20 @@ def build_player_dossier(name, team=None):
 
     # =====================================================
     #  PAGINA 2 -- Perfil tecnico
-    #  Radar + Scores por rol + Totales de carrera
-    #  Matriz de fortalezas + Top 12 percentiles
+    #  Radar + Scores por rol + Totales de carrera + Matriz de fortalezas
     # =====================================================
     body += _mini_header(cname, "Perfil tecnico")
     body += _radar_section(prof, pool_role_avg, crow, pool, crow)
     body += _strength_matrix(crow, pool)
-    body += _top_pct_section(crow, pool, top_n=12)
 
     body += _page_break()
 
     # =====================================================
     #  PAGINA 3 -- Estadisticas detalladas
-    #  Percentiles por grupo + Temporadas + Footer
+    #  Top 9 percentiles + Grupos de metricas + Temporadas + Footer
     # =====================================================
     body += _mini_header(cname, "Estadisticas detalladas")
+    body += _top_pct_section(crow, pool, top_n=9)
     body += _group_section(crow, pool)
     body += _seasons_section(enr, cname)
     body += _footer(prof)

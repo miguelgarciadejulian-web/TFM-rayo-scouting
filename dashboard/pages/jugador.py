@@ -29,6 +29,13 @@ import unicodedata as _ud
 import yaml as _yaml
 from src.utils.market import get_value  # noqa: E402
 
+# Pre-importar el modulo de PDF en el arranque para evitar error en primer intento
+try:
+    from src.reports.player_dossier import build_player_dossier as _pdf_preload
+except Exception:
+    pass
+
+
 
 def _norm(x):
     return _ud.normalize("NFKD", str(x)).encode("ascii", "ignore").decode().lower().strip()
