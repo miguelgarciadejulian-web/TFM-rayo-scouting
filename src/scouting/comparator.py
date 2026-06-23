@@ -139,7 +139,7 @@ class PlayerComparison:
     score_rendimiento:float
     score_economico:  float
     score_edad:       float
-    score_disponibilidad: float
+    score_disponibilidad: float | None  # None = jugador Rayo en propiedad (no aplica)
 
     # Métricas p90 para radar (combinadas o normalizadas)
     goal_contrib_p90:    float = 0.0   # goals_p90 + assists_p90
@@ -312,8 +312,15 @@ class FitRayoScorer:
         s_a  = self._score_edad(age, pos)
         s_d  = self._score_disponibilidad(cu, name, squad_entry=squad_entry)
 
-        # Rendimiento primero (40%), económico importante (30%), edad y disponibilidad (15% c/u)
-        fit = round(0.40*s_r + 0.30*s_e + 0.15*s_a + 0.15*s_d, 1)
+        # Jugadores del Rayo en PROPIEDAD: disponibilidad no aplica (ya están en plantilla).
+        # Se excluye s_d y se normalizan los pesos restantes (/0.85).
+        # Cedidos: sí incluyen disponibilidad (propietario externo, coste desconocido).
+        is_own_rayo = (squad_entry is not None) and not squad_entry.get("loan_from")
+        if is_own_rayo:
+            fit = round((0.40*s_r + 0.30*s_e + 0.15*s_a) / 0.85, 1)
+            s_d = None  # señal para UI: "no aplica"
+        else:
+            fit = round(0.40*s_r + 0.30*s_e + 0.15*s_a + 0.15*s_d, 1)
 
         def _sf(v) -> float:
             """Convierte a float de forma segura (NaN → 0)."""
@@ -816,4 +823,46 @@ class FitRayoScorer:
             rows = self.economic[mask]
             if not rows.empty:
                 v = rows.iloc[0].get("market_value_eur")
-                if v a
+                if v and float(v) > 0:
+                    return float(v)
+        # 2) por display_name
+        if "display_name" in self.economic.columns:
+            mask = self.economic["display_name"].apply(_n) == nl
+            rows = self.economic[mask]
+            if not rows.empty:
+                v = rows.iloc[0].get("market_value_eur")
+                if v and float(v) > 0:
+                    return float(v)
+        return 0.0
+
+    def _get_contract(self, name: str) -> str | None:
+        if self.economic is None or self.economic.empty:
+            return None
+        import unicodedata
+        def _n(s): return unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode().lower()
+        nl = _n(name)
+        for col in ("canonical_name", "display_name"):
+            if col not in self.economic.columns:
+                continue
+            mask = self.economic[col].apply(_n) == nl
+            rows = self.economic[mask]
+            if not rows.empty:
+                v = rows.iloc[0].get("contract_until")
+                if v and str(v) not in ("nan", "None", ""):
+                    return str(v)[:10]
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Factory helper
+# ---------------------------------------------------------------------------
+
+def load_scorer(proc_path: Path, squad_info: list[dict] | None = None) -> "FitRayoScorer":
+    """Carga los parquets y devuelve un FitRayoScorer listo para usar."""
+    master_path   = proc_path / "master_players.parquet"
+    economic_path = proc_path / "player_economic.parquet"
+
+    master = pd.read_parquet(master_path) if master_path.exists() else pd.DataFrame()
+    economic = pd.read_parquet(economic_path) if economic_path.exists() else None
+
+    return FitRayoScorer(master_df=master, economic_df=economic, squad_info=squad_info or [])

@@ -748,7 +748,19 @@ def _narrative_block(narrative: dict) -> html.Div:
         ]
     )
 
-def _mini_stat(label: str, val: float) -> html.Div:
+def _mini_stat(label: str, val) -> html.Div:
+    # val puede ser None para jugadores Rayo en propiedad (disponibilidad no aplica)
+    if val is None:
+        return html.Div(
+            [
+                html.Div(label, style={"fontSize": "0.65rem", "color": "#555"}),
+                html.Div("N/A", style={"fontWeight": "bold", "fontSize": "0.8rem",
+                                       "color": "#9CA3AF"}),
+            ],
+            style={"background": "#F9FAFB", "border": "1px solid #E5E7EB",
+                   "borderRadius": "6px", "padding": "4px 8px", "textAlign": "center",
+                   "minWidth": "58px"},
+        )
     color = _fit_color(val)
     if val >= 70:
         bg, border = "#F0FDF4", "#86EFAC"
@@ -779,22 +791,3 @@ def _mini_stat(label: str, val: float) -> html.Div:
 
 
 def _stat_row(label: str, val) -> html.Div:
-    return html.Div(
-        [
-            html.Span(label, style={"color": "#555", "fontSize": "0.78rem"}),
-            html.Span(str(val), style={"fontWeight": "600", "fontSize": "0.78rem"}),
-        ],
-        style={"display": "flex", "justifyContent": "space-between",
-               "padding": "1px 0"},
-    )
-
-
-def _fmt_mv(v) -> str:
-    if v is None or (isinstance(v, float) and (v != v or v <= 0)):
-        return "N/D"
-    v = float(v)
-    if v >= 1_000_000:
-        return f"€{v/1_000_000:.1f}M"
-    if v >= 1_000:
-        return f"€{v/1_000:.0f}K"
-    return f"€{v:.0f}"

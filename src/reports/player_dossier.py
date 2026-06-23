@@ -428,15 +428,19 @@ def _fit_section(comp_result) -> str:
     s_r = float(r.score_rendimiento)
     s_e = float(r.score_economico)
     s_a = float(r.score_edad)
-    s_d = float(r.score_disponibilidad)
-    total = round(0.40*s_r + 0.30*s_e + 0.15*s_a + 0.15*s_d, 1)
+    s_d = float(r.score_disponibilidad) if r.score_disponibilidad is not None else None
+    if s_d is not None:
+        total = round(0.40*s_r + 0.30*s_e + 0.15*s_a + 0.15*s_d, 1)
+    else:
+        total = round((0.40*s_r + 0.30*s_e + 0.15*s_a) / 0.85, 1)
 
     comps = [
         ("Rendimiento (40%)",     s_r),
         ("Enc. economico (30%)",  s_e),
         ("Perfil de edad (15%)",  s_a),
-        ("Disponibilidad (15%)",  s_d),
     ]
+    if s_d is not None:
+        comps.append(("Disponibilidad (15%)", s_d))
     bars = "".join(_pbar(lab, val, label_w=190) for lab, val in comps)
 
     def _trow(cells, bold=False, bg="#ffffff"):
@@ -452,12 +456,17 @@ def _fit_section(comp_result) -> str:
         f'padding:4px 5px;font-size:6.5pt;text-transform:uppercase;">{h}</td>'
         for h in ["Componente", "Peso", "Score", "Contribucion"]
     )
+    disp_row = (
+        _trow(["Disponibilidad", "15%", f"{s_d:.0f}", f"{s_d*0.15:.1f}"], bg="#F9FAFB")
+        if s_d is not None else
+        _trow(["Disponibilidad", "—", "N/A", "—"], bg="#F9FAFB")
+    )
     rows_html = (
-        _trow(["Rendimiento",       "40%", f"{s_r:.0f}", f"{s_r*0.40:.1f}"], bg="#ffffff")
-        + _trow(["Enc. economico",  "30%", f"{s_e:.0f}", f"{s_e*0.30:.1f}"], bg="#F9FAFB")
-        + _trow(["Perfil de edad",  "15%", f"{s_a:.0f}", f"{s_a*0.15:.1f}"], bg="#ffffff")
-        + _trow(["Disponibilidad",  "15%", f"{s_d:.0f}", f"{s_d*0.15:.1f}"], bg="#F9FAFB")
-        + _trow(["TOTAL FIT RAYO",  "100%", "—",          f"{total:.1f}"],
+        _trow(["Rendimiento",      "40%", f"{s_r:.0f}", f"{s_r*0.40:.1f}"], bg="#ffffff")
+        + _trow(["Enc. economico", "30%", f"{s_e:.0f}", f"{s_e*0.30:.1f}"], bg="#F9FAFB")
+        + _trow(["Perfil de edad", "15%", f"{s_a:.0f}", f"{s_a*0.15:.1f}"], bg="#ffffff")
+        + disp_row
+        + _trow(["TOTAL FIT RAYO", "100%", "—", f"{total:.1f}"],
                 bold=True, bg="#F8FAFC")
     )
     tbl = (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
@@ -909,12 +918,4 @@ def build_player_dossier(name, team=None):
     body += _footer(prof)
 
     full_html = (
-        f'<!DOCTYPE html><html lang="es"><head>'
-        f'<meta charset="utf-8"><title>Informe {cname}</title>'
-        f'<style>{_CSS}</style>'
-        f'</head><body>{body}</body></html>'
-    )
-
-    pdf_bytes = html_to_pdf(full_html)
-    fname = f"informe_{_n(cname).replace(' ', '_')}.pdf"
-    return fname, pdf_bytes
+       
