@@ -717,4 +717,93 @@ def layout(**_params):
                     style_data_conditional=[
                         {"if": {"column_editable": True},
                          "background": "#FFFBEB", "borderLeft": "2px solid #F59E0B"},
-      
+                    ],
+                    page_size=30,
+                    style_table={"overflowX": "auto"},
+                ),
+                html.Div([
+                    dbc.Button("Guardar cambios", id="btn-save-contracts",
+                               color="danger", size="sm",
+                               style={"marginTop": "10px", "marginRight": "8px"}),
+                    html.Span(id="save-contracts-feedback",
+                              style={"fontSize": "11px", "color": "#166534"}),
+                ]),
+            ], style={"background": "#fff", "border": "1px solid #E5E7EB",
+                      "borderRadius": "10px", "padding": "16px 18px",
+                      "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
+        ], id="collapse-edit-contracts", is_open=False),
+
+        criteria_accordion("plantilla"),
+    ])
+
+
+# ---------------------------------------------------------------------------
+# Callbacks
+# ---------------------------------------------------------------------------
+
+@callback(
+    Output("collapse-edit-contracts", "is_open"),
+    Input("btn-edit-contracts", "n_clicks"),
+    State("collapse-edit-contracts", "is_open"),
+    prevent_initial_call=True,
+)
+def _toggle_edit(n, is_open):
+    return not is_open
+
+
+@callback(
+    Output("save-contracts-feedback", "children"),
+    Input("btn-save-contracts", "n_clicks"),
+    State("edit-contracts-table", "data"),
+    prevent_initial_call=True,
+)
+def _save_contracts(n, rows):
+    if not n or not rows:
+        return no_update
+    try:
+        data = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
+        sq = data.get("squad_2025_26", {})
+        name_to_row = {r["Jugador"]: r for r in rows}
+        for grp_key, grp_players in sq.items():
+            if not isinstance(grp_players, list):
+                continue
+            for p in grp_players:
+                if not isinstance(p, dict):
+                    continue
+                row = name_to_row.get(p.get("name", ""))
+                if row:
+                    p["contract_end"] = row.get("Fin contrato") or p.get("contract_end")
+                    try:
+                        mv = int(float(row.get("Valor TM (€)", 0) or 0))
+                        if mv >= 0:
+                            p["market_value"] = mv
+                    except (ValueError, TypeError):
+                        pass
+        CONFIG.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
+                          encoding="utf-8")
+        return "✓ Guardado correctamente"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+@callback(
+    Output("plantilla-nav", "href"),
+    Input({"type": "plantilla-row", "name": dash.ALL}, "n_clicks"),
+    prevent_initial_call=True,
+)
+def _nav_to_player(clicks):
+    import urllib.parse as _up
+    ctx = dash.callback_context
+    if not ctx.triggered:
+        return no_update
+    prop = ctx.triggered[0]["prop_id"]
+    if not prop or '"name":' not in prop:
+        return no_update
+    import json as _json
+    try:
+        id_part = prop.split(".")[0]
+        id_dict = _json.loads(id_part)
+        name = id_dict.get("name", "")
+        if name:
+            return f"/jugador?name={_up.quote(name)}&team={_up.quote('Rayo Vallecano')}"
+    except Exception:

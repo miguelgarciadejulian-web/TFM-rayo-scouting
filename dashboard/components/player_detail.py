@@ -167,9 +167,27 @@ def _find_rows(name, team=None):
     df = enriched()
     if df.empty:
         return df
+
+    # 1. Exact normalized match
     cand = df[df["name"].map(_n) == _n(name)]
+
+    # 2. First-initial + last-name match (handles OPTA abbreviations like "P. Ciss" for "Pathé Ciss")
+    if cand.empty:
+        parts = _n(name).split()
+        if len(parts) >= 2:
+            ini = parts[0][0]          # first initial
+            last = parts[-1]           # last name
+            import re as _re
+            pat = _re.compile(
+                rf'^{_re.escape(ini)}[\.\s]\s*{_re.escape(last)}$'
+            )
+            cand = df[df["name"].map(lambda x: bool(pat.match(_n(x))))]
+
+    # 3. Loose last-word partial fallback
     if cand.empty:
         cand = df[df["name"].map(_n).str.contains(_n(name).split()[-1], na=False)]
+
+    # 4. Team filter (applied to whichever step matched)
     if team:
         t = cand[cand["team"].map(_n).str.contains(_n(team).split()[0], na=False)]
         if not t.empty:
@@ -554,12 +572,4 @@ def build_detail(name, team=None, league=None, age=None,
             ], md=7),
         ], className="mb-3"),
         html.P("Percentiles por métrica · histórico completo (vs su posición)", style={"fontSize": "11px",
-               "fontWeight": "700", "color": "#9CA3AF", "textTransform": "uppercase", "marginBottom": "8px"}),
-        dbc.Row(metric_cols),
-        html.P("Evolucion por temporada", style={"fontSize": "11px", "fontWeight": "700",
-               "color": "#9CA3AF", "textTransform": "uppercase", "margin": "10px 0 8px"}),
-        html.Div(html.Table([html.Thead(evo_head), html.Tbody(evo_body)],
-                 style={"width": "100%", "borderCollapse": "collapse"}),
-                 style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
-                        "padding": "10px 14px", "overflowX": "auto"}),
-    ])
+           
