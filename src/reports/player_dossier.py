@@ -26,10 +26,10 @@ from src.reports.pdf_base import (
     GREEN, AMBER, LOW, RED, LGREY, DARK, GREY,
 )
 
-# --- Rutas ---
+# ─── Rutas ────────────────────────────────────────────────────────────────────
 PROC = Path(settings()["paths"]["data_processed"])
 
-# --- Etiquetas extendidas (sin claves crudas) ---
+# ─── Etiquetas extendidas (sin claves crudas) ─────────────────────────────────
 EXTRA_LABELS = {
     "successful_long_passes_p90":                    "pases largos",
     "total_losses_of_possession_p90":                "perdidas de balon",
@@ -53,7 +53,7 @@ EXTRA_LABELS = {
 }
 ALL_LABELS = {**METRIC_LABELS, **EXTRA_LABELS}
 
-# --- Grupos de metricas ---
+# ─── Grupos de metricas ───────────────────────────────────────────────────────
 METRIC_GROUPS = {
     "Ataque":   ["goals_p90", "total_shots_p90", "shots_on_target_inc_goals_p90",
                  "total_touches_in_opposition_box_p90"],
@@ -83,7 +83,7 @@ CAREER_TOTALS = [
 ]
 
 SEASON_COLS = [
-    # (campo, etiqueta, ancho_px)  -- 10 cols, suma ~650px (deja margen en A4 703px)
+    # (campo, etiqueta, ancho_px)  — 10 cols, suma ~650px (deja margen en A4 703px)
     ("season",                    "Temporada", 68),
     ("team",                      "Equipo",   183),
     ("minutes",                   "Min",       58),
@@ -112,7 +112,7 @@ MATRIX_METRICS = [
 ]
 
 
-# --- Helpers de datos ---
+# ─── Helpers de datos ─────────────────────────────────────────────────────────
 def _n(s):
     return unicodedata.normalize("NFKD", str(s)).encode("ascii", "ignore").decode().lower()
 
@@ -175,9 +175,9 @@ def _pct_rank(crow, pool, metric):
     return float(pct) if pd.notna(pct) else None
 
 
-# =============================================================================
-#  HTML BUILDERS -- todo con <table> para compatibilidad xhtml2pdf + WeasyPrint
-# =============================================================================
+# ═══════════════════════════════════════════════════════════════════════════════
+#  HTML BUILDERS — todo con <table> para compatibilidad xhtml2pdf + WeasyPrint
+# ═══════════════════════════════════════════════════════════════════════════════
 
 def _S(title: str) -> str:
     """Cabecera de seccion roja."""
@@ -190,12 +190,12 @@ def _S(title: str) -> str:
 
 
 def _page_break() -> str:
-    """Salto de pagina explicito -- compatible con xhtml2pdf y WeasyPrint."""
+    """Salto de pagina explicito — compatible con xhtml2pdf y WeasyPrint."""
     return '<div style="page-break-after:always;margin:0;padding:0;height:0;"></div>'
 
 
 def _mini_header(cname: str, section: str) -> str:
-    """Cabecera minima para paginas 2 y 3 -- identifica al jugador."""
+    """Cabecera minima para paginas 2 y 3 — identifica al jugador."""
     d = date.today().strftime("%d/%m/%Y")
     return (
         f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
@@ -211,7 +211,7 @@ def _mini_header(cname: str, section: str) -> str:
 
 
 def _pbar(label: str, pct: float, note: str = "", label_w: int = 155) -> str:
-    """Barra de percentil horizontal -- tabla anidada, compatible xhtml2pdf."""
+    """Barra de percentil horizontal — tabla anidada, compatible xhtml2pdf."""
     pct = max(0.0, min(float(pct), 100.0))
     col = GREEN if pct >= 68 else (AMBER if pct >= 44 else LOW)
     note_html = (f'<br/><span style="font-size:5pt;color:#9CA3AF;">{note}</span>'
@@ -247,7 +247,7 @@ def _dot(pct: float) -> str:
     return f'<span style="color:{LOW};font-size:10pt;">&#9679;</span>'
 
 
-# --- Topbar ---
+# ─── Topbar ───────────────────────────────────────────────────────────────────
 def _topbar() -> str:
     d = date.today().strftime("%d/%m/%Y")
     return (
@@ -263,7 +263,7 @@ def _topbar() -> str:
     )
 
 
-# --- Hero card ---
+# ─── Hero card ────────────────────────────────────────────────────────────────
 def _fit_label(v: float) -> str:
     """Etiqueta interpretativa del Fit Rayo (v en escala 0-100)."""
     if v >= 75: return "Excelente encaje"
@@ -344,9 +344,9 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
     )
 
 
-# --- KPI Strip ---
+# ─── KPI Strip ────────────────────────────────────────────────────────────────
 def _kpi_strip(fit_s, fit_v, val_s, sal_s, con_s, mins_s, goals_tot, asist_tot) -> str:
-    # FIT RAYO ya aparece destacado en el gauge del hero -- aqui solo datos economicos/rendimiento
+    # FIT RAYO ya aparece destacado en el gauge del hero — aquí solo datos económicos/rendimiento
     cards = [
         ("VALOR TM",     val_s),
         ("SALARIO EST.", sal_s),
@@ -374,7 +374,7 @@ def _kpi_strip(fit_s, fit_v, val_s, sal_s, con_s, mins_s, goals_tot, asist_tot) 
     )
 
 
-# --- Fortalezas / Debilidades ---
+# ─── Fortalezas / Debilidades ─────────────────────────────────────────────────
 def _sw_section(strengths, weaknesses) -> str:
     if not strengths and not weaknesses:
         return ""
@@ -419,7 +419,7 @@ def _sw_section(strengths, weaknesses) -> str:
     )
 
 
-# --- Fit Rayo ---
+# ─── Fit Rayo ─────────────────────────────────────────────────────────────────
 def _fit_section(fit, prof, fit_10) -> str:
     pot_map = {"muy alto":95,"alto":80,"estable":65,"en meseta":50,"veterania":35}
     pot_s   = pot_map.get(prof.get("potential",""), 55)
@@ -455,7 +455,7 @@ def _fit_section(fit, prof, fit_10) -> str:
         + _trow(["Rendimiento en rol","20%",str(int(prof.get("primary_score") or 50)),
                  f"{(prof.get('primary_score') or 50)*0.20:.1f}"], bg="#ffffff")
         + _trow(["Potencial / edad","15%",str(pot_s),f"{pot_s*0.15:.1f}"], bg="#F9FAFB")
-        + _trow(["TOTAL FIT RAYO","100%","--",f"{fit.get('global_fit',0):.1f}"],
+        + _trow(["TOTAL FIT RAYO","100%","—",f"{fit.get('global_fit',0):.1f}"],
                 bold=True, bg="#F8FAFC")
     )
     tbl = (f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
@@ -466,10 +466,10 @@ def _fit_section(fit, prof, fit_10) -> str:
     note = (f'<div style="font-size:6pt;color:#9CA3AF;font-style:italic;margin-top:3px;">'
             f'Formula: Fit = (Plantilla*0.40) + (Entrenador*0.25) + (Rol*0.20) + (Potencial*0.15). '
             f'Potencial: muy alto=95, alto=80, estable=65, en meseta=50, veterania=35.</div>')
-    return _S("Fit Rayo -- Encaje con el club") + bars + tbl + note
+    return _S("Fit Rayo — Encaje con el club") + bars + tbl + note
 
 
-# --- Radar + roles + carrera ---
+# ─── Radar + roles + carrera ──────────────────────────────────────────────────
 def _html_table(headers, rows, total_row=None) -> str:
     """Tabla HTML con cabecera roja y filas alternadas."""
     th = "".join(
@@ -501,11 +501,11 @@ def _html_table(headers, rows, total_row=None) -> str:
 
 
 def _career_table(tot_rows) -> str:
-    """Tabla totales de carrera -- las TRES columnas con ancho px explicito.
+    """Tabla totales de carrera — las TRES columnas con ancho px explicito.
     xhtml2pdf con table-layout:fixed asigna 0px a columnas sin width explicito,
     haciendo que los valores se solapen. Solucion: anchos fijos en todas las celdas
     y anchura absoluta en la tabla (no %).
-    A4 - margenes 1.2cm aprox 703px: W0+W1+W2 = 345+180+178 = 703px.
+    A4 - margenes 1.2cm ≈ 703px: W0+W1+W2 = 345+180+178 = 703px.
     """
     W0, W1, W2 = 345, 180, 178  # Metrica | Total | /90'
     def _th(h, w):
@@ -573,10 +573,10 @@ def _radar_section(prof, pool_avg, crow, pool, career_row) -> str:
         + _career_table(tot_rows)
     ) if tot_rows else ""
 
-    return _S("Perfil de rol -- radar de habilidades") + top_layout + career_section
+    return _S("Perfil de rol — radar de habilidades") + top_layout + career_section
 
 
-# --- Matriz de fortalezas (semaforo) ---
+# ─── Matriz de fortalezas (semaforo) ─────────────────────────────────────────
 def _strength_matrix(crow, pool) -> str:
     valid = []
     for label, metric in MATRIX_METRICS:
@@ -605,7 +605,7 @@ def _strength_matrix(crow, pool) -> str:
     r_rows = "".join(_mrow(l, p) for l, p in valid[half:])
 
     return (
-        _S("Matriz de fortalezas -- semaforo de metricas") +
+        _S("Matriz de fortalezas — semaforo de metricas") +
         f'<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:4px;">'
         f'<tr valign="top">'
         f'<td width="260" style="width:260px;padding-right:5px;vertical-align:top;">'
@@ -624,8 +624,8 @@ def _strength_matrix(crow, pool) -> str:
     )
 
 
-# --- Top percentiles ---
-def _top_pct_section(crow, pool, top_n=12) -> str:
+# ─── Top percentiles ──────────────────────────────────────────────────────────
+def _top_pct_section(crow, pool, top_n=9) -> str:
     all_m = []
     for grp, metrics in METRIC_GROUPS.items():
         for m in metrics:
@@ -637,13 +637,22 @@ def _top_pct_section(crow, pool, top_n=12) -> str:
         return ""
     all_m.sort(key=lambda x: -x[1])
     bars = "".join(_pbar(lab, pct, label_w=175) for lab, pct in all_m[:top_n])
-    return (_S(f"Top {top_n} metricas destacadas vs posicion") +
-        f'<table cellpadding="0" cellspacing="0" border="0" width="100%" style="page-break-inside:avoid;"><tr><td>' + bars + '</td></tr></table>')
+    # Envolver en tabla con page-break-inside:avoid para que no se parta entre paginas
+    return (
+        _S(f"Top {top_n} metricas destacadas vs posicion") +
+        f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
+        f'style="page-break-inside:avoid;">'
+        f'<tr><td>{bars}</td></tr>'
+        f'</table>'
+    )
 
 
-# --- Percentiles por grupo de metricas ---
+# ─── Percentiles por grupo de metricas ───────────────────────────────────────
 def _group_section(crow, pool) -> str:
-    """Layout 3 columnas: [Ataque|Creacion|Pase] + [Defensa|Duelos|vacio]."""
+    """Layout 3 columnas: [Ataque|Creacion|Pase] + [Defensa|Duelos|vacío].
+    Ancho A4: 703px → 3 cols × 226px con separacion 7px entre cols.
+    """
+    # Construir datos por grupo
     grp_data = {}
     for grp, metrics in METRIC_GROUPS.items():
         rows = []
@@ -659,35 +668,43 @@ def _group_section(crow, pool) -> str:
     def _grp_cell(grp, w, pad=""):
         rows = grp_data.get(grp, [])
         header = (
-            f'<div style="font-size:6.5pt;font-weight:bold;color:#374151;'
+            f'<div style="font-size:7pt;font-weight:bold;color:#374151;'
             f'background-color:#F3F4F6;border-left:3px solid #E30613;'
-            f'padding:3px 7px;margin-bottom:3px;margin-top:5px;">{grp.upper()}</div>'
+            f'padding:3px 8px;margin-bottom:4px;margin-top:6px;">{grp.upper()}</div>'
         )
-        bars = "".join(_pbar(lab, pct, note, label_w=88) for lab, pct, note in rows)
+        bars = "".join(_pbar(lab, pct, note, label_w=110) for lab, pct, note in rows)
         return (f'<td width="{w}" style="width:{w}px;vertical-align:top;{pad}">'
                 f'{header}{bars}</td>')
 
+    # Layout 2 columnas × 336px = 672px total — más legible que 3×224px
+    # Fila 1: Ataque | Creacion
+    # Fila 2: Pase    | Defensa
+    # Fila 3: Duelos  | vacío
     row1 = (
-        _grp_cell("Ataque",   224, "padding-right:6px;") +
-        _grp_cell("Creacion", 224, "padding-right:6px;") +
-        _grp_cell("Pase",     224)
+        _grp_cell("Ataque",   336, "padding-right:8px;") +
+        _grp_cell("Creacion", 336)
     )
     row2 = (
-        _grp_cell("Defensa",  224, "padding-right:6px;") +
-        _grp_cell("Duelos",   224, "padding-right:6px;") +
-        '<td width="224" style="width:224px;vertical-align:top;"></td>'
+        _grp_cell("Pase",     336, "padding-right:8px;") +
+        _grp_cell("Defensa",  336)
     )
+    row3 = (
+        _grp_cell("Duelos",   336, "padding-right:8px;") +
+        '<td width="336" style="width:336px;vertical-align:top;"></td>'
+    )
+
     return (
         _S("Percentiles por grupo de metricas") +
         f'<table cellpadding="0" cellspacing="0" border="0" width="672" '
         f'style="margin-top:4px;page-break-inside:avoid;">'
         f'<tr valign="top">{row1}</tr>'
         f'<tr valign="top">{row2}</tr>'
+        f'<tr valign="top">{row3}</tr>'
         f'</table>'
     )
 
 
-# --- Estadisticas por temporada ---
+# ─── Estadisticas por temporada ───────────────────────────────────────────────
 def _seasons_section(enr, cname) -> str:
     prows = enr[enr["name"] == cname].copy()
     if prows.empty:
@@ -699,7 +716,7 @@ def _seasons_section(enr, cname) -> str:
     # Solo columnas presentes en los datos
     cols = [(c, lbl, w) for c, lbl, w in SEASON_COLS if c in prows.columns]
 
-    # Cabecera con anchos explicitos (px) -- imprescindible para xhtml2pdf
+    # Cabecera con anchos explícitos (px) — imprescindible para xhtml2pdf
     def _th(lbl, w):
         return (f'<td width="{w}" style="width:{w}px;background-color:#E30613;color:white;'
                 f'font-weight:bold;padding:3px 5px;font-size:6pt;text-transform:uppercase;'
@@ -748,7 +765,7 @@ def _seasons_section(enr, cname) -> str:
     return _S("Estadisticas por temporada (OPTA)") + tbl + leyenda
 
 
-# --- Footer ---
+# ─── Footer ───────────────────────────────────────────────────────────────────
 def _footer(prof) -> str:
     d     = date.today().strftime("%d/%m/%Y")
     temps = prof.get("seasons_played", "?")
@@ -761,7 +778,7 @@ def _footer(prof) -> str:
     )
 
 
-# --- CSS del documento ---
+# ─── CSS del documento ────────────────────────────────────────────────────────
 _CSS = """
 @page { size: A4; margin: 1.2cm; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -777,7 +794,7 @@ table { border-spacing: 0; }
 """
 
 
-# --- Funcion principal ---
+# ─── Funcion principal ────────────────────────────────────────────────────────
 def build_player_dossier(name, team=None):
     enr = _enriched()
     if enr.empty:
@@ -857,10 +874,10 @@ def build_player_dossier(name, team=None):
     except Exception:
         pool_role_avg = {}
 
-    # =====================================================
-    #  PAGINA 1 -- Resumen ejecutivo
-    #  Topbar + Hero + KPIs + Fortalezas/Debilidades + Fit Rayo
-    # =====================================================
+    # ═══════════════════════════════════════════════════════
+    #  PÁGINA 1 — Resumen ejecutivo
+    #  Topbar · Hero · KPIs · Fortalezas/Debilidades · Fit Rayo
+    # ═══════════════════════════════════════════════════════
     body = ""
     body += _topbar()
     body += _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str)
@@ -871,20 +888,20 @@ def build_player_dossier(name, team=None):
 
     body += _page_break()
 
-    # =====================================================
-    #  PAGINA 2 -- Perfil tecnico
-    #  Radar + Scores por rol + Totales de carrera + Matriz de fortalezas
-    # =====================================================
+    # ═══════════════════════════════════════════════════════
+    #  PÁGINA 2 — Perfil técnico
+    #  Radar · Scores por rol · Totales de carrera · Matriz de fortalezas
+    # ═══════════════════════════════════════════════════════
     body += _mini_header(cname, "Perfil tecnico")
     body += _radar_section(prof, pool_role_avg, crow, pool, crow)
     body += _strength_matrix(crow, pool)
 
     body += _page_break()
 
-    # =====================================================
-    #  PAGINA 3 -- Estadisticas detalladas
-    #  Top 9 percentiles + Grupos de metricas + Temporadas + Footer
-    # =====================================================
+    # ═══════════════════════════════════════════════════════
+    #  PÁGINA 3 — Estadísticas detalladas
+    #  Top 9 percentiles · Grupos de métricas · Temporadas · Footer
+    # ═══════════════════════════════════════════════════════
     body += _mini_header(cname, "Estadisticas detalladas")
     body += _top_pct_section(crow, pool, top_n=9)
     body += _group_section(crow, pool)
@@ -896,8 +913,4 @@ def build_player_dossier(name, team=None):
         f'<meta charset="utf-8"><title>Informe {cname}</title>'
         f'<style>{_CSS}</style>'
         f'</head><body>{body}</body></html>'
-    )
-
-    pdf_bytes = html_to_pdf(full_html)
-    fname = f"informe_{_n(cname).replace(' ', '_')}.pdf"
-    return fname, pdf_bytes
+    
