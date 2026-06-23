@@ -475,22 +475,37 @@ class FitRayoScorer:
 
         return texts
 
+    def _get_enriched_row(self, name: str):
+        """Fila más reciente del jugador en enriched (columnas OPTA)."""
+        if self.enriched.empty:
+            return None
+        nl = str(name).strip().lower()
+        mask = self.enriched["name"].fillna("").str.lower() == nl
+        rows = self.enriched[mask]
+        if rows.empty:
+            parts = nl.split()
+            if len(parts) >= 2:
+                abbrev = f"{parts[0][0]}. {' '.join(parts[1:])}"
+                rows = self.enriched[self.enriched["name"].fillna("").str.lower() == abbrev]
+        if rows.empty:
+            return None
+        ORDER = {"2025-2026":6,"2025":5,"2024-2025":4,"2023-2024":3,"2022-2023":2,"2021-2022":1}
+        rows = rows.copy()
+        rows["_o"] = rows["season"].map(ORDER).fillna(0)
+        return rows.loc[rows["_o"].idxmax()].drop("_o")
+
     def _score_rendimiento(self, row: pd.Series) -> float:
-        """Usa el módulo compartido src.utils.rendimiento para coherencia total."""
+        """Rendimiento via módulo compartido. Usa fila enriched (métricas OPTA)."""
         try:
             from src.utils.rendimiento import compute_rendimiento, get_subposition
+            name = str(row.get("name", ""))
+            enr_row = self._get_enriched_row(name) or row
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
-            subpos = get_subposition(
-                str(row.get("name", "")),
-                overrides=_ov,
-                mv_df=_mv,
-                position_group=str(row.get("position_group", row.get("position_primary", ""))),
-            )
-            rd = compute_rendimiento(row, self.enriched, subpos=subpos)
-            return rd["score"]
+            pos_grp = str(enr_row.get("position_group", row.get("position_primary", "")))
+            subpos = get_subposition(name, overrides=_ov, mv_df=_mv, position_group=pos_grp)
+            return compute_rendimiento(enr_row, self.enriched, subpos=subpos)["score"]
         except Exception:
-            # Fallback legacy
             mins = self._sf(row.get("minutes"))
             if mins <= 0:
                 return 10.0
@@ -498,23 +513,19 @@ class FitRayoScorer:
             ga90   = (self._sf(row.get("goals")) + self._sf(row.get("assists"))) / max(mins/90, 1)
             ga_s   = min(100.0, ga90 * 300)
             duel_s = min(100.0, self._sf(row.get("tackles_won")) / max(mins/90, 1) * 150)
-            raw    = 0.5*min_s + 0.3*ga_s + 0.2*duel_s
-            diff   = _league_difficulty(row.get("league"))
-            return round(raw * diff, 1)
+            return round(0.5*min_s + 0.3*ga_s + 0.2*duel_s, 1)
 
     def score_rendimiento_breakdown(self, row: pd.Series) -> dict:
-        """Desglosa el score usando el módulo compartido."""
+        """Breakdown usando fila enriched (métricas OPTA correctas)."""
         try:
             from src.utils.rendimiento import compute_rendimiento, get_subposition
+            name = str(row.get("name", ""))
+            enr_row = self._get_enriched_row(name) or row
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
-            subpos = get_subposition(
-                str(row.get("name", "")),
-                overrides=_ov,
-                mv_df=_mv,
-                position_group=str(row.get("position_group", row.get("position_primary", ""))),
-            )
-            return compute_rendimiento(row, self.enriched, subpos=subpos)
+            pos_grp = str(enr_row.get("position_group", row.get("position_primary", "")))
+            subpos = get_subposition(name, overrides=_ov, mv_df=_mv, position_group=pos_grp)
+            return compute_rendimiento(enr_row, self.enriched, subpos=subpos)
         except Exception as exc:
             return {"score": 10.0, "subpos": "—", "dims": [], "league_diff": 1.0,
                     "league": str(row.get("league", "") or ""), "error": str(exc)}

@@ -123,14 +123,13 @@ REND_DIMS: dict[str, list] = {
         ("Pase",            ["total_successful_passes_excl_crosses_corners_p90",
                               "forward_passes_p90",
                               "successful_long_passes_p90",
-                              "successful_passes_opposition_half_p90"],             0.28),
+                              "successful_passes_opposition_half_p90"],             0.30),
+        ("Recuperación",    ["tackles_won_p90", "interceptions_p90",
+                              "recoveries_p90"],                                    0.30),
         ("Creación",        ["key_passes_attempt_assists_p90",
                               "goal_assists_p90",
                               "through_balls_p90"],                                 0.25),
-        ("Recuperación",    ["tackles_won_p90", "interceptions_p90",
-                              "recoveries_p90"],                                    0.25),
-        ("Ataque",          ["goals_p90", "total_shots_p90",
-                              "total_touches_in_opposition_box_p90"],               0.22),
+        ("Contribución",   ["goals_p90", "goal_assists_p90"],                 0.15),
     ],
     "AM": [
         ("Creación",        ["key_passes_attempt_assists_p90",
@@ -174,7 +173,7 @@ REND_METHODOLOGY: dict[str, str] = {
     "CB":  "Acciones defensivas/90: entradas+intercepciones+recuperaciones+bloqueos+despejes (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción de juego (15%)",
     "FB":  "Defensiva (30%) · Proyección ofensiva: centros+pases adelante (30%) · Duelos (20%) · Contribución en ataque (20%)",
     "DM":  "Recuperación de balón (40%) · Pase (30%) · Presión y duelos (20%) · Contribución ofensiva (10%)",
-    "CM":  "Pase (28%) · Creación de juego (25%) · Recuperación (25%) · Ataque (22%)",
+    "CM":  "Pase (30%) · Recuperación (30%) · Creación (25%) · Contribución gol/asist (15%)",
     "AM":  "Creación (35%) · Gol/Remate (30%) · Pase en profundidad (20%) · Pressing (15%)",
     "WG":  "Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%)",
     "ST":  "Gol/Remate (45%) · Juego de área: duelos aéreos y 1v1 (20%) · Creación (20%) · Pressing (15%)",
@@ -273,10 +272,6 @@ def compute_rendimiento(
           "league":     str,
         }
     """
-    from src.utils.rendimiento import (
-        REND_DIMS, SUBPOS_TO_POOL, SUBPOS_LABELS, _add_gk_derived
-    )
-
     if subpos is None:
         grp = str(player_row.get("position_group", "") or "MID").upper()
         subpos = OPTA_GRP_TO_SUBPOS.get(grp, "CM")
@@ -293,11 +288,18 @@ def compute_rendimiento(
             "league_diff": 1.0, "league": str(player_row.get("league") or ""),
         }
 
-    # Pool: misma grupo posicional, ≥ min_minutes
-    pool = enriched_df[
+    # Pool: misma grupo posicional, ≥ min_minutes, misma liga si hay suficientes
+    pool_all = enriched_df[
         enriched_df["position_group"].str.upper() == pool_grp
     ].copy()
-    pool = pool[pd.to_numeric(pool["minutes"], errors="coerce").fillna(0) >= min_minutes]
+    pool_all = pool_all[pd.to_numeric(pool_all["minutes"], errors="coerce").fillna(0) >= min_minutes]
+
+    player_league = str(player_row.get("league") or "")
+    if player_league:
+        pool_liga = pool_all[pool_all["league"] == player_league]
+        pool = pool_liga if len(pool_liga) >= 30 else pool_all
+    else:
+        pool = pool_all
 
     if subpos == "GK":
         pool = _add_gk_derived(pool)
