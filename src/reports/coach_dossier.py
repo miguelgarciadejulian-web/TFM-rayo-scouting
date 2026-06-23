@@ -414,20 +414,16 @@ def _radar_section(axes, dna_target) -> str:
                      f'<span style="color:{diff_col};font-weight:bold;">{ds}</span>'))
     ax_tbl = _html_table(["Eje","Tecnico","ADN Rayo","Dif."], rows,
                          note="100=elite  |  50=media  |  0=peor. Percentil equipo dirigido vs liga.")
-    # Imagen con ancho Y alto fijos — xhtml2pdf requiere ambos atributos
-    radar_img = (f'<img src="data:image/png;base64,{radar_b64}" width="255" height="200" '
-                 f'style="display:block;margin-bottom:5px;"/>'
+    # Radar centrado arriba + tabla ejes a ancho completo debajo (más legible, compatible xhtml2pdf)
+    radar_img = (f'<div style="text-align:center;margin:5px 0 8px 0;">'
+                 f'<img src="data:image/png;base64,{radar_b64}" width="300" height="230"/>'
+                 f'</div>'
                  if radar_b64 else "")
     return (
         _S("Estilo de juego — Radar tactico") +
-        f'<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:4px;">'
-        f'<tr valign="top">'
-        # Ancho en px (atributo width), no solo CSS, para que xhtml2pdf lo respete
-        f'<td width="265" style="width:265px;padding-right:10px;vertical-align:top;">{radar_img}</td>'
-        f'<td style="vertical-align:top;">'
-        f'<div style="font-size:7.5pt;font-weight:bold;color:#E30613;margin-bottom:4px;">Ejes vs ADN Rayo</div>'
-        f'{ax_tbl}</td>'
-        f'</tr></table>'
+        radar_img +
+        f'<div style="font-size:7.5pt;font-weight:bold;color:#E30613;margin-bottom:4px;">Ejes vs ADN Rayo</div>' +
+        ax_tbl
     )
 
 
@@ -530,4 +526,10 @@ def build_coach_dossier(name):
     body += _fit_eval_section(ev, score_10, score_num)
     body += _seasons_section(c)
     body += _footer(c)
-    
+    full_html = (
+        '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">'
+        f'<title>Informe Entrenador {c["name"]}</title>'
+        f'<style>{_CSS}</style></head><body>{body}</body></html>'
+    )
+    pdf_bytes = html_to_pdf(full_html)
+    fname = f"informe_entrenador_{_n(c['name']).replace
