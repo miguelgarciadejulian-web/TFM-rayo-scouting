@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 
-# ─── Paleta ──────────────────────────────────────────────────────────────────
+# --- Paleta ---
 RED      = "#E30613"
 RED_DK   = "#B8000F"
 GREEN    = "#059669"
@@ -80,6 +80,49 @@ def photo_b64(img_bytes: bytes, max_w=360, max_h=480) -> str:
         return base64.b64encode(img_bytes).decode()
 
 
+def gauge_png_b64(score_10, size_px=105) -> str:
+    """Gauge circular como PNG base64 (matplotlib).
+    Garantiza renderizado correcto en xhtml2pdf -- SVG inline no funciona.
+    Retorna un tag <img> listo para incrustar en HTML.
+    """
+    v = max(0.0, min(float(score_10 or 0), 10.0))
+    score_100 = int(round(v * 10))
+    col_hex   = GREEN if v >= 6.5 else (AMBER if v >= 5.0 else LOW)
+    filled    = max(v / 10, 0.001)
+    empty     = max(1.0 - filled, 0.001)
+
+    fig, ax = plt.subplots(figsize=(1.6, 1.6))
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("white")
+
+    ax.pie(
+        [filled, empty],
+        colors=[col_hex, GRID2],
+        startangle=90,
+        counterclock=False,
+        wedgeprops=dict(width=0.32, edgecolor="white", linewidth=1.5),
+    )
+
+    ax.text(0,  0.10, str(score_100),
+            ha="center", va="center",
+            fontsize=24, fontweight="bold", color=col_hex)
+    ax.text(0, -0.30, "/ 100",
+            ha="center", va="center",
+            fontsize=9.5, color=GREY)
+
+    ax.set_xlim(-1.15, 1.15)
+    ax.set_ylim(-1.15, 1.15)
+    ax.axis("off")
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=110, bbox_inches="tight",
+                facecolor="white", edgecolor="none")
+    plt.close(fig)
+    buf.seek(0)
+    b64 = base64.b64encode(buf.read()).decode()
+    return f'<img src="data:image/png;base64,{b64}" width="{size_px}" height="{size_px}"/>'
+
+
 def svg_gauge(score_10, size=88, show_100=False) -> str:
     """SVG donut gauge inline para score 0-10. Sin dependencias externas.
     show_100=True: muestra el score en escala 0-100 con numero en color segun umbral.
@@ -92,8 +135,8 @@ def svg_gauge(score_10, size=88, show_100=False) -> str:
     if show_100:
         score_txt  = str(int(round(v * 10)))
         denom_txt  = "/ 100"
-        score_size = 21   # ligeramente menor para 2 digitos
-        score_fill = col  # coloreado segun umbral
+        score_size = 21
+        score_fill = col
     else:
         score_txt  = str(int(v)) if v == int(v) else str(v)
         denom_txt  = "/ 10"
@@ -243,18 +286,18 @@ def adn_chart_b64(axes_vals: dict, dna_target: dict, axes_def: list, size_w=7.5,
     return fig_to_b64(fig)
 
 
-# ─── CSS base compartido ──────────────────────────────────────────────────────
+# --- CSS base compartido ---
 BASE_CSS = """
 @page { size: A4; margin: 1.2cm; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111827; background: white; line-height: 1.45; }
 
-/* ── Topbar ── */
+/* Topbar */
 .topbar { background: #0D0D0D; color: white; padding: 7px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 2.5px solid #E30613; }
 .topbar-l { font-weight: bold; font-size: 8.5pt; color: white; }
 .topbar-r { font-size: 8pt; color: #9CA3AF; }
 
-/* ── Hero ── */
+/* Hero */
 .hero { background: white; border: 0.5px solid #E5E7EB; border-top: 3px solid #E30613; display: flex; align-items: center; gap: 14px; padding: 13px 15px; margin-top: 6px; }
 .hero-photo { width: 76px; height: 96px; object-fit: cover; border-radius: 3px; border: 0.5px solid #E5E7EB; flex-shrink: 0; }
 .hero-info { flex: 1; min-width: 0; }
@@ -266,13 +309,13 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111827
 .gauge-wrap { text-align: center; flex-shrink: 0; }
 .gauge-sublbl { font-size: 5.5pt; font-weight: bold; color: #E30613; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
-/* ── KPI strip ── */
+/* KPI strip */
 .kpi-row { display: flex; gap: 4px; margin-top: 6px; }
 .kpi-card { flex: 1; background: white; border: 0.5px solid #E5E7EB; border-top: 2.5px solid #E30613; padding: 7px 9px; min-width: 0; }
 .kpi-label { font-size: 5.5pt; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; overflow: hidden; }
 .kpi-value { font-size: 10pt; font-weight: bold; color: #111827; margin-top: 2px; line-height: 1.15; }
 
-/* ── Strengths / Weaknesses ── */
+/* Strengths / Weaknesses */
 .sw-row { display: flex; gap: 4px; margin-top: 5px; }
 .sw-box { flex: 1; border: 0.5px solid #E5E7EB; padding: 6px 8px; min-width: 0; }
 .sw-green { background: #F0FDF4; }
@@ -286,10 +329,10 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111827
 .pill-amber { background: #FEF3C7; color: #D97706; }
 .pill-red   { background: #FEE2E2; color: #DC2626; }
 
-/* ── Section header ── */
+/* Section header */
 .section-hdr { background: #E30613; color: white; font-weight: bold; font-size: 7.5pt; text-transform: uppercase; padding: 4px 10px; letter-spacing: 0.5px; margin-top: 9px; margin-bottom: 5px; }
 
-/* ── Bar chart ── */
+/* Bar chart */
 .bchart { margin: 3px 0; }
 .brow { display: flex; align-items: center; margin: 3px 0; gap: 6px; }
 .blabel { font-size: 7pt; color: #374151; text-align: right; flex-shrink: 0; }
@@ -297,12 +340,12 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111827
 .bfill  { height: 100%; border-radius: 2px; opacity: 0.88; }
 .bval   { font-size: 7.5pt; font-weight: bold; flex-shrink: 0; width: 28px; }
 
-/* ── Two-column layout ── */
+/* Two-column layout */
 .two-col { display: flex; gap: 10px; margin-top: 5px; }
 .col-l { flex: 0 0 51%; min-width: 0; }
 .col-r { flex: 1; min-width: 0; }
 
-/* ── Tables ── */
+/* Tables */
 .tbl { width: 100%; border-collapse: collapse; font-size: 7pt; margin: 3px 0; }
 .tbl thead tr { background: #E30613; }
 .tbl thead td { color: white; font-weight: bold; padding: 4px 5px; font-size: 6.5pt; text-transform: uppercase; letter-spacing: 0.2px; }
@@ -311,61 +354,56 @@ body { font-family: Arial, Helvetica, sans-serif; font-size: 9pt; color: #111827
 .tbl tbody td { padding: 3.5px 5px; color: #111827; border-bottom: 0.3px solid #E5E7EB; }
 .tbl .total-row td { font-weight: bold; background: #F8FAFC !important; border-top: 1px solid #D1D5DB; color: #111827; }
 
-/* ── 2-column grid ── */
+/* 2-column grid */
 .grid2 { display: flex; gap: 8px; margin: 2px 0; }
 .grid2-cell { flex: 1; min-width: 0; }
 .group-title { font-size: 8pt; font-weight: bold; color: #E30613; margin-bottom: 2px; margin-top: 4px; }
 .sub-title   { font-size: 8pt; font-weight: bold; color: #E30613; margin: 4px 0 3px; }
 
-/* ── Badge (entrenador) ── */
+/* Badge (entrenador) */
 .badge { display: inline-block; padding: 4px 14px; border-radius: 4px; font-weight: bold; font-size: 9pt; margin-top: 6px; }
 .badge-green { background: #DCFCE7; color: #059669; border: 1px solid #059669; }
 .badge-amber { background: #FEF3C7; color: #D97706; border: 1px solid #D97706; }
 .badge-red   { background: #FEE2E2; color: #DC2626; border: 1px solid #DC2626; }
 
-/* ── Risk tags ── */
+/* Risk tags */
 .risk-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
 .risk-tag { font-size: 6.5pt; padding: 2px 8px; border-radius: 10px; border: 0.5px solid; }
 
-/* ── Info box (notas manuales) ── */
+/* Info box (notas manuales) */
 .info-box { background: #F8FAFC; border-left: 3px solid #E30613; padding: 7px 10px; margin: 4px 0; font-size: 8pt; color: #374151; }
 .info-box .info-label { font-weight: bold; color: #E30613; font-size: 7pt; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px; }
 
-/* ── Formula note ── */
+/* Formula note */
 .formula-note { font-size: 6.5pt; color: #9CA3AF; font-style: italic; margin-top: 3px; }
 
-/* ── Footer ── */
+/* Footer */
 .footer { border-top: 1.5px solid #E30613; margin-top: 14px; padding-top: 5px; font-size: 6pt; color: #9CA3AF; font-style: italic; }
 """
 
 
 def build_html_doc(body_html: str, title: str = "Informe") -> str:
     """Envuelve body HTML en documento completo con CSS base."""
-    return f"""<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8">
-<title>{title}</title>
-<style>{BASE_CSS}</style>
-</head>
-<body>
-{body_html}
-</body>
-</html>"""
+    return (
+        f'<!DOCTYPE html><html lang="es"><head>'
+        f'<meta charset="utf-8"><title>{title}</title>'
+        f'<style>{BASE_CSS}</style>'
+        f'</head><body>{body_html}</body></html>'
+    )
 
 
 def html_to_pdf(html: str) -> bytes:
     """Convierte HTML a bytes PDF. Usa WeasyPrint si disponible, xhtml2pdf como fallback."""
     import sys, io as _io
 
-    # Intento 1: WeasyPrint (requiere libpango/libcairo — no disponible en Windows sin GTK3)
+    # Intento 1: WeasyPrint (requiere libpango/libcairo -- no disponible en Windows sin GTK3)
     # En Windows lo saltamos directamente para evitar crashes de ctypes/SEH no capturables.
     if sys.platform != "win32":
         try:
             import weasyprint
             return weasyprint.HTML(string=html).write_pdf()
         except BaseException:
-            # BaseException captura también OSError de ctypes y errores de DLL
+            # BaseException captura tambien OSError de ctypes y errores de DLL
             pass
 
     # Intento 2: xhtml2pdf (puro Python, sin dependencias de sistema, compatible Windows)
@@ -377,4 +415,14 @@ def html_to_pdf(html: str) -> bytes:
         # Solo comprobamos que el PDF tenga contenido real.
         pdf_bytes = buf.getvalue()
         if len(pdf_bytes) < 500:
-            raise RuntimeError("xhtml2pdf produjo un PDF 
+            raise RuntimeError("xhtml2pdf produjo un PDF vacio (HTML demasiado corto o invalido)")
+        return pdf_bytes
+    except ImportError:
+        raise RuntimeError(
+            "PDF no disponible. Ejecuta: pip install xhtml2pdf\n"
+            "(WeasyPrint requiere GTK3 en Windows, instala xhtml2pdf como alternativa)"
+        )
+    except RuntimeError:
+        raise
+    except Exception as xhtml_err:
+        raise RuntimeError(f"xhtml2pdf error: {xhtml_err}") from xhtml_err
