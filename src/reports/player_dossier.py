@@ -217,21 +217,21 @@ def _pbar(label: str, pct: float, note: str = "", label_w: int = 155) -> str:
     note_html = (f'<br/><span style="font-size:5pt;color:#9CA3AF;">{note}</span>'
                  if note else "")
     return (
-        f'<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:2px 0;">'
+        f'<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:2.5px 0;">'
         f'<tr valign="middle">'
         f'<td width="{label_w}" style="width:{label_w}px;text-align:right;'
-        f'padding-right:5px;font-size:6.5pt;color:#374151;vertical-align:middle;">'
+        f'padding-right:6px;font-size:6.5pt;color:#374151;vertical-align:middle;">'
         f'{label}{note_html}</td>'
         f'<td style="vertical-align:middle;">'
         f'<table cellpadding="0" cellspacing="0" border="0" width="100%">'
         f'<tr>'
-        f'<td width="{pct:.0f}%" style="background-color:{col};height:10px;" height="10">&nbsp;</td>'
-        f'<td style="background-color:#F0F0F0;height:10px;" height="10">&nbsp;</td>'
+        f'<td width="{pct:.0f}%" style="background-color:{col};height:12px;" height="12">&nbsp;</td>'
+        f'<td style="background-color:#EBEBEB;height:12px;" height="12">&nbsp;</td>'
         f'</tr>'
         f'</table>'
         f'</td>'
-        f'<td width="28" style="width:28px;font-size:7pt;font-weight:bold;'
-        f'color:{col};padding-left:4px;vertical-align:middle;text-align:right;">'
+        f'<td width="30" style="width:30px;font-size:7.5pt;font-weight:bold;'
+        f'color:{col};padding-left:5px;vertical-align:middle;text-align:right;">'
         f'{pct:.0f}</td>'
         f'</tr>'
         f'</table>'
@@ -264,6 +264,14 @@ def _topbar() -> str:
 
 
 # ─── Hero card ────────────────────────────────────────────────────────────────
+def _fit_label(v: float) -> str:
+    """Etiqueta interpretativa del Fit Rayo."""
+    if v >= 75: return "Excelente encaje"
+    if v >= 60: return "Buen encaje"
+    if v >= 45: return "Encaje moderado"
+    return "Encaje limitado"
+
+
 def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
     team_s   = str(crow.get("team", ""))
     league_s = str(crow.get("league", "")).replace("_", " ")
@@ -297,7 +305,10 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
         f'</td>'
     )
 
-    gauge_svg = svg_gauge(fit_10, size=80)
+    fit_v_raw = float(fit_10) * 10 if fit_10 else 0
+    gauge_svg  = svg_gauge(fit_10, size=105)
+    fit_interp = _fit_label(fit_v_raw)
+    fit_col    = GREEN if fit_v_raw >= 60 else (AMBER if fit_v_raw >= 45 else LOW)
 
     return (
         f'<table cellpadding="0" cellspacing="0" border="0" width="100%" '
@@ -320,11 +331,15 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
         f'&nbsp;&nbsp;<span style="color:#9CA3AF;">Sal. est.: </span><strong>{sal_s}</strong>'
         f'</div>'
         f'</td>'
-        f'<td width="105" style="width:105px;text-align:center;vertical-align:middle;'
-        f'padding:12px 14px;">'
+        f'<td width="130" style="width:130px;text-align:center;vertical-align:middle;'
+        f'padding:10px 12px;border-left:1px solid #F3F4F6;">'
         f'{gauge_svg}'
-        f'<div style="font-size:5.5pt;font-weight:bold;color:#E30613;text-transform:uppercase;'
-        f'letter-spacing:0.5px;margin-top:3px;">FIT RAYO</div>'
+        f'<div style="font-size:10pt;font-weight:bold;color:{fit_col};margin-top:2px;">'
+        f'{fit_10}/10</div>'
+        f'<div style="font-size:6pt;font-weight:bold;color:#E30613;text-transform:uppercase;'
+        f'letter-spacing:0.5px;">FIT RAYO</div>'
+        f'<div style="font-size:6.5pt;color:#374151;margin-top:3px;font-style:italic;">'
+        f'{fit_interp}</div>'
         f'</td>'
         f'</tr>'
         f'</table>'
@@ -333,25 +348,23 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
 
 # ─── KPI Strip ────────────────────────────────────────────────────────────────
 def _kpi_strip(fit_s, fit_v, val_s, sal_s, con_s, mins_s, goals_tot, asist_tot) -> str:
-    col = GREEN if fit_v >= 65 else (AMBER if fit_v >= 45 else LOW)
+    # FIT RAYO ya aparece destacado en el gauge del hero — aquí solo datos económicos/rendimiento
     cards = [
-        ("FIT RAYO",
-         f'<span style="color:{col};font-weight:bold;font-size:10pt;">{fit_s}</span>'),
-        ("VALOR TM",      val_s),
-        ("SALARIO EST.",  sal_s),
-        ("CONTRATO",      con_s),
-        ("MIN. TOTALES",  mins_s),
-        ("G + A",         f'{int(goals_tot)}G &nbsp; {int(asist_tot)}A'),
+        ("VALOR TM",     val_s),
+        ("SALARIO EST.", sal_s),
+        ("CONTRATO",     con_s),
+        ("MIN. TOTALES", mins_s),
+        ("G + A",        f'{int(goals_tot)}G &nbsp; {int(asist_tot)}A'),
     ]
     cells = ""
     for i, (label, value) in enumerate(cards):
         bl = "" if i == 0 else "border-left:2px solid white;"
         cells += (
             f'<td style="border:0.5px solid #E5E7EB;border-top:2.5px solid #E30613;'
-            f'padding:7px 8px;background-color:white;vertical-align:top;{bl}">'
+            f'padding:7px 10px;background-color:white;vertical-align:top;{bl}">'
             f'<div style="font-size:5.5pt;color:#9CA3AF;text-transform:uppercase;'
             f'letter-spacing:0.4px;">{label}</div>'
-            f'<div style="font-size:9pt;font-weight:bold;color:#0D0D0D;margin-top:2px;">'
+            f'<div style="font-size:9.5pt;font-weight:bold;color:#0D0D0D;margin-top:2px;">'
             f'{value}</div>'
             f'</td>'
         )
@@ -652,12 +665,14 @@ def _group_section(crow, pool) -> str:
             # width en atributo px (xhtml2pdf ignora width:% en CSS)
             col_w = 255 if j == 0 else 256
             pad_r = "padding-right:8px;" if j == 0 else ""
-            content = (
-                f'<div style="font-size:7.5pt;font-weight:bold;color:#E30613;'
-                f'margin-bottom:2px;margin-top:3px;">{grp}</div>'
+            grp_header = (
+                f'<div style="font-size:7pt;font-weight:bold;color:#374151;'
+                f'background-color:#F3F4F6;border-left:3px solid #E30613;'
+                f'padding:3px 8px;margin-bottom:4px;margin-top:6px;">{grp.upper()}</div>'
             )
+            content = grp_header
             if rows:
-                content += "".join(_pbar(lab, pct, note, label_w=105) for lab, pct, note in rows)
+                content += "".join(_pbar(lab, pct, note, label_w=110) for lab, pct, note in rows)
             html += f'<td width="{col_w}" style="width:{col_w}px;{pad_r}vertical-align:top;">{content}</td>'
         if len(pair) == 1:
             html += '<td></td>'
@@ -745,26 +760,4 @@ _CSS = """
 @page { size: A4; margin: 1.2cm; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 9pt;
-    color: #111827;
-    background: white;
-    line-height: 1.4;
-}
-img { display: block; }
-table { border-spacing: 0; }
-"""
-
-
-# ─── Funcion principal ────────────────────────────────────────────────────────
-def build_player_dossier(name, team=None):
-    enr = _enriched()
-    if enr.empty:
-        raise ValueError("Sin datos enriquecidos")
-
-    career = career_aggregate(enr)
-    cand   = career[career["name"].map(_n) == _n(name)]
-    if cand.empty:
-        cand = career[career["name"].map(_n).str.contains(_n(name).split()[-1], na=False)]
-    if cand.empty:
-        raise Va
+    font-family: Arial, Helvetica, sans-serif
