@@ -288,13 +288,22 @@ def layout(**_p):
                 html.Li("Intensidad defensiva: cuanto pelean sus equipos por el balon en duelos, entradas, interceptaciones y duelos aereos.", style={"fontSize": "12px", "color": "#374151", "marginBottom": "4px"}),
                 html.Li("Verticalidad: si juega directo, con pases largos, juego en campo rival y conducciones hacia adelante.", style={"fontSize": "12px", "color": "#374151", "marginBottom": "4px"}),
             ], style={"paddingLeft": "20px", "marginTop": "4px", "marginBottom": "8px"}),
-            html.P("Las metricas concretas que hay detras de cada caracteristica:",
-                   style={"fontSize": "11px", "fontWeight": "600", "color": "#6B7280", "marginBottom": "6px"}),
-            _coach_axis_table(),
-            html.P("Bandas de lectura: menos de 40 bajo, 40-66 medio, 66 o mas alto. "
-                   "La posesion se toma directa del porcentaje real. "
-                   "La descripcion textual se genera por umbrales sobre estos ejes.",
-                   style={"fontSize": "11px", "color": "#6B7280", "marginTop": "8px"}),
+            html.Table([
+                html.Thead(html.Tr([
+                    html.Th("Caracteristica", style=TH),
+                    html.Th("Que mide", style=TH),
+                ])),
+                html.Tbody([
+                    html.Tr([html.Td("Tendencia ofensiva", style={**TD, "fontWeight": "700"}), html.Td("Disparos totales, disparos a puerta, goles, pases clave y balones en campo rival", style=TD)]),
+                    html.Tr([html.Td("Solidez defensiva",  style={**TD, "fontWeight": "700"}), html.Td("Goles encajados (negativo) y porterias a cero", style=TD)]),
+                    html.Tr([html.Td("Presion alta",       style={**TD, "fontWeight": "700"}), html.Td("Recuperaciones, entradas ganadas, interceptaciones y faltas cometidas (como indicador de presion agresiva)", style=TD)]),
+                    html.Tr([html.Td("Intensidad defensiva", style={**TD, "fontWeight": "700"}), html.Td("Entradas, interceptaciones, duelos totales, faltas cometidas y duelos aereos ganados", style=TD)]),
+                    html.Tr([html.Td("Verticalidad",       style={**TD, "fontWeight": "700"}), html.Td("Pases largos completados, balones en campo contrario y regates exitosos", style=TD)]),
+                ]),
+            ], style={"width": "100%", "borderCollapse": "collapse", "marginTop": "6px", "marginBottom": "8px"}),
+            html.P("Cada caracteristica se puntua de 0 a 100 respecto al resto de equipos de la misma liga esa temporada. "
+                   "Menos de 40 = bajo, 40-66 = medio, 66 o mas = alto.",
+                   style={"fontSize": "11px", "color": "#6B7280", "marginTop": "4px"}),
         ], style=CARD),
         html.Div([
             html.P("Paso 2 -- Fit Rayo (score /10). Mezcla cuatro sub-scores:", style={"fontSize": "12px", "color": "#374151"}),
@@ -381,15 +390,4 @@ def layout(**_p):
                 html.Thead(html.Tr([html.Th("Factor", style=TH), html.Th("Peso", style=TH), html.Th("Detalle", style=TH)])),
                 html.Tbody([
                     html.Tr([html.Td("Meses restantes de contrato", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("6m o menos = 30 pts, 12m o menos = 20 pts, 24m o menos = 10 pts, mas de 24m = 0 pts", style=TD)]),
-                    html.Tr([html.Td("Ratio clausula / valor TM", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("menor de 1x = 30 pts (clausula barata), 1-2x = 15 pts, mayor de 3x = 0 pts", style=TD)]),
-                    html.Tr([html.Td("Edad (pico de demanda 24-28)", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700"}), html.Td("24-28 = 20 pts, 22-23 = 12 pts, menor de 22 o mayor de 31 = 0 pts", style=TD)]),
-                    html.Tr([html.Td("Interes real confirmado", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700"}), html.Td("Confirmado = 20 pts, Sondeado = 10 pts, Sin noticias = 0 pts", style=TD)]),
-                ]),
-            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
-            html.P("Niveles: 70 o mas MUY ALTO, 50-69 ALTO, 30-49 MEDIO, menos de 30 BAJO.",
-                   style={"fontSize":"11px","color":"#6B7280"}),
-            html.P("Simulador de fichajes: el score de viabilidad combina el impacto en la masa salarial, "
-                   "el retorno esperado de valor de mercado a 3 anos y la liberacion de salario si hay una salida asociada.",
-                   style={"fontSize":"12px","color":"#374151","marginTop":"8px"}),
-        ], style=CARD),
-    ])
+                    html.Tr([html.Td("Ratio clausula / valor TM", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700"}), html.Td("menor de 1x = 30 pts (clausula barata), 1-2x = 15 pts, mayor de 3x =
