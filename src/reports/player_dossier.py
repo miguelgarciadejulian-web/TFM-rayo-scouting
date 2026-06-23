@@ -265,10 +265,10 @@ def _topbar() -> str:
 
 # ─── Hero card ────────────────────────────────────────────────────────────────
 def _fit_label(v: float) -> str:
-    """Etiqueta interpretativa del Fit Rayo."""
+    """Etiqueta interpretativa del Fit Rayo (v en escala 0-100)."""
     if v >= 75: return "Excelente encaje"
-    if v >= 60: return "Buen encaje"
-    if v >= 45: return "Encaje moderado"
+    if v >= 65: return "Buen encaje"
+    if v >= 50: return "Encaje moderado"
     return "Encaje limitado"
 
 
@@ -335,7 +335,7 @@ def _hero_html(cname, crow, mv, prof, fit_10, sal_s, foto_b64_str) -> str:
         f'padding:10px 12px;border-left:1px solid #F3F4F6;">'
         f'{gauge_svg}'
         f'<div style="font-size:10pt;font-weight:bold;color:{fit_col};margin-top:2px;">'
-        f'{fit_10}/10</div>'
+        f'{int(round(float(fit_10 or 0)*10))}/100</div>'
         f'<div style="font-size:6pt;font-weight:bold;color:#E30613;text-transform:uppercase;'
         f'letter-spacing:0.5px;">FIT RAYO</div>'
         f'<div style="font-size:6.5pt;color:#374151;margin-top:3px;font-style:italic;">'
@@ -432,8 +432,6 @@ def _fit_section(fit, prof, fit_10) -> str:
         ("Potencial / edad  (15%)",     float(pot_s)),
     ]
     fit_col = score_color(float(fit_10) * 10 if fit_10 else 0, hi=70, lo=50)
-    title   = (f'<div style="font-size:10pt;font-weight:bold;color:{fit_col};margin-bottom:5px;">'
-               f'FIT RAYO &mdash; {fit_10} / 10</div>')
     bars    = "".join(_pbar(lab, val, label_w=200) for lab, val in comps)
 
     # Breakdown table (HTML puro)
@@ -470,7 +468,7 @@ def _fit_section(fit, prof, fit_10) -> str:
     note = (f'<div style="font-size:6pt;color:#9CA3AF;font-style:italic;margin-top:3px;">'
             f'Formula: Fit = (Plantilla*0.40) + (Entrenador*0.25) + (Rol*0.20) + (Potencial*0.15). '
             f'Potencial: muy alto=95, alto=80, estable=65, en meseta=50, veterania=35.</div>')
-    return _S("Fit Rayo — Encaje con el club") + title + bars + tbl + note
+    return _S("Fit Rayo — Encaje con el club") + bars + tbl + note
 
 
 # ─── Radar + roles + carrera ──────────────────────────────────────────────────
@@ -760,4 +758,11 @@ _CSS = """
 @page { size: A4; margin: 1.2cm; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-    font-family: Arial, Helvetica, sans-serif
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9pt;
+    color: #111827;
+    background: white;
+    line-height: 1.4;
+}
+img { display: block; }
+ta
