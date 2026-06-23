@@ -75,34 +75,37 @@ def _lateral_lookup() -> dict[str, str]:
     return _CACHE["lat_dict"]
 
 
+# Mismo orden y etiquetas que scouting.py
+_LAT_ORDER  = ["LI", "LD", "DC", "MC", "MI", "MD", "EI", "ED", "DL", "PO"]
+_LAT_LABELS = {
+    "LI": "LI — Lateral izquierdo",
+    "LD": "LD — Lateral derecho",
+    "DC": "DC — Defensa central",
+    "MC": "MC — Mediocentro",
+    "MI": "MI — Medio izquierdo",
+    "MD": "MD — Medio derecho",
+    "EI": "EI — Extremo izquierdo",
+    "ED": "ED — Extremo derecho",
+    "DL": "DL — Delantero centro",
+    "PO": "PO — Portero",
+}
+
+
 def _position_filter_options() -> list[dict]:
-    """Opciones de filtro de posición dinámicas (position_primary + lateral_pos)."""
+    """Mismo sistema de filtro que scouting.py — lateral_pos (LI/LD/DC/MC…)."""
     if "pos_filter_opts" not in _CACHE:
-        df = _master()
-        POS_LABELS = {
-            "CB": "CB — Defensa central",
-            "CM": "CM — Mediocentro",
-            "GK": "GK — Portero",
-            "ST": "ST — Delantero",
-        }
-        positions = sorted(df["position_primary"].dropna().unique())
-        opts: list[dict] = [{"label": "Todas las posiciones", "value": "all"}]
-        for p in positions:
-            opts.append({"label": POS_LABELS.get(p, p), "value": f"pos:{p}"})
-            if p == "CB":
-                lat = _lateral_lookup()
-                lat_vals = sorted(set(v for v in lat.values() if v))
-                LAT_LABELS = {"LI": "└ LI — Lateral izquierdo",
-                              "LD": "└ LD — Lateral derecho",
-                              "DC": "└ DC — Central puro"}
-                for lv in lat_vals:
-                    opts.append({"label": LAT_LABELS.get(lv, f"└ {lv}"), "value": f"lat:{lv}"})
+        lat = _lateral_lookup()
+        present = set(lat.values()) - {None, ""}
+        opts = [{"label": "Todas las posiciones", "value": "all"}]
+        for k in _LAT_ORDER:
+            if k in present:
+                opts.append({"label": _LAT_LABELS.get(k, k), "value": k})
         _CACHE["pos_filter_opts"] = opts
     return _CACHE["pos_filter_opts"]
 
 
 def _player_options(pos_filter: str | None = None) -> list[dict]:
-    """Opciones del dropdown de búsqueda (precargadas, deduplicadas por nombre)."""
+    """Opciones del dropdown de búsqueda, filtradas por lateral_pos igual que scouting."""
     if "opts_raw_with_pos" not in _CACHE:
         df = _master()
         ORDER = {"2026": 7, "2025-2026": 6, "2025/2026": 6, "2025": 5,
@@ -110,25 +113,18 @@ def _player_options(pos_filter: str | None = None) -> list[dict]:
         df = df.copy()
         df["_o"] = df["season"].map(ORDER).fillna(0)
         best = df.loc[df.groupby("name")["_o"].idxmax()].sort_values("name")
+        lat = _lateral_lookup()
         opts = []
         for _, row in best.iterrows():
             label = f"{row['name']}  ·  {row.get('team','?')}  ({league_name(row.get('league',''))})"
             opts.append({"label": label, "value": row["name"],
-                         "_pos": str(row.get("position_primary", "") or "")})
+                         "_lat": lat.get(row["name"], "")})
         _CACHE["opts_raw_with_pos"] = opts
     opts = _CACHE["opts_raw_with_pos"]
     if not pos_filter or pos_filter == "all":
         return [{"label": o["label"], "value": o["value"]} for o in opts]
-    if pos_filter.startswith("pos:"):
-        target_pos = pos_filter[4:]
-        return [{"label": o["label"], "value": o["value"]}
-                for o in opts if o["_pos"] == target_pos]
-    if pos_filter.startswith("lat:"):
-        target_lat = pos_filter[4:]
-        lat = _lateral_lookup()
-        return [{"label": o["label"], "value": o["value"]}
-                for o in opts if o["_pos"] == "CB" and lat.get(o["value"]) == target_lat]
-    return [{"label": o["label"], "value": o["value"]} for o in opts]
+    return [{"label": o["label"], "value": o["value"]}
+            for o in opts if o["_lat"] == pos_filter]
 
 
 # ---------------------------------------------------------------------------
@@ -201,7 +197,8 @@ def layout():
                     dcc.Dropdown(
                         id="comp-lateral",
                         options=_position_filter_options(),
-                        value="all", clearable=False,
+                        value="all", clearable=True,
+                        placeholder="Todas las posiciones",
                         style={"fontSize":"0.82rem"},
                     ),
                 ], md=3),
@@ -267,7 +264,7 @@ def _rayo_label(p: dict) -> str:
     Input("comp-lateral", "value"),
 )
 def _filter_player_options(pos_filter):
-    return _player_options(pos_filter=pos_filter)
+    return _player_options(pos_filter=pos_filter or "all")
 
 
 @callback(
