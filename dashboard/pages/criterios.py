@@ -194,13 +194,50 @@ def layout(**_p):
             html.Table([
                 html.Thead(html.Tr([html.Th("Dimensión", style=TH), html.Th("Peso", style=TH), html.Th("Cálculo", style=TH)])),
                 html.Tbody([
-                    html.Tr([html.Td("Rendimiento (rol principal)", style=TD), html.Td("40 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Percentil del rol principal · 0→0, 100→40 pts", style=TD)]),
-                    html.Tr([html.Td("Cobertura de necesidad en plantilla", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("1.0 si el perfil está sub-representado · 0.0 si ya sobra", style=TD)]),
-                    html.Tr([html.Td("Afinidad de estilo con el ADN del Rayo", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Distancia euclidiana entre percentiles y el ADN objetivo", style=TD)]),
-                    html.Tr([html.Td("Potencial por edad", style=TD), html.Td("10 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("≤21→10 · ≤24→8 · ≤28→5 · ≤31→2 · +31→0 pts", style=TD)]),
+                    html.Tr([html.Td("Rendimiento", style=TD), html.Td("40 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Percentiles por sub-posición · ajuste por dificultad de liga", style=TD)]),
+                    html.Tr([html.Td("Encaje económico", style=TD), html.Td("30 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Valor TM vs horquilla de inversión del Rayo", style=TD)]),
+                    html.Tr([html.Td("Perfil de edad", style=TD), html.Td("20 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Curva óptima por posición · prime / declive / potencial", style=TD)]),
+                    html.Tr([html.Td("Disponibilidad", style=TD), html.Td("10 %", style={**TD,"fontWeight":"700","color":"#166534"}), html.Td("Contrato expirante · agente libre · cedido con opción", style=TD)]),
                 ]),
-            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
-            html.P("Bandas de Fit: ≥ 80 Excelente · 65-79 Muy bueno · 50-64 Bueno · 35-49 Dudoso · < 35 No encaja.",
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"12px"}),
+            html.Div([
+                html.Div([
+                    html.I(className="ti ti-run",
+                           style={"color":"#166534","fontSize":"14px","marginRight":"8px"}),
+                    html.Span(
+                        "Cómo se calcula el Rendimiento "
+                        "(fuente única · idéntico en Perfil, Comparador, Decisiones y PDF)",
+                        style={"fontSize":"11px","fontWeight":"700","color":"#166534"},
+                    ),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"8px"}),
+                html.P(
+                    "Para cada jugador se determina su sub-posición (Portero, Central, Lateral, "
+                    "Pivote, Medio Centro, Mediapunta, Extremo o Delantero Centro) a partir de "
+                    "los datos de Transfermarkt. El score es la media ponderada de percentiles en "
+                    "las dimensiones relevantes para esa sub-posición, calculados contra todos los "
+                    "jugadores de la misma familia posicional OPTA con >= 450 minutos. "
+                    "Se aplica un factor de dificultad de liga (La Liga = 1.00, Segunda = 0.82...).",
+                    style={"fontSize":"11px","color":"#374151","marginBottom":"8px"},
+                ),
+                html.Table([
+                    html.Thead(html.Tr([
+                        html.Th("Sub-posición", style=TH),
+                        html.Th("Dimensiones (peso)", style={**TH,"width":"60%"}),
+                    ])),
+                    html.Tbody([
+                        html.Tr([html.Td("Portero",         style=TD), html.Td("Paradas/90 (45%) · Limpiezas (30%) · Juego con balón (15%) · Duelos aéreos (10%)", style=TD)]),
+                        html.Tr([html.Td("Central",         style=TD), html.Td("Defensiva: entradas+int+rec+bloqueos (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción (15%)", style=TD)]),
+                        html.Tr([html.Td("Lateral",         style=TD), html.Td("Defensiva (30%) · Proyección ofensiva: centros+pases (30%) · Duelos (20%) · Ataque (20%)", style=TD)]),
+                        html.Tr([html.Td("Pivote",          style=TD), html.Td("Recuperación (40%) · Pase (30%) · Presión/duelos (20%) · Contribución ofensiva (10%)", style=TD)]),
+                        html.Tr([html.Td("Medio Centro",    style=TD), html.Td("Pase (28%) · Creación (25%) · Recuperación (25%) · Ataque (22%)", style=TD)]),
+                        html.Tr([html.Td("Mediapunta",      style=TD), html.Td("Creación (35%) · Gol/Remate (30%) · Pase en profundidad (20%) · Pressing (15%)", style=TD)]),
+                        html.Tr([html.Td("Extremo",         style=TD), html.Td("Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%)", style=TD)]),
+                        html.Tr([html.Td("Delantero Centro",style=TD), html.Td("Gol/Remate (45%) · Juego de área: duelos aéreos+1v1 (20%) · Creación (20%) · Pressing (15%)", style=TD)]),
+                    ]),
+                ], style={"width":"100%","borderCollapse":"collapse","fontSize":"10px"}),
+            ], style={"background":"#F0FDF4","border":"1px solid #BBF7D0",
+                      "borderRadius":"8px","padding":"12px 14px","marginBottom":"8px"}),
+            html.P("Bandas de Fit: >= 80 Excelente · 65-79 Muy bueno · 50-64 Bueno · 35-49 Dudoso · < 35 No encaja.",
                    style={"fontSize":"11px","color":"#6B7280"}),
             html.P("Filtros del explorador de scouting: liga/país, edad mín/máx, minutos mínimos, posición, "
                    "pierna dominante, tipología de jugador, Fit mínimo y valor TM máximo. Los jugadores "

@@ -569,14 +569,14 @@ def _fit_rayo_card(name: str) -> html.Div:
 
     # Paneles de cada sub-score
     if rend_bd and rend_bd.get("dims"):
-        _pos_grp_lbl = rend_bd.get("pos_grp", "—")
+        _subpos_lbl  = rend_bd.get("subpos_label", rend_bd.get("pos_grp", "—"))
         _pool_n      = rend_bd.get("pool_size", 0)
         _ld          = rend_bd.get("league_diff", 1.0)
         _raw         = rend_bd.get("raw_score", 0)
+        _ld_note     = f" · dif. liga ×{_ld:.2f}" if _ld != 1.0 else ""
         rend_items = [
             html.Div(
-                f"Posición: {_pos_grp_lbl}  ·  Pool: {_pool_n} jugadores ≥450 min  ·  "
-                f"Dif. liga: ×{_ld:.2f}",
+                f"{_subpos_lbl}  ·  {_pool_n} jugadores ≥450 min{_ld_note}",
                 style={"fontSize": "9px", "fontFamily": "monospace", "color": "#6B7280",
                        "marginBottom": "8px", "padding": "4px 8px",
                        "background": "#F3F4F6", "borderRadius": "4px"},
@@ -586,12 +586,12 @@ def _fit_rayo_card(name: str) -> html.Div:
                     d["label"],
                     f"×{d['weight']:.0%}",
                     d["score"],
-                    f"Percentil {d['score']:.0f}/100 vs jugadores de la misma posición",
+                    f"Percentil {d['score']:.0f}/100 vs {_subpos_lbl.lower()}s con ≥450 min",
                 )
                 for d in rend_bd["dims"]
             ],
             html.Div(
-                f"Score bruto: {_raw:.1f}  ×  dif. liga {_ld:.2f} = {rend_bd.get('score', 0):.1f}",
+                f"Bruto: {_raw:.1f}{_ld_note} → {rend_bd.get('score', 0):.1f}/100",
                 style={"fontSize": "8px", "color": "#9CA3AF", "fontStyle": "italic",
                        "marginTop": "6px", "paddingTop": "6px",
                        "borderTop": "1px dashed #E5E7EB"},
@@ -1010,4 +1010,3 @@ def save_lateral(n, lateral_pos, role_type, key):
     ov[_norm(name)] = entry
     _save_overrides(ov)
     return "Guardado"
-                                                                                                                                                                                                                                                                                  
