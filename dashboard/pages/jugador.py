@@ -18,6 +18,12 @@ from dashboard.components.criteria_block import criteria_accordion  # noqa: E402
 from src.fit.clause_risk import evaluate_clause_risk, RISK_COLORS  # noqa: E402
 from src.utils.lateral_position import LATERAL_LABELS, ROLE_TYPE_LABELS, LATERAL_TO_ROLES  # noqa: E402
 
+# Pre-importar el modulo de PDF en el arranque para evitar error en primer intento
+try:
+    from src.reports.player_dossier import build_player_dossier as _pdf_preload  # noqa: F401
+except Exception:
+    pass
+
 dash.register_page(__name__, path="/jugador", name="Perfil Jugador")
 
 PROC = Path(settings()["paths"]["data_processed"])
@@ -28,13 +34,6 @@ OVERRIDES = PROC / "player_overrides.json"
 import unicodedata as _ud
 import yaml as _yaml
 from src.utils.market import get_value  # noqa: E402
-
-# Pre-importar el modulo de PDF en el arranque para evitar error en primer intento
-try:
-    from src.reports.player_dossier import build_player_dossier as _pdf_preload
-except Exception:
-    pass
-
 
 
 def _norm(x):
@@ -821,13 +820,16 @@ def render_player(search, picked):
 @callback(Output("current-player", "data"),
           Input("jugador-loc", "search"), Input("jugador-search", "value"))
 def _track_player(search, picked):
-    if picked and "|||" in picked:
-        n, t = picked.split("|||", 1)
-        return {"name": n, "team": t}
+    # URL siempre tiene prioridad: cuando navegas desde Scouting
+    # la URL cambia pero 'picked' retiene el jugador anterior
     if search and search.startswith("?"):
         import urllib.parse as _u
         pr = dict(_u.parse_qsl(search[1:]))
-        return {"name": pr.get("name", ""), "team": pr.get("team", "")}
+        if pr.get("name"):
+            return {"name": pr["name"], "team": pr.get("team", "")}
+    if picked and "|||" in picked:
+        n, t = picked.split("|||", 1)
+        return {"name": n, "team": t}
     return None
 
 
@@ -980,8 +982,4 @@ def save_lateral(n, lateral_pos, role_type, key):
         del entry["lateral_pos"]   # borrar override → vuelve al inferido
     if role_type:
         entry["role_type"] = role_type
-    elif "role_type" in entry:
-        del entry["role_type"]   # borrar override → vuelve al inferido
-    ov[_norm(name)] = entry
-    _save_overrides(ov)
-    return "Gu
+    elif "role_type" in entry
