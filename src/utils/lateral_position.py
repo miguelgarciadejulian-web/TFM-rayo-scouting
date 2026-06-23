@@ -152,7 +152,7 @@ def build_lateral_map(enriched_path: Path, master_path: Path) -> pd.DataFrame:
 
     Cacheado en memoria — se llama una vez por arranque.
     """
-    key = str(enriched_path)
+    key = f"{enriched_path}|{master_path}"
     if key in _CACHE:
         return _CACHE[key]
 
@@ -230,4 +230,4 @@ def roles_for_lateral(lat_code: str | None) -> list[str]:
     """Devuelve lista de role_type keys válidos para un lateral_pos dado."""
     if not lat_code:
         return list(ROLE_TYPE_LABELS.keys())
-    return LATERAL_TO_ROLES.get(lat_code, list(ROLE_TYPE_LABELS.keys()))
+    return LATERAL_TO_ROLES.get(lat_code, list(ROLE_TYPE_LA

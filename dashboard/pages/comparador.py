@@ -67,8 +67,9 @@ def _lateral_lookup() -> dict[str, str]:
     if "lat_dict" not in _CACHE:
         try:
             from src.utils.lateral_position import build_lateral_map as _blm
-            enr_path = _PROC / "player_seasons_enriched.parquet"
-            lat_df = _blm(enr_path, enr_path)[["name", "lateral_pos"]]
+            enr_path    = _PROC / "player_seasons_enriched.parquet"
+            master_path = _PROC / "master_players.parquet"
+            lat_df = _blm(enr_path, master_path)[["name", "lateral_pos"]]
             _CACHE["lat_dict"] = dict(zip(lat_df["name"], lat_df["lateral_pos"]))
         except Exception:
             _CACHE["lat_dict"] = {}
@@ -785,9 +786,4 @@ def _mini_stat(label: str, val) -> html.Div:
             "borderRadius": "6px",
             "padding": "4px 8px",
             "textAlign": "center",
-            "minWidth": "58px",
-        },
-    )
-
-
-def _stat_row(label: str, val) -> html.Div:
+            "minWidth": "58px"

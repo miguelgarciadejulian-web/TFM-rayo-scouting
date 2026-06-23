@@ -111,8 +111,9 @@ def _pos_filter_options() -> list[dict]:
     """Opciones del filtro de posición — mismo sistema que scouting (lateral_pos)."""
     from src.utils.lateral_position import build_lateral_map, LATERAL_LABELS as _LL
     try:
-        _enr_p = PROC / "player_seasons_enriched.parquet"
-        _lat = build_lateral_map(_enr_p, _enr_p)
+        _enr_p    = PROC / "player_seasons_enriched.parquet"
+        _master_p = PROC / "master_players.parquet"
+        _lat = build_lateral_map(_enr_p, _master_p)
         present = set(_lat["lateral_pos"].dropna()) - {"?"}
     except Exception:
         present = set(_LAT_ORDER)
@@ -606,8 +607,9 @@ def _get_lateral_map():
         return _LATERAL_MAP_CACHE["data"]
     try:
         from src.utils.lateral_position import build_lateral_map
-        _enr_p = PROC / "player_seasons_enriched.parquet"
-        _lat = build_lateral_map(_enr_p, _enr_p)
+        _enr_p    = PROC / "player_seasons_enriched.parquet"
+        _master_p = PROC / "master_players.parquet"
+        _lat = build_lateral_map(_enr_p, _master_p)
         lat_d = dict(zip(_lat["name"], _lat["lateral_pos"]))
         rt_d  = dict(zip(_lat["name"], _lat["role_type"]))
     except Exception:
@@ -887,8 +889,4 @@ def _renewal_analysis(horizon):
             html.P(title, style={
                 "fontSize": "10px", "fontWeight": "700", "color": bc,
                 "textTransform": "uppercase", "letterSpacing": ".08em",
-                "borderLeft": f"3px solid {bc}", "paddingLeft": "8px",
-                "marginBottom": "10px",
-            }),
-            dbc.Row([
-                dbc
+                "borderLeft": f"3px solid {bc}", "pa
