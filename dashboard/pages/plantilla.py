@@ -97,6 +97,68 @@ def market_val(v):
     return f"{v/1e6:.1f}M€" if v >= 1e6 else f"{v/1e3:.0f}K€"
 
 
+def _squad_role_map(players_all: list, role_map: dict, role_labels: dict) -> dict:
+    """
+    Devuelve {yaml_name: role_label} resolviendo nombres YAML completos
+    a nombres abreviados OPTA (ej. "Pathé Ciss" → "P. Ciss").
+
+    Algoritmo (por orden de prioridad):
+      1. Coincidencia exacta
+      2. Coincidencia exacta normalizada (sin acentos, minúsculas)
+      3. Apellido + inicial del nombre coinciden
+      4. Si solo hay un jugador OPTA con ese apellido, se asume que es el mismo
+    """
+    import unicodedata
+
+    def _norm(s: str) -> str:
+        return unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower().strip()
+
+    # Índice: apellido_normalizado → [(opta_name, first_initial), ...]
+    last_idx: dict[str, list] = {}
+    for opta_name in role_map:
+        parts = _norm(opta_name).split()
+        if not parts:
+            continue
+        last      = parts[-1]
+        first_ini = parts[0][0] if parts[0] else ""
+        last_idx.setdefault(last, []).append((opta_name, first_ini))
+
+    result: dict[str, str] = {}
+    for p in players_all:
+        yaml_name = p.get("name", "")
+        if not yaml_name:
+            continue
+        # 1. Exacto
+        if yaml_name in role_map:
+            result[yaml_name] = role_labels.get(role_map[yaml_name], "")
+            continue
+        # 2. Normalizado exacto
+        yn = _norm(yaml_name)
+        found = next((k for k in role_map if _norm(k) == yn), None)
+        if found:
+            result[yaml_name] = role_labels.get(role_map[found], "")
+            continue
+        # 3. Apellido + inicial
+        yparts = yn.split()
+        if not yparts:
+            continue
+        y_last = yparts[-1]
+        y_ini  = yparts[0][0] if yparts else ""
+        cands  = last_idx.get(y_last, [])
+        matched = None
+        for opta_name, o_ini in cands:
+            if o_ini == y_ini:
+                matched = opta_name
+                break
+        # 4. Un solo candidato con ese apellido → asumir que es el mismo jugador
+        if matched is None and len(cands) == 1:
+            matched = cands[0][0]
+        if matched:
+            result[yaml_name] = role_labels.get(role_map.get(matched, ""), "")
+
+    return result
+
+
 def player_row(p, i, role_map=None, role_labels=None):
     name = p.get("name", "")
     pos  = p.get("position", "")
@@ -108,8 +170,8 @@ def player_row(p, i, role_map=None, role_labels=None):
     initials = "".join(w[0].upper() for w in name.split()[:2] if w)
     year = int(str(end)[:4]) if end else 9999
     row_bg = "#FFF5F5" if year <= 2026 else ("#FFFFFF" if i % 2 == 0 else "#FAFAFA")
-    role_key   = (role_map or {}).get(name, "")
-    role_label = (role_labels or {}).get(role_key, "")
+    # role_map aquí ya es {yaml_name: label} (pre-resuelto por _squad_role_map)
+    role_label  = (role_map or {}).get(name, "")
     is_inferred = bool(role_label)
     if not role_label:
         role_label = _POS_STYLE_FALLBACK.get(pos.upper(), "Sin datos")
@@ -147,7 +209,7 @@ def player_row(p, i, role_map=None, role_labels=None):
        style={"background": row_bg, "transition": "background .1s", "cursor": "pointer"})
 
 
-def group_table(group_key, players, role_map=None, role_labels=None):
+def group_table(group_key, players, resolved_styles=None):
     label, icon = GROUP_LABELS[group_key]
     return html.Div([
         html.Div([
@@ -166,7 +228,7 @@ def group_table(group_key, players, role_map=None, role_labels=None):
                     html.Th("Valor TM", style={**th, "width": "90px"}),
                     html.Th("Estilo de juego", style={**th, "width": "160px"}),
                 ], style={"borderBottom": f"2px solid {_ROJO}"})),
-                html.Tbody([player_row(p, i, role_map, role_labels) for i, p in enumerate(players)]),
+                html.Tbody([player_row(p, i, resolved_styles) for i, p in enumerate(players)]),
             ], style={"width": "100%", "borderCollapse": "collapse"}),
         ], style={"overflowX": "auto"}),
     ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
@@ -340,11 +402,11 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
                     _years.append(int(str(_p.get("contract_end", "9999"))[:4]))
                 except (ValueError, TypeError):
                     _years.append(9999)
-            urgent = sum(1 for y in _years if y <= today.year + 1)
-            warn   = sum(1 for y in _years if today.year + 1 < y <= today.year + 2)
+            urgent = sum(1 for y in _years if y <= today.year)
+            warn   = sum(1 for y in _years if today.year < y <= today.year + 1)
             if urgent > 0:
                 contract_chip = html.Span(
-                    f"⚠ {urgent} expira{'n' if urgent > 1 else ''} ≤{today.year + 1}",
+                    f"⚠ {urgent} expira{'n' if urgent > 1 else ''} en {today.year}",
                     title="Posición cubierta pero con contratos urgentes",
                     style={"fontSize": "9px", "fontWeight": "600", "color": "#991B1B",
                            "background": "#FEE2E2", "borderRadius": "4px",
@@ -461,17 +523,22 @@ def layout(**_params):
         if isinstance(grp, list):
             players_all.extend(p for p in grp if isinstance(p, dict))
 
-    # Estilos de juego desde lateral map
+    # Estilos de juego: construye {yaml_name: role_label} resolviendo nombres OPTA
     try:
         from src.utils.lateral_position import build_lateral_map, ROLE_TYPE_LABELS as _RTL
         _proc = Path(settings()["paths"]["data_processed"])
-        _lat = build_lateral_map(
+        _lat  = build_lateral_map(
             _proc / "player_seasons_enriched.parquet",
             _proc / "master_players.parquet",
         )
-        _role_map = dict(zip(_lat["name"], _lat["role_type"]))
+        _rt_raw = {
+            n: rt for n, rt in zip(_lat["name"], _lat["role_type"])
+            if rt is not None
+        }
+        # Resolver nombres YAML completos → etiquetas de estilo
+        _resolved_styles = _squad_role_map(players_all, _rt_raw, _RTL)
     except Exception:
-        _role_map = {}
+        _resolved_styles = {}
         _RTL = {}
 
     total_mv   = sum(p.get("market_value", 0) for p in players_all)
@@ -579,10 +646,10 @@ def layout(**_params):
 
         dbc.Row([
             dbc.Col([
-                group_table("goalkeepers", sq.get("goalkeepers", []), _role_map, _RTL),
-                group_table("defenders",   sq.get("defenders",   []), _role_map, _RTL),
-                group_table("midfielders", sq.get("midfielders", []), _role_map, _RTL),
-                group_table("forwards",    sq.get("forwards",    []), _role_map, _RTL),
+                group_table("goalkeepers", sq.get("goalkeepers", []), _resolved_styles),
+                group_table("defenders",   sq.get("defenders",   []), _resolved_styles),
+                group_table("midfielders", sq.get("midfielders", []), _resolved_styles),
+                group_table("forwards",    sq.get("forwards",    []), _resolved_styles),
             ], md=8),
 
             dbc.Col([
@@ -650,67 +717,4 @@ def layout(**_params):
                     style_data_conditional=[
                         {"if": {"column_editable": True},
                          "background": "#FFFBEB", "borderLeft": "2px solid #F59E0B"},
-                    ],
-                    page_size=30,
-                    style_table={"overflowX": "auto"},
-                ),
-                html.Div([
-                    dbc.Button("Guardar cambios", id="btn-save-contracts",
-                               color="danger", size="sm",
-                               style={"marginTop": "10px", "marginRight": "8px"}),
-                    html.Span(id="save-contracts-feedback",
-                              style={"fontSize": "11px", "color": "#166534"}),
-                ]),
-            ], style={"background": "#fff", "border": "1px solid #E5E7EB",
-                      "borderRadius": "10px", "padding": "16px 18px",
-                      "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
-        ], id="collapse-edit-contracts", is_open=False),
-
-        criteria_accordion("plantilla"),
-    ])
-
-
-# ---------------------------------------------------------------------------
-# Callbacks
-# ---------------------------------------------------------------------------
-
-@callback(
-    Output("collapse-edit-contracts", "is_open"),
-    Input("btn-edit-contracts", "n_clicks"),
-    State("collapse-edit-contracts", "is_open"),
-    prevent_initial_call=True,
-)
-def _toggle_edit(n, is_open):
-    return not is_open
-
-
-@callback(
-    Output("save-contracts-feedback", "children"),
-    Input("btn-save-contracts", "n_clicks"),
-    State("edit-contracts-table", "data"),
-    prevent_initial_call=True,
-)
-def _save_contracts(n, rows):
-    if not n or not rows:
-        return no_update
-    try:
-        data = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
-        sq = data.get("squad_2025_26", {})
-        name_to_row = {r["Jugador"]: r for r in rows}
-        for grp_key, grp_players in sq.items():
-            if not isinstance(grp_players, list):
-                continue
-            for p in grp_players:
-                if not isinstance(p, dict):
-                    continue
-                row = name_to_row.get(p.get("name", ""))
-                if row:
-                    p["contract_end"] = row.get("Fin contrato") or p.get("contract_end")
-                    try:
-                        mv = int(float(row.get("Valor TM (€)", 0) or 0))
-                        if mv >= 0:
-                            p["market_value"] = mv
-                    except (ValueError, TypeError):
-                        pass
-        CONFIG.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
-                          e
+      
