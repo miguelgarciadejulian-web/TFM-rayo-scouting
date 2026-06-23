@@ -843,21 +843,15 @@ def build_player_dossier(name, team=None):
     goals_tot = float(crow.get("goals") or 0)
     asist_tot = float(crow.get("goal_assists") or 0)
 
-    _comp_fit = _comparator_fit(cname, PROC)
-    if _comp_fit is not None:
-        fit_v  = _comp_fit
-        fit_10 = round(_comp_fit / 10, 1)
-        fit_s  = f"{fit_10}/10"
-    elif fit:
+    # Usar siempre global_fit de player_fit para que gauge y tabla sean consistentes.
+    # _comparator_fit usa fórmula diferente (rendimiento/económico/edad/disponibilidad)
+    # mientras que la tabla desglose muestra plantilla/entrenador/rol/potencial.
+    if fit:
         fit_v  = fit.get("global_fit", 0)
         fit_10 = round(fit_v / 10, 1)
         fit_s  = f"{fit_10}/10"
     else:
         fit_v = 0; fit_10 = 0; fit_s = "n/d"
-
-    if fit:
-        fit["_unified_v"]  = fit_v
-        fit["_unified_10"] = fit_10
 
     # Pool avg para radar
     try:
@@ -913,4 +907,6 @@ def build_player_dossier(name, team=None):
         f'<meta charset="utf-8"><title>Informe {cname}</title>'
         f'<style>{_CSS}</style>'
         f'</head><body>{body}</body></html>'
-    
+    )
+
+  
