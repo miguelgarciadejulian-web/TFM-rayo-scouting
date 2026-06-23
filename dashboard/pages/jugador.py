@@ -783,8 +783,14 @@ def _fill_search(search):
 
 @callback(Output("jugador-picked-store", "data"),
           Input("jugador-search", "value"),
+          Input("jugador-loc", "search"),
           prevent_initial_call=True)
-def _save_pick(val):
+def _save_pick(val, search):
+    from dash import ctx
+    # Si el trigger es la URL (navegación desde Scouting), limpiar el store
+    # para que no quede el jugador anterior bloqueando render_player y _track_player
+    if ctx.triggered_id == "jugador-loc":
+        return None
     if val and "|||" in val:
         return val
     return no_update
@@ -820,16 +826,23 @@ def render_player(search, picked):
 @callback(Output("current-player", "data"),
           Input("jugador-loc", "search"), Input("jugador-search", "value"))
 def _track_player(search, picked):
-    # URL siempre tiene prioridad: cuando navegas desde Scouting
-    # la URL cambia pero 'picked' retiene el jugador anterior
+    from dash import ctx
+    # Si el trigger es la URL → usar URL (navegación desde Scouting)
+    if ctx.triggered_id == "jugador-loc" and search and search.startswith("?"):
+        import urllib.parse as _u
+        pr = dict(_u.parse_qsl(search[1:]))
+        if pr.get("name"):
+            return {"name": pr["name"], "team": pr.get("team", "")}
+    # Si el trigger es el dropdown → usar dropdown
+    if picked and "|||" in picked:
+        n, t = picked.split("|||", 1)
+        return {"name": n, "team": t}
+    # Fallback: URL
     if search and search.startswith("?"):
         import urllib.parse as _u
         pr = dict(_u.parse_qsl(search[1:]))
         if pr.get("name"):
             return {"name": pr["name"], "team": pr.get("team", "")}
-    if picked and "|||" in picked:
-        n, t = picked.split("|||", 1)
-        return {"name": n, "team": t}
     return None
 
 
@@ -966,20 +979,4 @@ def save_market(n, value_m, clause_m, contract, foot, height, key):
 
 @callback(Output("lateral-status", "children"),
           Input("save-lateral", "n_clicks"),
-          State("mkt-lateral-pos", "value"),
-          State("mkt-role-type", "value"),
-          State("player-note-key", "data"),
-          prevent_initial_call=True)
-def save_lateral(n, lateral_pos, role_type, key):
-    if not n or not key:
-        return no_update
-    name = key.split("|")[0]
-    ov = _load_overrides()
-    entry = ov.get(_norm(name), {})
-    if lateral_pos:
-        entry["lateral_pos"] = lateral_pos
-    elif "lateral_pos" in entry:
-        del entry["lateral_pos"]   # borrar override → vuelve al inferido
-    if role_type:
-        entry["role_type"] = role_type
-    elif "role_type" in entry
+          State("mkt-lat
