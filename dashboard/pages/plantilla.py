@@ -184,12 +184,17 @@ def player_row(p, i, role_map=None, role_labels=None):
                 "fontSize": "11px", "fontWeight": "600", "flexShrink": "0",
             }),
             html.Div([
-                html.Span(name, style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL}),
-                (html.Span(f" cedido de {loan}", style={
-                    "fontSize": "10px", "color": "#1D4ED8", "marginLeft": "6px",
-                    "background": "#EFF6FF", "borderRadius": "6px", "padding": "1px 6px",
-                }) if loan else html.Span()),
-            ]),
+                html.Div(name, style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL,
+                                      "whiteSpace": "nowrap", "overflow": "hidden",
+                                      "textOverflow": "ellipsis", "maxWidth": "160px"}),
+                html.Div(
+                    html.Span(f"↗ {loan}", style={
+                        "fontSize": "9px", "color": "#1D4ED8",
+                        "background": "#EFF6FF", "borderRadius": "4px", "padding": "1px 5px",
+                    }) if loan else None,
+                    style={"height": "16px", "display": "flex", "alignItems": "center"},
+                ),
+            ], style={"display": "flex", "flexDirection": "column", "gap": "1px"}),
         ], style={"display": "flex", "alignItems": "center", "gap": "10px"})),
         html.Td(pos_badge(pos)),
         html.Td(str(age), style={"fontSize": "13px", "color": "#374151", "textAlign": "center"}),
@@ -796,14 +801,4 @@ def _nav_to_player(clicks):
     ctx = dash.callback_context
     if not ctx.triggered:
         return no_update
-    prop = ctx.triggered[0]["prop_id"]
-    if not prop or '"name":' not in prop:
-        return no_update
-    import json as _json
-    try:
-        id_part = prop.split(".")[0]
-        id_dict = _json.loads(id_part)
-        name = id_dict.get("name", "")
-        if name:
-            return f"/jugador?name={_up.quote(name)}&team={_up.quote('Rayo Vallecano')}"
-    except Exception:
+    prop = ctx.triggered[0]["pro
