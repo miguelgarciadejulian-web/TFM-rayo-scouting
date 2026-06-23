@@ -499,7 +499,8 @@ class FitRayoScorer:
         try:
             from src.utils.rendimiento import compute_rendimiento, get_subposition
             name = str(row.get("name", ""))
-            enr_row = self._get_enriched_row(name) or row
+            _enr = self._get_enriched_row(name)
+            enr_row = _enr if _enr is not None else row
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "")))
@@ -520,7 +521,8 @@ class FitRayoScorer:
         try:
             from src.utils.rendimiento import compute_rendimiento, get_subposition
             name = str(row.get("name", ""))
-            enr_row = self._get_enriched_row(name) or row
+            _enr = self._get_enriched_row(name)
+            enr_row = _enr if _enr is not None else row
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "")))
