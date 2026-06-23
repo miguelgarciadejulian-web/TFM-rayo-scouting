@@ -116,8 +116,9 @@ def _infer_role_type(row: pd.Series) -> str | None:
 
     if lat == "DC":
         # Central organizador vs dominador: más pases completados % → organizador
+        # Umbral: mediana histórica (~85%) para split equilibrado
         pct = float(row.get("passes_completed_pct") or 0)
-        return "central_corrector" if pct >= 75 else "central_dominador"
+        return "central_corrector" if pct >= 85 else "central_dominador"
 
     if lat in ("MC", "MI", "MD"):
         kp  = float(row.get("key_passes") or 0) / mins * 90
@@ -229,5 +230,4 @@ def role_type_label(code: str | None) -> str:
 def roles_for_lateral(lat_code: str | None) -> list[str]:
     """Devuelve lista de role_type keys válidos para un lateral_pos dado."""
     if not lat_code:
-        return list(ROLE_TYPE_LABELS.keys())
-    return LATERAL_TO_ROLES.get(lat_code, list(ROLE_TYPE_LA
+        return list(ROLE_TYPE_LABELS.
