@@ -3,8 +3,10 @@
     "age": 24,
     "dob": "2002-04-22",
     "foot": "right",
-    "height": "1.82",
-    "position": "Left Winger",
-    "photo_url": "https://img.a.transfermarkt.technology/portrait/big/618813-1710780485.jpg"
+    "height": "1.84",
+    "position": "Extremo izquierdo",
+    "photo_url": "https://img.a.transfermarkt.technology/portrait/big/618813-1707924109.jpg",
+    "value_eur": 1500000,
+    "contract_until": "2026-06-30"
   }
 }
