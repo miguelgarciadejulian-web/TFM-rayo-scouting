@@ -693,11 +693,13 @@ def _fit_rayo_card(name: str) -> html.Div:
     ]
     formula_rows = []
     for lbl, val, weight in formula_items:
-        c = _color(val)
+        c        = _color(val)
+        val_txt  = f"{val:.0f}" if val is not None else "N/A"
+        wt_txt   = "—" if val is None else weight
         formula_rows.append(html.Tr([
-            html.Td(lbl,    style={"fontSize": "10px", "color": "#6B7280", "paddingRight": "8px"}),
-            html.Td(weight, style={"fontSize": "10px", "color": "#9CA3AF", "textAlign": "right", "paddingRight": "8px"}),
-            html.Td(f"{val:.0f}", style={"fontSize": "10px", "fontWeight": "700", "color": c, "textAlign": "right"}),
+            html.Td(lbl,     style={"fontSize": "10px", "color": "#6B7280", "paddingRight": "8px"}),
+            html.Td(wt_txt,  style={"fontSize": "10px", "color": "#9CA3AF", "textAlign": "right", "paddingRight": "8px"}),
+            html.Td(val_txt, style={"fontSize": "10px", "fontWeight": "700", "color": c, "textAlign": "right"}),
         ]))
     formula_rows.append(html.Tr([
         html.Td("FIT RAYO", style={"fontSize": "10px", "fontWeight": "800", "color": "#1A1A2E",
@@ -978,7 +980,4 @@ def save_market(n, value_m, clause_m, contract, foot, height, key):
     entry = ov.get(_norm(name), {})
     if value_m not in (None, ""):
         entry["value_eur"] = float(value_m) * 1_000_000
-    if clause_m not in (None, ""):
-        entry["clause_eur_millions"] = float(clause_m)
-    if contract:
-        entry["contract_until
+    if clause_m no
