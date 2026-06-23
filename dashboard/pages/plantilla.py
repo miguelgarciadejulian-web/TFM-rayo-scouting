@@ -46,6 +46,19 @@ _GROUP_COLOR = {
     "Porteros": "#1D4ED8", "Defensas": "#166534",
     "Centrocampistas": "#92400E", "Delanteros": "#9F1239",
 }
+# Estilo de juego por posición YAML como fallback cuando no hay datos estadísticos
+_POS_STYLE_FALLBACK = {
+    "GK": "Portero",
+    "CB": "Central (sin datos)",
+    "LB": "Lateral izq. (sin datos)",
+    "RB": "Lateral dcho. (sin datos)",
+    "DM": "Pivote (sin datos)",
+    "CM": "Centrocampista (sin datos)",
+    "AM": "Mediapunta (sin datos)",
+    "LW": "Extremo izdo. (sin datos)",
+    "RW": "Extremo dcho. (sin datos)",
+    "ST": "Delantero (sin datos)",
+}
 th = {
     "fontSize": "10px", "fontWeight": "600", "color": "#9CA3AF",
     "textTransform": "uppercase", "letterSpacing": ".06em",
@@ -97,6 +110,9 @@ def player_row(p, i, role_map=None, role_labels=None):
     row_bg = "#FFF5F5" if year <= 2026 else ("#FFFFFF" if i % 2 == 0 else "#FAFAFA")
     role_key   = (role_map or {}).get(name, "")
     role_label = (role_labels or {}).get(role_key, "")
+    is_inferred = bool(role_label)
+    if not role_label:
+        role_label = _POS_STYLE_FALLBACK.get(pos.upper(), "Sin datos")
     return html.Tr([
         html.Td(html.Div([
             html.Div(initials, style={
@@ -119,10 +135,13 @@ def player_row(p, i, role_map=None, role_labels=None):
         html.Td(contract_bar(end)),
         html.Td(html.Span(market_val(mv), style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL})),
         html.Td(
-            html.Span(role_label, style={
-                "fontSize": "10px", "color": "#1D4ED8", "background": "#EFF6FF",
-                "borderRadius": "6px", "padding": "2px 7px", "whiteSpace": "nowrap",
-            }) if role_label else html.Span("—", style={"fontSize": "11px", "color": "#D1D5DB"}),
+            html.Span(role_label, title="Estilo inferido de estadísticas" if is_inferred else "Posición estimada — sin datos suficientes", style={
+                "fontSize": "10px",
+                "color": "#1D4ED8" if is_inferred else "#6B7280",
+                "background": "#EFF6FF" if is_inferred else "#F3F4F6",
+                "borderRadius": "6px", "padding": "2px 7px",
+                "fontStyle": "normal" if is_inferred else "italic",
+            }),
         ),
     ], id={"type": "plantilla-row", "name": name}, n_clicks=0,
        style={"background": row_bg, "transition": "background .1s", "cursor": "pointer"})
@@ -330,7 +349,7 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
                     style={"fontSize": "9px", "fontWeight": "600", "color": "#991B1B",
                            "background": "#FEE2E2", "borderRadius": "4px",
                            "padding": "1px 6px", "marginLeft": "5px",
-                           "whiteSpace": "nowrap"},
+                           },
                 )
             elif warn > 0:
                 contract_chip = html.Span(
@@ -339,7 +358,7 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
                     style={"fontSize": "9px", "fontWeight": "600", "color": "#92400E",
                            "background": "#FEF3C7", "borderRadius": "4px",
                            "padding": "1px 6px", "marginLeft": "5px",
-                           "whiteSpace": "nowrap"},
+                           },
                 )
             else:
                 contract_chip = html.Span()
@@ -366,13 +385,14 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
                                         "color": "#6B7280", "padding": "5px 8px"}),
             html.Td(str(have), style={"fontSize": "11px", "textAlign": "center",
                                       "fontWeight": "700", "color": "#1A1A2E", "padding": "5px 8px"}),
-            html.Td([
+            html.Td(html.Div([
                 html.Span(status_txt, style={
                     "fontSize": "10px", "fontWeight": "600", "color": status_color,
                     "background": status_bg, "padding": "2px 8px", "borderRadius": "99px",
                 }),
                 contract_chip,
-            ], style={"padding": "5px 8px", "whiteSpace": "nowrap"}),
+            ], style={"display": "flex", "alignItems": "center", "flexWrap": "wrap", "gap": "4px"}),
+            style={"padding": "5px 8px"}),
         ], style={"borderBottom": "1px solid #F3F4F6"}))
 
     return html.Div([
@@ -693,32 +713,4 @@ def _save_contracts(n, rows):
                     except (ValueError, TypeError):
                         pass
         CONFIG.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
-                          encoding="utf-8")
-        return "✓ Guardado correctamente"
-    except Exception as e:
-        return f"Error: {e}"
-
-
-@callback(
-    Output("plantilla-nav", "href"),
-    Input({"type": "plantilla-row", "name": dash.ALL}, "n_clicks"),
-    prevent_initial_call=True,
-)
-def _nav_to_player(clicks):
-    import urllib.parse as _up
-    ctx = dash.callback_context
-    if not ctx.triggered:
-        return no_update
-    prop = ctx.triggered[0]["prop_id"]
-    if not prop or '"name":' not in prop:
-        return no_update
-    import json as _json
-    try:
-        id_part = prop.split(".")[0]
-        id_dict = _json.loads(id_part)
-        name = id_dict.get("name", "")
-        if name:
-            return f"/jugador?name={_up.quote(name)}"
-    except Exception:
-        pass
-    return no_update
+                          e

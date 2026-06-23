@@ -415,12 +415,34 @@ def _fit_rayo_card(name: str) -> html.Div:
     r = results[0]
 
     def _color(v):
+        if v is None: return "#9CA3AF"
         if v >= 70: return "#166534"
         if v >= 50: return "#1D4ED8"
         if v >= 30: return "#92400E"
         return "#991B1B"
 
     def _bar(label, val, icon):
+        if val is None:
+            return html.Div([
+                html.Div([
+                    html.I(className=f"ti {icon}",
+                           style={"color": "#9CA3AF", "marginRight": "5px", "fontSize": "12px"}),
+                    html.Span(label, style={
+                        "fontSize": "11px", "fontWeight": "600", "color": "#374151",
+                        "minWidth": "130px",
+                    }),
+                    html.Span("N/A", style={
+                        "fontSize": "11px", "color": "#9CA3AF", "fontWeight": "600",
+                        "marginLeft": "auto",
+                    }),
+                ], style={"display": "flex", "alignItems": "center", "marginBottom": "3px"}),
+                html.Div(
+                    html.Div(style={"width": "0%", "height": "5px",
+                                    "background": "#9CA3AF", "borderRadius": "3px"}),
+                    style={"background": "#E5E7EB", "borderRadius": "3px",
+                           "height": "5px", "marginBottom": "8px"},
+                ),
+            ])
         c = _color(val)
         return html.Div([
             html.Div([
@@ -959,36 +981,4 @@ def save_market(n, value_m, clause_m, contract, foot, height, key):
     if clause_m not in (None, ""):
         entry["clause_eur_millions"] = float(clause_m)
     if contract:
-        entry["contract_until"] = str(contract).strip()
-    if foot:
-        entry["foot"] = str(foot).strip()
-    if height not in (None, ""):
-        entry["height"] = height
-    ov[_norm(name)] = entry
-    _save_overrides(ov)
-    return "Guardado — recarga la pagina para verlo"
-
-
-@callback(Output("lateral-status", "children"),
-          Input("save-lateral", "n_clicks"),
-          State("mkt-lateral-pos", "value"),
-          State("mkt-role-type", "value"),
-          State("player-note-key", "data"),
-          prevent_initial_call=True)
-def save_lateral(n, lateral_pos, role_type, key):
-    if not n or not key:
-        return no_update
-    name = key.split("|")[0]
-    ov = _load_overrides()
-    entry = ov.get(_norm(name), {})
-    if lateral_pos:
-        entry["lateral_pos"] = lateral_pos
-    elif "lateral_pos" in entry:
-        del entry["lateral_pos"]   # borrar override → vuelve al inferido
-    if role_type:
-        entry["role_type"] = role_type
-    elif "role_type" in entry:
-        del entry["role_type"]   # borrar override → vuelve al inferido
-    ov[_norm(name)] = entry
-    _save_overrides(ov)
-    return "Guardado"
+        entry["contract_until
