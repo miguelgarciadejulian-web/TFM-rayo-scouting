@@ -572,4 +572,12 @@ def build_detail(name, team=None, league=None, age=None,
             ], md=7),
         ], className="mb-3"),
         html.P("Percentiles por métrica · histórico completo (vs su posición)", style={"fontSize": "11px",
-           
+               "fontWeight": "700", "color": "#9CA3AF", "textTransform": "uppercase", "marginBottom": "8px"}),
+        dbc.Row(metric_cols),
+        html.P("Evolucion por temporada", style={"fontSize": "11px", "fontWeight": "700",
+               "color": "#9CA3AF", "textTransform": "uppercase", "margin": "10px 0 8px"}),
+        html.Div(html.Table([html.Thead(evo_head), html.Tbody(evo_body)],
+                 style={"width": "100%", "borderCollapse": "collapse"}),
+                 style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
+                        "padding": "10px 14px", "overflowX": "auto"}),
+    ])
