@@ -113,6 +113,57 @@ def _league_difficulty(league: str | None) -> float:
     return LEAGUE_DIFFICULTY.get(str(league), _LEAGUE_DIFF_DEFAULT)
 
 
+
+
+# ---------------------------------------------------------------------------
+# Dimensiones de rendimiento por posición (columnas de master_players.parquet)
+# Cada dimensión: (label, [métricas p90], peso)
+# ---------------------------------------------------------------------------
+_REND_DIMS_MASTER: dict[str, list] = {
+    "ST": [
+        ("Gol / Remate",   ["goals_p90", "shots_p90", "shots_on_target_p90",
+                             "passes_into_box_p90"],                         0.40),
+        ("Creación",       ["key_passes_p90", "assists_p90",
+                             "dribbles_completed_p90"],                      0.30),
+        ("Construcción",   ["pass_accuracy", "progressive_carries_p90"],     0.15),
+        ("Presión",        ["tackles_won_p90", "interceptions_p90",
+                             "ball_recoveries_p90"],                         0.15),
+    ],
+    "CM": [
+        ("Pase",           ["pass_accuracy", "progressive_carries_p90",
+                             "key_passes_p90"],                              0.30),
+        ("Creación",       ["assists_p90", "passes_into_box_p90",
+                             "dribbles_completed_p90"],                      0.25),
+        ("Recuperación",   ["tackles_won_p90", "interceptions_p90",
+                             "ball_recoveries_p90"],                         0.25),
+        ("Ataque",         ["goals_p90", "shots_p90"],                       0.20),
+    ],
+    "CB": [
+        ("Defensiva",      ["tackles_won_p90", "interceptions_p90",
+                             "ball_recoveries_p90"],                         0.45),
+        ("Duelos",         ["interceptions_p90", "ball_recoveries_p90"],     0.25),
+        ("Construcción",   ["pass_accuracy", "progressive_carries_p90"],     0.20),
+        ("Ofensiva",       ["assists_p90", "crosses_completed_p90"],         0.10),
+    ],
+    "GK": [
+        ("Pase / Salida",  ["pass_accuracy", "passes_completed_pct"],        0.60),
+        ("Recuperación",   ["ball_recoveries_p90"],                          0.40),
+    ],
+}
+# Posiciones que mapean a cada grupo
+_POS_TO_GRP: dict[str, str] = {
+    "ST": "ST", "CF": "ST", "SS": "ST", "FW": "ST",
+    "CM": "CM", "DM": "CM", "AM": "CM", "MF": "CM",
+    "CB": "CB", "RB": "CB", "LB": "CB", "DF": "CB",
+    "GK": "GK",
+}
+
+
+def _pos_grp(position: str | None) -> str:
+    if not position:
+        return "CM"
+    return _POS_TO_GRP.get(str(position).upper().strip(), "CM")
+
 # ---------------------------------------------------------------------------
 # Dataclass resultado
 # ---------------------------------------------------------------------------
@@ -461,41 +512,81 @@ class FitRayoScorer:
 
         return texts
 
+    def _pct_in_pool(self, pool: pd.DataFrame, col: str, val: float) -> float | None:
+        """Percentil (0-100) de val respecto al pool para la columna col."""
+        if col not in pool.columns:
+            return None
+        series = pd.to_numeric(pool[col], errors="coerce").dropna()
+        if series.empty:
+            return None
+        return float((series < val).sum() / len(series) * 100)
+
     def _score_rendimiento(self, row: pd.Series) -> float:
         mins = self._sf(row.get("minutes"))
-        if mins <= 0:
+        if mins < 90:
             return 10.0
-        min_s  = min(100.0, mins / 25.0)
-        ga90   = (self._sf(row.get("goals")) + self._sf(row.get("assists"))) / max(mins/90, 1)
-        ga_s   = min(100.0, ga90 * 300)
-        duel_s = min(100.0, self._sf(row.get("tackles_won")) / max(mins/90, 1) * 150)
-        raw    = 0.5*min_s + 0.3*ga_s + 0.2*duel_s
-        diff   = _league_difficulty(row.get("league"))
+        pos = _pos_grp(row.get("position_primary"))
+        dims_def = _REND_DIMS_MASTER.get(pos, _REND_DIMS_MASTER["CM"])
+        pool = self.master.copy()
+        pool = pool[pd.to_numeric(pool["minutes"], errors="coerce").fillna(0) >= 450]
+        pos_pool = pool[pool["position_primary"] == row.get("position_primary")]
+        if len(pos_pool) < 10:
+            pos_pool = pool
+        total_w, total_ws = 0.0, 0.0
+        for _label, metrics, weight in dims_def:
+            scores = []
+            for m in metrics:
+                v = self._sf(row.get(m))
+                pct = self._pct_in_pool(pos_pool, m, v)
+                if pct is not None:
+                    scores.append(pct)
+            if scores:
+                ds = sum(scores) / len(scores)
+                total_ws += weight * ds
+                total_w += weight
+        if total_w == 0:
+            return 10.0
+        raw = total_ws / total_w
+        diff = _league_difficulty(row.get("league"))
         return round(raw * diff, 1)
 
     def score_rendimiento_breakdown(self, row: pd.Series) -> dict:
-        """Desglosa el score de rendimiento para mostrar en la UI."""
+        """Desglosa el score de rendimiento (por dimensiones posicionales) para la UI."""
         mins = self._sf(row.get("minutes"))
-        if mins <= 0:
-            return {"mins": 0, "goals": 0, "assists": 0, "tackles_won": 0,
-                    "min_s": 0, "ga_s": 0, "duel_s": 0, "score": 10.0,
-                    "league_diff": 1.0, "league": ""}
-        goals   = self._sf(row.get("goals"))
-        assists = self._sf(row.get("assists"))
-        duels   = self._sf(row.get("tackles_won"))
-        min_s   = round(min(100.0, mins / 25.0), 1)
-        ga90    = (goals + assists) / max(mins/90, 1)
-        ga_s    = round(min(100.0, ga90 * 300), 1)
-        duel_s  = round(min(100.0, duels / max(mins/90, 1) * 150), 1)
-        raw     = round(0.5*min_s + 0.3*ga_s + 0.2*duel_s, 1)
-        diff    = _league_difficulty(row.get("league"))
-        score   = round(raw * diff, 1)
+        if mins < 90:
+            return {"score": 10.0, "pos_grp": "—", "dims": [], "league_diff": 1.0,
+                    "league": str(row.get("league", "") or "")}
+        pos = _pos_grp(row.get("position_primary"))
+        dims_def = _REND_DIMS_MASTER.get(pos, _REND_DIMS_MASTER["CM"])
+        pool = self.master.copy()
+        pool = pool[pd.to_numeric(pool["minutes"], errors="coerce").fillna(0) >= 450]
+        pos_pool = pool[pool["position_primary"] == row.get("position_primary")]
+        if len(pos_pool) < 10:
+            pos_pool = pool
+        dim_results = []
+        total_w, total_ws = 0.0, 0.0
+        for label, metrics, weight in dims_def:
+            scores = []
+            for m in metrics:
+                v = self._sf(row.get(m))
+                pct = self._pct_in_pool(pos_pool, m, v)
+                if pct is not None:
+                    scores.append(pct)
+            if scores:
+                ds = round(sum(scores) / len(scores), 1)
+                dim_results.append({"label": label, "score": ds, "weight": weight})
+                total_ws += weight * ds
+                total_w += weight
+        raw = round(total_ws / total_w, 1) if total_w > 0 else 10.0
+        diff = _league_difficulty(row.get("league"))
         return {
-            "mins": int(mins), "goals": int(goals), "assists": int(assists),
-            "tackles_won": int(duels),
-            "min_s": min_s, "ga_s": ga_s, "duel_s": duel_s,
-            "raw_score": raw, "league_diff": diff,
-            "league": str(row.get("league", "") or ""), "score": score,
+            "score": round(raw * diff, 1),
+            "raw_score": raw,
+            "pos_grp": pos,
+            "dims": dim_results,
+            "league_diff": diff,
+            "league": str(row.get("league", "") or ""),
+            "pool_size": len(pos_pool),
         }
 
     def _score_economico(self, mv: float) -> float:

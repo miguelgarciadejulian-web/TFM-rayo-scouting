@@ -568,36 +568,30 @@ def _fit_rayo_card(name: str) -> html.Div:
         ], style={"borderBottom": "1px solid #F3F4F6", "paddingBottom": "4px"})
 
     # Paneles de cada sub-score
-    if rend_bd:
-        _mins   = rend_bd.get("mins", 0)
-        _goals  = rend_bd.get("goals", 0)
-        _asts   = rend_bd.get("assists", 0)
-        _duels  = rend_bd.get("tackles_won", 0)
-        _min_s  = rend_bd.get("min_s", 0)
-        _ga_s   = rend_bd.get("ga_s", 0)
-        _duel_s = rend_bd.get("duel_s", 0)
-        _p90    = max(_mins / 90, 1)
+    if rend_bd and rend_bd.get("dims"):
+        _pos_grp_lbl = rend_bd.get("pos_grp", "—")
+        _pool_n      = rend_bd.get("pool_size", 0)
+        _ld          = rend_bd.get("league_diff", 1.0)
+        _raw         = rend_bd.get("raw_score", 0)
         rend_items = [
-            _mini_row(
-                "Minutos jugados", "×0.50", _min_s,
-                f"{_mins} min jugados → min(100, {_mins}/25) = {_min_s:.0f}  "
-                f"[2.250 min = score máx 90; 1.000 min ≈ 40]",
-            ),
-            _mini_row(
-                "Goles + Asistencias /90", "×0.30", _ga_s,
-                f"({_goals} goles + {_asts} asist) en {_mins} min "
-                f"→ {(_goals+_asts)}/{_p90:.1f}p90 × 300 = {_ga_s:.0f}  "
-                f"[0.33 G+A/90 = score 100]",
-            ),
-            _mini_row(
-                "Duelos ganados /90", "×0.20", _duel_s,
-                f"{_duels} duelos ganados en {_mins} min "
-                f"→ {_duels}/{_p90:.1f}p90 × 150 = {_duel_s:.0f}  "
-                f"[0.67 duelos/90 = score 100]",
-            ),
             html.Div(
-                "⚠ Este score mide actividad bruta del jugador, no percentil posicional. "
-                "Un delantero con pocos duelos puede igualmente tener score alto si marca.",
+                f"Posición: {_pos_grp_lbl}  ·  Pool: {_pool_n} jugadores ≥450 min  ·  "
+                f"Dif. liga: ×{_ld:.2f}",
+                style={"fontSize": "9px", "fontFamily": "monospace", "color": "#6B7280",
+                       "marginBottom": "8px", "padding": "4px 8px",
+                       "background": "#F3F4F6", "borderRadius": "4px"},
+            ),
+            *[
+                _mini_row(
+                    d["label"],
+                    f"×{d['weight']:.0%}",
+                    d["score"],
+                    f"Percentil {d['score']:.0f}/100 vs jugadores de la misma posición",
+                )
+                for d in rend_bd["dims"]
+            ],
+            html.Div(
+                f"Score bruto: {_raw:.1f}  ×  dif. liga {_ld:.2f} = {rend_bd.get('score', 0):.1f}",
                 style={"fontSize": "8px", "color": "#9CA3AF", "fontStyle": "italic",
                        "marginTop": "6px", "paddingTop": "6px",
                        "borderTop": "1px dashed #E5E7EB"},
@@ -661,7 +655,7 @@ def _fit_rayo_card(name: str) -> html.Div:
             dbc.Row([
                 dbc.Col(_sub_panel(
                     "Rendimiento (40%)", "ti-run", rend_items,
-                    "Score = 0.50×Minutos + 0.30×G+A/90 + 0.20×Duelos/90",
+                    "Percentiles por dimensión vs misma posición · ≥50 min",
                 ), md=6),
                 dbc.Col(_sub_panel(
                     "Encaje económico (30%)", "ti-coin-euro", eco_items,
@@ -980,4 +974,40 @@ def save_market(n, value_m, clause_m, contract, foot, height, key):
     entry = ov.get(_norm(name), {})
     if value_m not in (None, ""):
         entry["value_eur"] = float(value_m) * 1_000_000
-    if clause_m no
+    if clause_m not in (None, ""):
+        entry["clause_eur_millions"] = float(clause_m)
+    if contract:
+        entry["contract_until"] = str(contract).strip()
+    if foot:
+        entry["foot"] = str(foot).strip()
+    if height not in (None, ""):
+        entry["height"] = height
+    ov[_norm(name)] = entry
+    _save_overrides(ov)
+    return "Guardado — recarga la pagina para verlo"
+
+
+@callback(Output("lateral-status", "children"),
+          Input("save-lateral", "n_clicks"),
+          State("mkt-lateral-pos", "value"),
+          State("mkt-role-type", "value"),
+          State("player-note-key", "data"),
+          prevent_initial_call=True)
+def save_lateral(n, lateral_pos, role_type, key):
+    if not n or not key:
+        return no_update
+    name = key.split("|")[0]
+    ov = _load_overrides()
+    entry = ov.get(_norm(name), {})
+    if lateral_pos:
+        entry["lateral_pos"] = lateral_pos
+    elif "lateral_pos" in entry:
+        del entry["lateral_pos"]   # borrar override → vuelve al inferido
+    if role_type:
+        entry["role_type"] = role_type
+    elif "role_type" in entry:
+        del entry["role_type"]   # borrar override → vuelve al inferido
+    ov[_norm(name)] = entry
+    _save_overrides(ov)
+    return "Guardado"
+                                                                                                                                                                                                                                                                                  
