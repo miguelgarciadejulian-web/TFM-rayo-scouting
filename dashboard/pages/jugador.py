@@ -883,11 +883,11 @@ def _download_pdf(n, cur, search, picked):
         ], style={"display": "flex", "alignItems": "center"})
         return no_update, err, False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
 
-    from src.reports.player_dossier import build_player_dossier
     try:
+        from src.reports.player_dossier import build_player_dossier
         fname, data = build_player_dossier(name, team=team or None)
         return dcc.send_bytes(data, fname), "", False, _PDF_BTN_DEFAULT, _BTN_STYLE_DEFAULT
-    except Exception as exc:
+    except BaseException as exc:
         import traceback
         traceback.print_exc()
         err_msg = html.Div([
@@ -977,4 +977,4 @@ def save_lateral(n, lateral_pos, role_type, key):
         del entry["role_type"]   # borrar override → vuelve al inferido
     ov[_norm(name)] = entry
     _save_overrides(ov)
-    return "Guardado"
+    return "Gu

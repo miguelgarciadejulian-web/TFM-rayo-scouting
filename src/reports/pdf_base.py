@@ -344,4 +344,6 @@ def build_html_doc(body_html: str, title: str = "Informe") -> str:
 
 def html_to_pdf(html: str) -> bytes:
     """Convierte HTML a bytes PDF. Usa WeasyPrint si disponible, xhtml2pdf como fallback."""
-    # Intento 1: WeasyPrint (mejor
+    import sys, io as _io
+
+    # I

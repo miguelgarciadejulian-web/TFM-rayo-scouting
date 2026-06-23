@@ -1315,11 +1315,11 @@ _COACH_PDF_BTN_STYLE = {
 def _download_coach_pdf(n, name):
     if not n or not name:
         return no_update, no_update, no_update, no_update
-    from src.reports.coach_dossier import build_coach_dossier
     try:
+        from src.reports.coach_dossier import build_coach_dossier
         fname, data = build_coach_dossier(name)
         return dcc.send_bytes(data, fname), "", False, _COACH_PDF_BTN_DEFAULT
-    except Exception as exc:
+    except BaseException as exc:
         import traceback
         traceback.print_exc()
         err = html.Div([
@@ -1420,4 +1420,3 @@ def _suggest_adn_from_data(n):
             "Columnas ↓inv. se invierten: menor valor bruto → mayor percentil. "
             "Diferencia = percentil calculado − valor del slider.",
             style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic", "margin": "0"}),
-    ])
