@@ -318,6 +318,169 @@ def _style_transparency(prof: dict, pct_for_fn):
     ], open=True, style={"marginTop": "4px", "marginBottom": "4px"})
 
 
+# ── Rendimiento: dimensiones por grupo posicional ────────────────────────────
+_REND_DIMS: dict[str, list] = {
+    "FWD": [
+        ("Gol / Remate",    ["goals_p90", "total_shots_p90",
+                             "shots_on_target_inc_goals_p90",
+                             "total_touches_in_opposition_box_p90"],          0.35),
+        ("Creación",        ["key_passes_attempt_assists_p90", "goal_assists_p90",
+                             "successful_dribbles_p90", "through_balls_p90"], 0.30),
+        ("Pase",            ["total_successful_passes_excl_crosses_corners_p90",
+                             "forward_passes_p90",
+                             "successful_passes_opposition_half_p90"],        0.20),
+        ("Def. / Presión",  ["tackles_won_p90", "interceptions_p90",
+                             "recoveries_p90"],                               0.15),
+    ],
+    "MID": [
+        ("Pase",            ["total_successful_passes_excl_crosses_corners_p90",
+                             "forward_passes_p90",
+                             "successful_passes_opposition_half_p90",
+                             "successful_long_passes_p90"],                   0.28),
+        ("Creación",        ["key_passes_attempt_assists_p90", "goal_assists_p90",
+                             "successful_dribbles_p90", "through_balls_p90"], 0.25),
+        ("Recuperación",    ["tackles_won_p90", "interceptions_p90",
+                             "recoveries_p90"],                               0.25),
+        ("Ataque",          ["goals_p90", "total_shots_p90",
+                             "total_touches_in_opposition_box_p90"],          0.22),
+    ],
+    "DEF": [
+        ("Defensiva",       ["tackles_won_p90", "interceptions_p90",
+                             "recoveries_p90", "blocks_p90",
+                             "total_clearances_p90"],                         0.40),
+        ("Duelos",          ["aerial_duels_won_p90", "ground_duels_won_p90"], 0.25),
+        ("Construcción",    ["total_successful_passes_excl_crosses_corners_p90",
+                             "forward_passes_p90",
+                             "successful_long_passes_p90"],                   0.25),
+        ("Ofensiva",        ["goal_assists_p90",
+                             "successful_crosses_open_play_p90"],             0.10),
+    ],
+    "GK": [
+        ("Pase / Salida",   ["total_successful_passes_excl_crosses_corners_p90",
+                             "successful_long_passes_p90"],                   0.50),
+        ("Juego aéreo",     ["aerial_duels_won_p90"],                         0.30),
+        ("Recuperación",    ["recoveries_p90"],                               0.20),
+    ],
+}
+
+_DIM_ICONS = {
+    "Gol / Remate": "ti-ball-football",
+    "Creación": "ti-sparkles",
+    "Pase": "ti-arrow-guide",
+    "Def. / Presión": "ti-shield",
+    "Recuperación": "ti-rotate-clockwise",
+    "Ataque": "ti-bolt",
+    "Defensiva": "ti-shield-lock",
+    "Duelos": "ti-swords",
+    "Construcción": "ti-arrows-exchange",
+    "Ofensiva": "ti-target-arrow",
+    "Pase / Salida": "ti-arrow-guide",
+    "Juego aéreo": "ti-antenna",
+}
+
+
+def _rendimiento_card(pool, latest, pct_for_fn):
+    """Tarjeta de Rendimiento: score global 0-100 + desglose por dimensiones."""
+    pos_grp = str(latest.get("position_group") or "MID").upper()
+    pos_grp = pos_grp if pos_grp in _REND_DIMS else "MID"
+    dims_def = _REND_DIMS[pos_grp]
+
+    def _col(v):
+        if v is None: return "#6B7280"
+        if v >= 75: return "#166534"
+        if v >= 55: return "#1D4ED8"
+        if v >= 35: return "#B45309"
+        return "#991B1B"
+
+    def _bar_col(v):
+        if v is None: return "#E5E7EB"
+        if v >= 75: return "#16A34A"
+        if v >= 55: return "#3B82F6"
+        if v >= 35: return "#F59E0B"
+        return "#EF4444"
+
+    dim_scores = []
+    total_w, total_ws = 0.0, 0.0
+
+    for dim_label, metrics, weight in dims_def:
+        scores = [pct_for_fn(m) for m in metrics if pct_for_fn(m) is not None]
+        if scores:
+            ds = sum(scores) / len(scores)
+            dim_scores.append((dim_label, ds, weight))
+            total_ws += weight * ds
+            total_w += weight
+
+    overall = round(total_ws / total_w) if total_w > 0 else None
+
+    def _grade(v):
+        if v is None: return "—"
+        if v >= 85: return "Elite"
+        if v >= 70: return "Alto"
+        if v >= 55: return "Medio-alto"
+        if v >= 40: return "Medio"
+        if v >= 25: return "Bajo"
+        return "Muy bajo"
+
+    bars = []
+    for label, score, _ in dim_scores:
+        icon = _DIM_ICONS.get(label, "ti-chart-bar")
+        bars.append(html.Div([
+            html.Div([
+                html.I(className=f"ti {icon}",
+                       style={"fontSize": "12px", "color": _col(score), "marginRight": "5px"}),
+                html.Span(label, style={"fontSize": "11px", "color": "#374151"}),
+            ], style={"display": "flex", "alignItems": "center",
+                      "width": "140px", "flexShrink": "0"}),
+            html.Div(style={"flex": "1", "background": "#F3F4F6",
+                            "borderRadius": "99px", "height": "8px", "overflow": "hidden"},
+                     children=html.Div(style={
+                         "height": "100%", "width": f"{score:.0f}%",
+                         "background": _bar_col(score), "borderRadius": "99px",
+                     })),
+            html.Span(f"{score:.0f}", style={
+                "fontSize": "11px", "fontWeight": "700",
+                "color": _col(score), "width": "30px", "textAlign": "right",
+                "marginLeft": "6px",
+            }),
+        ], style={"display": "flex", "alignItems": "center",
+                  "gap": "8px", "marginBottom": "7px"}))
+
+    overall_color = _col(overall)
+    grade_lbl = _grade(overall)
+
+    return html.Div([
+        html.Div([
+            html.Span("Rendimiento", style={
+                "fontSize": "11px", "fontWeight": "700", "color": "#9CA3AF",
+                "textTransform": "uppercase", "letterSpacing": ".06em",
+            }),
+            html.Div([
+                html.Span(f"{overall}" if overall is not None else "—",
+                          style={"fontSize": "26px", "fontWeight": "900",
+                                 "color": overall_color, "lineHeight": "1"}),
+                html.Span("/100", style={"fontSize": "12px", "color": "#9CA3AF",
+                                        "marginLeft": "2px"}),
+                html.Span(grade_lbl, style={
+                    "fontSize": "10px", "fontWeight": "600",
+                    "color": overall_color,
+                    "background": "#F3F4F6", "borderRadius": "99px",
+                    "padding": "2px 8px", "marginLeft": "8px",
+                }),
+            ], style={"display": "flex", "alignItems": "baseline", "gap": "0px"}),
+        ], style={"display": "flex", "justifyContent": "space-between",
+                  "alignItems": "center", "marginBottom": "12px"}),
+        html.Div(bars),
+        html.P(
+            "Percentiles vs jugadores de la misma posición con ≥ 450 min",
+            style={"fontSize": "9px", "color": "#9CA3AF",
+                   "fontStyle": "italic", "margin": "4px 0 0"},
+        ),
+    ], style={
+        "background": "#fff", "border": "1px solid #E5E7EB",
+        "borderRadius": "10px", "padding": "14px 18px", "marginBottom": "16px",
+    })
+
+
 def _radar(role_scores: dict):
     """Radar plotly de los scores de rol del jugador."""
     if not role_scores:
@@ -505,6 +668,8 @@ def build_detail(name, team=None, league=None, age=None,
             return None
         return float(pser.get(match[0]))
 
+    rend_card = _rendimiento_card(pool, latest, _pct_for)
+
     metric_cols = []
     for grp, metrics in METRIC_GROUPS.items():
         bars = []
@@ -544,6 +709,7 @@ def build_detail(name, team=None, league=None, age=None,
 
     return html.Div([
         header,
+        rend_card,
         dbc.Row([
             dbc.Col([
                 html.P("Perfil de rol (radar)", style={"fontSize": "11px", "fontWeight": "700",

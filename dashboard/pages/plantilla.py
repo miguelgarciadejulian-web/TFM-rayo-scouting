@@ -801,4 +801,16 @@ def _nav_to_player(clicks):
     ctx = dash.callback_context
     if not ctx.triggered:
         return no_update
-    prop = ctx.triggered[0]["pro
+    prop = ctx.triggered[0]["prop_id"]
+    if not prop or '"name":' not in prop:
+        return no_update
+    import json as _json
+    try:
+        id_part = prop.split(".")[0]
+        id_dict = _json.loads(id_part)
+        name = id_dict.get("name", "")
+        if name:
+            return f"/jugador?name={_up.quote(name)}&team={_up.quote('Rayo Vallecano')}"
+    except Exception:
+        pass
+    return no_update
