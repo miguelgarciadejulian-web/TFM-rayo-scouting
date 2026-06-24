@@ -148,6 +148,25 @@ def _load() -> pd.DataFrame:
         if "role_type" not in df.columns:
             df["role_type"] = None
 
+    # ---- Enriquecer edad desde market_values.csv (TM) ----
+    try:
+        mv_csv = PROC.parent / "config" / "market_values.csv"
+        if mv_csv.exists():
+            mv_df = pd.read_csv(mv_csv, usecols=lambda c: c in ("name", "age", "foot", "position"))
+            mv_df = mv_df.dropna(subset=["name"])
+            mv_df["_nn"] = mv_df["name"].apply(lambda x: unicodedata.normalize("NFKD", str(x)).encode("ascii","ignore").decode().lower().strip())
+            mv_df = mv_df.drop_duplicates("_nn").set_index("_nn")
+            if "age" not in df.columns:
+                df["age"] = None
+            df["_nn"] = df["name"].apply(lambda x: unicodedata.normalize("NFKD", str(x)).encode("ascii","ignore").decode().lower().strip())
+            for col in ("age", "foot", "position"):
+                if col in mv_df.columns:
+                    mask = df[col].isna() if col in df.columns else pd.Series(True, index=df.index)
+                    df.loc[mask, col] = df.loc[mask, "_nn"].map(mv_df[col])
+            df = df.drop(columns=["_nn"], errors="ignore")
+    except Exception:
+        pass
+
     # Precalcular numéricas para filtrado rápido
     def _num(col):
         if col in df.columns:
@@ -441,39 +460,4 @@ def filter_table(player, lat_pos, role_types, leagues, teams, foot, age_max, mv_
 
     columns = [{"name": label(c), "id": c, "type": "text"} for c in cols_show]
     n_econ = (df["_mv_n"] > 0).sum() if "_mv_n" in df.columns else 0
-    count_msg = f"{len(df):,} jugadores encontrados · {n_econ:,} con datos económicos"
-    return df_show.to_dict("records"), columns, count_msg
-
-
-@callback(
-    Output("scouting-nav-url", "data"),
-    Input("scouting-table", "active_cell"),
-    State("scouting-table", "derived_viewport_data"),
-    prevent_initial_call=True,
-)
-def go_to_player(active_cell, view_data):
-    if not active_cell or not view_data:
-        return no_update
-    idx = active_cell.get("row")
-    if idx is None or idx >= len(view_data):
-        return no_update
-    row = view_data[idx]
-    pid    = urllib.parse.quote(str(row.get("player_id") or row.get("player_id_src") or row.get("name", "")))
-    nombre = urllib.parse.quote(str(row.get("name", "")))
-    equipo = urllib.parse.quote(str(row.get("team", "")))
-    return f"/jugador?id={pid}&name={nombre}&team={equipo}"
-
-
-clientside_callback(
-    """
-    function(url) {
-        if (url) {
-            window.location.href = url;
-        }
-        return null;
-    }
-    """,
-    Output("scouting-nav-url", "data", allow_duplicate=True),
-    Input("scouting-nav-url", "data"),
-    prevent_initial_call=True,
-)
+    count_msg = f"{len(df):,} jugadores enco
