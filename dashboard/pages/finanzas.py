@@ -783,56 +783,76 @@ def tab_simulador(fin):
     lbl = {"fontSize":"11px","color":"#6B7280","marginBottom":"4px","display":"block"}
 
     return html.Div([
+        dcc.Store(id="sim-buys", data=[]),
+
         html.Div([
             html.I(className="ti ti-info-circle",style={"marginRight":"8px","color":"#1D4ED8"}),
-            html.Span("Busca un jugador del scope del Rayo. Se auto-rellenan salario estimado y cláusula, editables para simular traspaso negociado.",
+            html.Span("Puedes simular múltiples ventas y compras a la vez. Añade cada operación con el botón ➕ y el simulador las acumula.",
                       style={"fontSize":"12px","color":"#1E40AF"}),
         ], style={"background":"#EFF6FF","border":"1px solid #BFDBFE","borderRadius":"10px","padding":"12px 16px","marginBottom":"16px","display":"flex","alignItems":"center"}),
 
         dbc.Row([
+            # ── Salidas ──────────────────────────────────────────────────────
             dbc.Col(html.Div([
                 html.Div([html.I(className="ti ti-arrow-up-right",style={"color":"#FFD600","marginRight":"8px","fontSize":"16px"}),
                           html.Span("Salidas simuladas",style={"fontSize":"13px","fontWeight":"600","color":"#1A1A2E"})],
                          style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
                 html.Span("Jugadores del Rayo que salen",style=lbl),
-                dcc.Dropdown(player_opts,multi=True,id="sim-out",placeholder="Selecciona jugadores..."),
+                dcc.Dropdown(player_opts,multi=True,id="sim-out",placeholder="Selecciona uno o varios..."),
                 html.Div(style={"height":"1px","background":"#F3F4F6","margin":"14px 0"}),
-                html.Span("Ingreso por venta (M€)",style=lbl),
+                html.Span("Ingreso total por ventas (M€)",style=lbl),
                 dcc.Input(id="sim-income",type="number",min=0,value=0,step=0.5,placeholder="0.0",style=inp),
                 html.Div(id="sim-out-summary",style={"marginTop":"10px"}),
-            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px","height":"100%"}),md=4),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px","height":"100%"}), md=4),
 
+            # ── Altas (múltiples) ─────────────────────────────────────────────
             dbc.Col(html.Div([
                 html.Div([html.I(className="ti ti-arrow-down-left",style={"color":"#10B981","marginRight":"8px","fontSize":"16px"}),
-                          html.Span("Alta simulada",style={"fontSize":"13px","fontWeight":"600","color":"#1A1A2E"})],
+                          html.Span("Altas simuladas",style={"fontSize":"13px","fontWeight":"600","color":"#1A1A2E"})],
                          style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
+
+                # Form de UNA compra
                 html.Span("Ligas a buscar",style=lbl),
                 dcc.Dropdown(SIM_LEAGUES, multi=True, id="sim-leagues",
                              value=["Spain_Primera_Division","Spain_Segunda_Division"],
                              placeholder="Elige ligas...", style={"marginBottom":"8px"}),
                 html.Span("Buscar jugador",style=lbl),
                 dcc.Dropdown(options=master_opts,id="sim-player-search",placeholder="Escribe un nombre...",searchable=True,clearable=True),
-                html.Div(id="sim-player-card",style={"marginTop":"10px","marginBottom":"10px"}),
-                html.Div(style={"height":"1px","background":"#F3F4F6","margin":"10px 0"}),
+                html.Div(id="sim-player-card",style={"marginTop":"8px","marginBottom":"8px"}),
+                html.Div(style={"height":"1px","background":"#F3F4F6","margin":"8px 0"}),
                 dbc.Row([
                     dbc.Col([html.Span("Salario anual (M€)",style=lbl),
                              dcc.Input(id="sim-new-salary",type="number",min=0,value=None,step=0.05,placeholder="auto",style=inp),
-                             html.Span("editable — se auto-rellena",style={"fontSize":"10px","color":"#9CA3AF","marginTop":"3px","display":"block"})],width=6),
+                             html.Span("se auto-rellena",style={"fontSize":"10px","color":"#9CA3AF","marginTop":"2px","display":"block"})],width=6),
                     dbc.Col([html.Span("Cláusula estimada (M€)",style=lbl),
                              dcc.Input(id="sim-player-clause",type="number",min=0,value=None,step=0.5,placeholder="auto",style=inp),
-                             html.Span("editable — ~3× valor TM",style={"fontSize":"10px","color":"#9CA3AF","marginTop":"3px","display":"block"})],width=6),
+                             html.Span("~3× valor TM",style={"fontSize":"10px","color":"#9CA3AF","marginTop":"2px","display":"block"})],width=6),
                 ], className="g-2"),
-                html.Div(style={"height":"1px","background":"#F3F4F6","margin":"10px 0"}),
+                html.Div(style={"height":"1px","background":"#F3F4F6","margin":"8px 0"}),
                 dbc.Row([
-                    dbc.Col([html.Span("Traspaso acordado (M€)",style={**lbl,"color":"#374151","fontWeight":"600"}),
+                    dbc.Col([html.Span("Traspaso acordado (M€)",style={**lbl,"fontWeight":"600"}),
                              dcc.Input(id="sim-fee",type="number",min=0,value=None,step=0.5,placeholder="Ej: 8.0",style=inp)],width=7),
                     dbc.Col([html.Span("Años contrato",style=lbl),
                              dcc.Input(id="sim-contract-years",type="number",min=1,max=7,value=5,step=1,style=inp)],width=5),
                 ], className="g-2"),
-                html.Div(id="sim-fee-vs-clause",style={"marginTop":"6px"}),
-            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px","height":"100%"}),md=4),
+                html.Div(id="sim-fee-vs-clause",style={"marginTop":"4px"}),
 
-            dbc.Col(html.Div(id="sim-results",style={"height":"100%"}),md=4),
+                # Botón añadir
+                html.Button([
+                    html.I(className="ti ti-plus",style={"marginRight":"6px","fontSize":"13px"}),
+                    "Añadir compra a la simulación",
+                ], id="sim-add-buy", n_clicks=0, style={
+                    "width":"100%","marginTop":"10px","padding":"9px","border":"none",
+                    "borderRadius":"8px","background":"#10B981","color":"#fff",
+                    "fontSize":"12px","fontWeight":"700","cursor":"pointer","letterSpacing":".02em",
+                }),
+
+                # Lista de compras acumuladas
+                html.Div(id="sim-buys-list", style={"marginTop":"10px"}),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px","height":"100%"}), md=4),
+
+            # ── Resultados ────────────────────────────────────────────────────
+            dbc.Col(html.Div(id="sim-results",style={"height":"100%"}), md=4),
         ], className="g-3"),
     ])
 
@@ -1704,34 +1724,92 @@ def show_out_summary(out_players):
         for n in out_players if n in pmap
     ])
 
+@callback(
+    Output("sim-buys", "data"),
+    Input("sim-add-buy", "n_clicks"),
+    Input({"type": "sim-del-buy", "index": ALL}, "n_clicks"),
+    State("sim-player-search", "value"),
+    State("sim-new-salary", "value"),
+    State("sim-fee", "value"),
+    State("sim-contract-years", "value"),
+    State("sim-buys", "data"),
+    prevent_initial_call=True,
+)
+def _manage_buys(add_n, del_clicks, player_name, salary_m, fee_m, years, buys):
+    buys = list(buys or [])
+    trig = ctx.triggered_id
+    if trig == "sim-add-buy":
+        if player_name:
+            buys.append({
+                "name":   player_name,
+                "salary": float(salary_m or 0),
+                "fee":    float(fee_m or 0),
+                "years":  int(years or 5),
+            })
+    elif isinstance(trig, dict) and trig.get("type") == "sim-del-buy":
+        idx = trig["index"]
+        if 0 <= idx < len(buys):
+            buys.pop(idx)
+    return buys
+
+
+@callback(Output("sim-buys-list", "children"), Input("sim-buys", "data"))
+def _render_buys_list(buys):
+    if not buys:
+        return html.P("Ninguna compra añadida todavía.",
+                      style={"fontSize":"11px","color":"#9CA3AF","margin":"4px 0","fontStyle":"italic"})
+    items = []
+    for i, b in enumerate(buys):
+        items.append(html.Div([
+            html.Div([
+                html.Span(b["name"], style={"fontSize":"11px","fontWeight":"700","color":"#1A1A2E","flex":"1"}),
+                html.Span(f"{b['salary']:.2f}M€/año", style={"fontSize":"10px","color":"#10B981","marginRight":"6px"}),
+                html.Span(f"{b['fee']:.1f}M€ fee", style={"fontSize":"10px","color":"#B8960C","marginRight":"6px"}),
+                html.Span(f"{b['years']}a", style={"fontSize":"10px","color":"#6B7280","marginRight":"6px"}),
+                html.Button("✕", id={"type":"sim-del-buy","index":i}, n_clicks=0,
+                    style={"background":"none","border":"none","color":"#DC2626","cursor":"pointer",
+                           "fontSize":"12px","fontWeight":"700","padding":"0 2px"}),
+            ], style={"display":"flex","alignItems":"center"}),
+        ], style={"padding":"5px 8px","background":"#F0FDF4","borderRadius":"6px",
+                  "marginBottom":"4px","border":"1px solid #D1FAE5"}))
+    total_sal = sum(b["salary"] for b in buys)
+    total_fee = sum(b["fee"] for b in buys)
+    items.append(html.Div([
+        html.Span(f"{len(buys)} compra{'s' if len(buys)!=1 else ''} · "
+                  f"Sal. total: {total_sal:.2f}M€/año · "
+                  f"Fee total: {total_fee:.1f}M€",
+                  style={"fontSize":"10px","color":"#166534","fontWeight":"600"}),
+    ], style={"padding":"4px 8px","background":"#DCFCE7","borderRadius":"6px","marginTop":"4px"}))
+    return items
+
+
 @callback(Output("sim-results","children"),
-          Input("sim-out","value"),Input("sim-new-salary","value"),
-          Input("sim-income","value"),Input("sim-fee","value"),
-          Input("sim-contract-years","value"),
-          Input("sim-player-search","value"))
-def update_sim(out_players, new_salary_m, income_m, fee_m, years, player_name):
+          Input("sim-out","value"),
+          Input("sim-income","value"),
+          Input("sim-buys","data"))
+def update_sim(out_players, income_m, buys):
     fin = _load_finances()
     pmap  = {p["name"]:p for p in fin["player_salaries"]}
     scl   = fin["squad_cost_limit"]
     base  = scl["current_wage_bill_eur"]
     limit = scl["limit_eur"]
     cur_amort = fin.get("expenses", {}).get("amortizations_eur", 0)
-    # presupuesto de fichajes (caja) — del club_profile si existe
     try:
         from src.utils.config import club_profile
         budget_cash = club_profile().get("finances_eur", {}).get("transfer_budget_net_eur", 12_000_000)
     except Exception:
         budget_cash = 12_000_000
 
-    saved   = sum(pmap[n]["salary_annual"] for n in (out_players or []) if n in pmap)
-    new_sal = (new_salary_m or 0)*1_000_000
-    income  = (income_m or 0)*1_000_000
-    fee     = (fee_m or 0)*1_000_000
-    years   = int(years) if years else 5
+    buys = buys or []
+    saved     = sum(pmap[n]["salary_annual"] for n in (out_players or []) if n in pmap)
+    new_sal   = sum(b.get("salary",0)*1_000_000 for b in buys)
+    fee       = sum(b.get("fee",0)*1_000_000 for b in buys)
+    income    = (income_m or 0)*1_000_000
+    new_amort_buys = sum(b.get("fee",0)*1_000_000 / (b.get("years",5) or 5) for b in buys)
 
     # Coste de plantilla LaLiga = salarios + amortizaciones
     new_wage  = base - saved + new_sal
-    new_amort = cur_amort + (fee / years if years > 0 else fee)
+    new_amort = cur_amort + new_amort_buys
     squad_cost = new_wage + new_amort
     headroom  = limit - squad_cost
     cost_ok   = headroom >= 0
@@ -1775,7 +1853,7 @@ def update_sim(out_players, new_salary_m, income_m, fee_m, years, player_name):
         showlegend=False,
         yaxis_title="M€",
         yaxis_range=[0, max(values_bar) * 1.18],
-        title_text="Masa salarial vs Límite LaLiga",
+        title_text=f"Masa salarial vs Límite LaLiga ({len(buys)} alta{'s' if len(buys)!=1 else ''})",
     )
 
     # ── Gráfico impacto coste LaLiga (gauge de uso del límite) ──
@@ -1825,8 +1903,8 @@ def update_sim(out_players, new_salary_m, income_m, fee_m, years, player_name):
                style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF","textTransform":"uppercase","margin":"8px 0 4px"}),
         row("Masa salarial actual",        _fmt(base),      "#374151"),
         row("Ahorro por salidas",          f"-{_fmt(saved)}","#10B981"),
-        row("Nuevo salario incorporación", f"+{_fmt(new_sal)}","#B8960C"),
-        row(f"Amortiz. ({_fmt(fee)}/{years}a)", f"+{_fmt(fee/years if years else fee)}","#B8960C"),
+        row(f"Nuevo salario ({len(buys)} altas)", f"+{_fmt(new_sal)}","#B8960C"),
+        row("Amortiz. altas/año",          f"+{_fmt(new_amort_buys)}","#B8960C"),
         row("Coste total plantilla",       _fmt(squad_cost), "#1A1A2E"),
         row("Margen vs límite",            _fmt(headroom),   "#10B981" if headroom>=0 else "#DC2626"),
         html.Div(style={"borderTop":"2px solid #E5E7EB","margin":"8px 0"}),
@@ -2041,4 +2119,4 @@ def _fich_buy_card(player_name):
     ) if mv else html.Div()
 
     role_info  = _get_role_info(player_name)
-    lat_label                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+    lat_label
