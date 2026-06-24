@@ -317,6 +317,27 @@ def _fkpi(icon: str, label: str, value, sub: str, grad1: str, grad2: str, icon_c
     ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"12px",
               "padding":"16px","boxShadow":"0 2px 8px rgba(0,0,0,.06)"})
 
+def _contract_year_bars(players):
+    """Barras de vencimientos de contrato para la pestaña salarios."""
+    yr_map = {}
+    for p in players:
+        yr = str(p.get("contract_end","2030"))[:4]
+        yr_map[yr] = yr_map.get(yr, 0) + 1
+    total = len(players) or 1
+    bars = []
+    for yr, cnt in sorted(yr_map.items()):
+        color = "#DC2626" if yr <= "2026" else ("#F59E0B" if yr <= "2027" else "#10B981")
+        bars.append(html.Div([
+            html.Span(yr, style={"fontSize":"10px","color":"#6B7280","width":"34px","flexShrink":"0"}),
+            html.Div(style={"flex":"1","height":"8px","background":"#F3F4F6","borderRadius":"99px",
+                            "overflow":"hidden","alignSelf":"center"},
+                children=html.Div(style={"height":"100%","borderRadius":"99px",
+                    "width":f"{cnt/total*100:.0f}%","background":color})),
+            html.Span(str(cnt), style={"fontSize":"10px","color":"#374151","marginLeft":"6px","fontWeight":"600"}),
+        ], style={"display":"flex","alignItems":"center","gap":"6px","marginBottom":"5px"}))
+    return bars
+
+
 # ── Tab 1: Salarios ───────────────────────────────────────────────────────────
 def tab_salarios(fin):
     players = fin["player_salaries"]
@@ -371,22 +392,57 @@ def tab_salarios(fin):
                     "background":"#10B981" if pct<75 else ("#F59E0B" if pct<90 else "#FFD600"),
                     "borderRadius":"99px"})),
         ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"14px 18px","marginBottom":"14px"}),
-        html.Div([
-            html.P("Contratos y salarios · SalaryLeaks (mar-2026) · Capology",
-                   style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","marginBottom":"10px"}),
-            html.Div([
-                html.Span("✓ Cláusula confirmada",style={"fontSize":"10px","color":"#166534","background":"#DCFCE7","padding":"2px 8px","borderRadius":"99px","marginRight":"10px"}),
-                html.Span("~ Cláusula estimada",  style={"fontSize":"10px","color":"#6B7280","background":"#F3F4F6","padding":"2px 8px","borderRadius":"99px"}),
-            ], style={"marginBottom":"12px"}),
-            html.Div(html.Table([
-                html.Thead(html.Tr([html.Th("Jugador",style=HEAD),html.Th("Pos.",style=HEAD),
-                    html.Th("Semanal",style=HEAD),html.Th("Anual",style=HEAD),
-                    html.Th("Editar (M€/año)",style={**HEAD,"color":"#FFD600"}),
-                    html.Th("Bonus",style=HEAD),
-                    html.Th("Contrato",style=HEAD),html.Th("Cláusula",style=HEAD)])),
-                html.Tbody(rows),
-            ], style={"width":"100%","borderCollapse":"collapse"}), style={"overflowX":"auto"}),
-        ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}),
+        dbc.Row([
+            dbc.Col(html.Div([
+                html.P("Contratos y salarios · SalaryLeaks (mar-2026) · Capology",
+                       style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","marginBottom":"10px"}),
+                html.Div([
+                    html.Span("✓ Cláusula confirmada",style={"fontSize":"10px","color":"#166534","background":"#DCFCE7","padding":"2px 8px","borderRadius":"99px","marginRight":"10px"}),
+                    html.Span("~ Cláusula estimada",  style={"fontSize":"10px","color":"#6B7280","background":"#F3F4F6","padding":"2px 8px","borderRadius":"99px"}),
+                ], style={"marginBottom":"12px"}),
+                html.Div(html.Table([
+                    html.Thead(html.Tr([html.Th("Jugador",style=HEAD),html.Th("Pos.",style=HEAD),
+                        html.Th("Semanal",style=HEAD),html.Th("Anual",style=HEAD),
+                        html.Th("Editar (M€/año)",style={**HEAD,"color":"#FFD600"}),
+                        html.Th("Bonus",style=HEAD),
+                        html.Th("Contrato",style=HEAD),html.Th("Cláusula",style=HEAD)])),
+                    html.Tbody(rows),
+                ], style={"width":"100%","borderCollapse":"collapse"}), style={"overflowX":"auto"}),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px","height":"100%"}), md=8),
+
+            dbc.Col([
+                html.Div([
+                    html.P("Distribución salarial",
+                           style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF","textTransform":"uppercase",
+                                  "letterSpacing":".06em","margin":"0 0 4px","textAlign":"center"}),
+                    dcc.Graph(
+                        figure=apply_theme(go.Figure(go.Pie(
+                            labels=[p["name"].split()[-1] for p in sorted(players,key=lambda x:-x["salary_annual"])[:8]],
+                            values=[p["salary_annual"]/1e6 for p in sorted(players,key=lambda x:-x["salary_annual"])[:8]],
+                            hole=0.52,
+                            marker=dict(colors=["#0A0B0E","#E30613","#374151","#6B7280",
+                                                "#9CA3AF","#D1D5DB","#F3F4F6","#1E2028"]),
+                            textinfo="none",
+                            hovertemplate="<b>%{label}</b><br>%{value:.2f}M€/año<br>%{percent}<extra></extra>",
+                        )), height=180, transparent=True, compact=True) or go.Figure(),
+                        config={"displayModeBar":False},
+                    ),
+                    html.Div([
+                        html.Span([
+                            html.Span(style={"display":"inline-block","width":"7px","height":"7px","borderRadius":"50%",
+                                             "background":c,"marginRight":"4px","verticalAlign":"middle"}),
+                            html.Span(l, style={"fontSize":"9px","color":"#6B7280"}),
+                        ], style={"marginRight":"10px"})
+                        for c,l in [("#DC2626","Expira 2026"),("#F59E0B","2027"),("#10B981","2028+")]
+                    ], style={"display":"flex","justifyContent":"center","flexWrap":"wrap","marginBottom":"12px"}),
+
+                    html.P("Vencimientos de contrato",
+                           style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF","textTransform":"uppercase",
+                                  "letterSpacing":".06em","margin":"8px 0 8px","textAlign":"center"}),
+                    *_contract_year_bars(players),
+                ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"14px 16px"}),
+            ], md=4),
+        ], className="g-3"),
     ])
 
 # ── Tab 2: Presupuesto ────────────────────────────────────────────────────────
@@ -452,6 +508,72 @@ def tab_presupuesto(fin):
                          style={"display":"flex","alignItems":"center"}),
             ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}), md=6),
         ], className="g-3"),
+
+        # ── Gráfico comparativa ───────────────────────────────────────────────
+        dbc.Row([
+            dbc.Col(html.Div([
+                html.P("Ingresos", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
+                    "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 0","textAlign":"center"}),
+                dcc.Graph(
+                    figure=apply_theme(go.Figure(go.Pie(
+                        labels=["Derechos TV","Conference League","Taquilla","Comercial","Otros"],
+                        values=[rev["tv_laliga_eur"],rev["conference_league_eur"],rev["matchday_eur"],
+                                rev["commercial_sponsorship_eur"],rev["other_eur"]],
+                        hole=0.55,
+                        marker=dict(colors=["#047857","#059669","#10B981","#34D399","#6EE7B7"]),
+                        textinfo="none",
+                        hovertemplate="<b>%{label}</b><br>%{value:,.0f}€<br>%{percent}<extra></extra>",
+                    )), height=160, transparent=True, compact=True) or go.Figure(),
+                    config={"displayModeBar":False},
+                ),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"12px 16px"}), md=4),
+
+            dbc.Col(html.Div([
+                html.P("Gastos", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
+                    "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 0","textAlign":"center"}),
+                dcc.Graph(
+                    figure=apply_theme(go.Figure(go.Pie(
+                        labels=["Masa salarial","Amortizaciones","Operativos","Traspasos netos"],
+                        values=[exp["wage_bill_gross_eur"]+exp["bonus_bill_eur"],
+                                exp["amortizations_eur"],exp["operating_costs_eur"],exp["transfers_net_eur"]],
+                        hole=0.55,
+                        marker=dict(colors=["#9F1239","#B91C1C","#DC2626","#F87171"]),
+                        textinfo="none",
+                        hovertemplate="<b>%{label}</b><br>%{value:,.0f}€<br>%{percent}<extra></extra>",
+                    )), height=160, transparent=True, compact=True) or go.Figure(),
+                    config={"displayModeBar":False},
+                ),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"12px 16px"}), md=4),
+
+            dbc.Col(html.Div([
+                html.P("Balance 2026/27", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
+                    "textTransform":"uppercase","letterSpacing":".06em","marginBottom":"12px","textAlign":"center"}),
+                html.Div([
+                    html.I(className="ti ti-arrow-up",
+                           style={"color":"#10B981","fontSize":"14px","marginRight":"6px"}),
+                    html.Span("Ingresos", style={"fontSize":"11px","color":"#374151","flex":"1"}),
+                    html.Span(_fmt(total_rev), style={"fontSize":"13px","fontWeight":"700","color":"#10B981"}),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"8px"}),
+                html.Div([
+                    html.I(className="ti ti-arrow-down",
+                           style={"color":"#DC2626","fontSize":"14px","marginRight":"6px"}),
+                    html.Span("Gastos", style={"fontSize":"11px","color":"#374151","flex":"1"}),
+                    html.Span(_fmt(total_exp), style={"fontSize":"13px","fontWeight":"700","color":"#DC2626"}),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"8px"}),
+                html.Div(style={"borderTop":"2px solid #E5E7EB","margin":"10px 0"}),
+                html.Div([
+                    html.I(className=f"ti ti-{'trending-up' if balance>=0 else 'trending-down'}",
+                           style={"color":"#10B981" if balance>=0 else "#DC2626","fontSize":"14px","marginRight":"6px"}),
+                    html.Span("Balance", style={"fontSize":"11px","color":"#374151","flex":"1"}),
+                    html.Span(("+" if balance>=0 else "")+_fmt(balance),
+                              style={"fontSize":"18px","fontWeight":"900",
+                                     "color":"#10B981" if balance>=0 else "#DC2626"}),
+                ], style={"display":"flex","alignItems":"center"}),
+                html.P("superávit" if balance>=0 else "déficit",
+                       style={"fontSize":"10px","color":"#9CA3AF","margin":"4px 0 0","textAlign":"right"}),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px",
+                      "height":"100%","display":"flex","flexDirection":"column","justifyContent":"center"}), md=4),
+        ], className="g-3 mb-3"),
 
         # ── Editor de partidas del usuario (ingresos/gastos) ─────────────────
         html.Div([
@@ -568,8 +690,43 @@ def tab_riesgo(fin):
             ], style={"overflowX":"auto","marginBottom":"16px",
                       "border":"1px solid #E5E7EB","borderRadius":"10px"}),
 
-            # Tarjetas de riesgo dinámicas
-            html.Div(id="risk-cards-container"),
+            # Tarjetas de riesgo dinámicas + gráfico lateral
+        dbc.Row([
+            dbc.Col(html.Div(id="risk-cards-container"), md=8),
+            dbc.Col(html.Div([
+                html.P("Distribución de riesgo", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
+                    "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 6px","textAlign":"center"}),
+                dcc.Graph(
+                    figure=apply_theme(go.Figure(go.Bar(
+                        x=[muy_alto, alto,
+                           sum(1 for p in activos if _clause_risk_score(p,news)[1]=="MEDIO"),
+                           sum(1 for p in activos if _clause_risk_score(p,news)[1]=="BAJO")],
+                        y=["MUY ALTO","ALTO","MEDIO","BAJO"],
+                        orientation="h",
+                        marker=dict(color=["#991B1B","#DC2626","#F59E0B","#10B981"]),
+                        text=[muy_alto, alto,
+                              sum(1 for p in activos if _clause_risk_score(p,news)[1]=="MEDIO"),
+                              sum(1 for p in activos if _clause_risk_score(p,news)[1]=="BAJO")],
+                        textposition="inside",
+                        textfont=dict(size=10, color="#fff"),
+                        hovertemplate="<b>%{y}</b>: %{x} jugadores<extra></extra>",
+                    )), height=180, transparent=True, compact=True) or go.Figure(),
+                    config={"displayModeBar":False},
+                ),
+                html.Div(style={"borderTop":"1px solid #F3F4F6","margin":"10px 0"}),
+                html.P("Interés externo", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
+                    "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 8px","textAlign":"center"}),
+                *[html.Div([
+                    html.Strong(n["player"].split()[-1],
+                               style={"fontSize":"11px","color":"#1A1A2E","flex":"1"}),
+                    html.Span(n.get("note","")[:28],
+                             style={"fontSize":"10px","color":"#6B7280","fontStyle":"italic","flex":"2"}),
+                    html.Span("●", style={"color":"#DC2626" if n.get("interest_level")=="confirmed" else "#F59E0B",
+                                         "marginLeft":"6px","fontSize":"8px"}),
+                ], style={"display":"flex","alignItems":"center","padding":"4px 0","borderBottom":"1px solid #F9FAFB"})
+                  for n in news[:6]],
+            ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"14px"}), md=4),
+        ], className="g-3"),
         ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}),
     ])
 
@@ -1508,8 +1665,9 @@ def show_out_summary(out_players):
 @callback(Output("sim-results","children"),
           Input("sim-out","value"),Input("sim-new-salary","value"),
           Input("sim-income","value"),Input("sim-fee","value"),
-          Input("sim-contract-years","value"))
-def update_sim(out_players, new_salary_m, income_m, fee_m, years):
+          Input("sim-contract-years","value"),
+          Input("sim-player-search","value"))
+def update_sim(out_players, new_salary_m, income_m, fee_m, years, player_name):
     fin = _load_finances()
     pmap  = {p["name"]:p for p in fin["player_salaries"]}
     scl   = fin["squad_cost_limit"]
