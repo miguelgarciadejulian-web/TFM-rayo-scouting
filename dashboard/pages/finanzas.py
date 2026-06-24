@@ -956,24 +956,31 @@ def _get_rayo_overlap(lat_code: str | None, role_code: str | None) -> list[dict]
                 for p in section:
                     rayo_names.add(_norm(p["name"]))
 
-        # Filtrar lateral map a Rayo — sólo coincidencia exacta en ambas dimensiones
+        # Dos niveles: por posicion lateral y por perfil exacto (pos+rol)
         lm["_nn"] = lm["name"].astype(str).apply(_norm)
         rayo_lm = lm[lm["_nn"].isin(rayo_names)]
-        mask = rayo_lm["lateral_pos"] == lat_code
-        if role_code:
-            mask = mask & (rayo_lm["role_type"] == role_code)
-        matches = rayo_lm[mask]
-        result = []
-        for _, r in matches.iterrows():
-            result.append({
+
+        def _row_dict(r):
+            return {
                 "name":       r["name"],
                 "lat_label":  LATERAL_LABELS.get(r.get("lateral_pos"), "") if r.get("lateral_pos") else "",
                 "role_label": role_type_label(r.get("role_type")),
-                "exact":      True,
-            })
-        return result
+            }
+
+        by_position = []
+        if lat_code:
+            for _, r in rayo_lm[rayo_lm["lateral_pos"] == lat_code].iterrows():
+                by_position.append(_row_dict(r))
+
+        by_profile = []
+        if lat_code and role_code:
+            mask = (rayo_lm["lateral_pos"] == lat_code) & (rayo_lm["role_type"] == role_code)
+            for _, r in rayo_lm[mask].iterrows():
+                by_profile.append(_row_dict(r))
+
+        return {"by_position": by_position, "by_profile": by_profile}
     except Exception:
-        return []
+        return {"by_position": [], "by_profile": []}
 
 
 def _get_player_stats(name: str) -> dict:
@@ -1121,19 +1128,37 @@ def _evaluate_sale(player_name: str, income_eur: float, pmap: dict) -> dict:
                 18: "Jugador mayor — vender ahora es lo correcto"}
     score += pts; reasons.append(("📅", "Perfil de edad", tag3_map[pts], formula3, pts))
 
-    # Factor 4: Impacto en plantilla — peso 12 pts
+    # Factor 4: Impacto en plantilla — cobertura por posicion y por perfil exacto
     missing, reinforce = _get_squad_needs_roles()
     pos = stats.get("position") or "?"
     pos_count = _squad_pos_count(pos[:2] if pos else "")
     in_missing   = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in missing)
     in_reinforce = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in reinforce)
-    formula4 = (f"Posición '{pos}' · jugadores actuales en esa pos: {pos_count}"
-                f"  ·  En lista 'fichar': {'Sí' if in_missing else 'No'}"
-                f"  ·  En lista 'reforzar': {'Sí' if in_reinforce else 'No'}"
-                f"  [Necesidad prioritaria→−12 · Refuerzo→−5 · Cubierta→+8]")
-    if in_missing:   pts, tag = -12, f"Posición '{pos}' es necesidad PRIORITARIA — la venta la agrava"
-    elif in_reinforce: pts, tag = -5, f"Posición '{pos}' en lista de refuerzo — salida no ideal"
-    else:              pts, tag =  8, f"Posición '{pos}' cubierta ({pos_count} jugadores) — venta sin urgencia"
+    role_info   = _get_role_info(player_name)
+    overlap     = _get_rayo_overlap(role_info["lat_code"], role_info["role_code"])
+    n_pos       = len(overlap["by_position"])   # jugadores Rayo misma posicion lateral
+    n_prof      = len(overlap["by_profile"])    # jugadores Rayo mismo perfil exacto (pos+rol)
+    lat_lbl     = role_info["lat_label"] or pos
+    role_lbl    = role_info["role_label"]
+    formula4 = (f"Posicion '{lat_lbl}': {n_pos} jugadores Rayo  ·  "
+                f"Perfil exacto '{lat_lbl}+{role_lbl}': {n_prof} jugadores Rayo  ·  "
+                f"En lista 'fichar': {'Si' if in_missing else 'No'}  ·  "
+                f"En lista 'reforzar': {'Si' if in_reinforce else 'No'}  "
+                f"[Necesidad prio+perfil unico→-22 · Necesidad prio→-12 · Posicion cubierta+perfil repetido→+15 · Posicion cubierta→+8]")
+    if in_missing and n_prof == 0:
+        pts, tag = -22, f"Posicion '{lat_lbl}' NECESARIA y perfil '{role_lbl}' UNICO — venta muy arriesgada"
+    elif in_missing:
+        pts, tag = -12, f"Posicion '{lat_lbl}' es necesidad prioritaria — la venta la agrava"
+    elif in_reinforce and n_prof == 0:
+        pts, tag = -8, f"Posicion en lista de refuerzo y perfil unico — salida no ideal"
+    elif in_reinforce:
+        pts, tag = -3, f"Posicion en lista de refuerzo pero perfil cubierto ({n_prof} jugadores similares)"
+    elif n_prof >= 2:
+        pts, tag = 15, f"Perfil '{lat_lbl}+{role_lbl}' cubierto por {n_prof} jugadores — venta asumible"
+    elif n_pos >= 3:
+        pts, tag = 8, f"Posicion '{lat_lbl}' cubierta ({n_pos} jugadores) — venta sin urgencia"
+    else:
+        pts, tag = 0, f"Posicion '{lat_lbl}' aceptablemente cubierta — impacto moderado"
     score += pts; reasons.append(("🎯", "Impacto en plantilla", tag, formula4, pts))
 
     score = max(0, min(100, score))
@@ -1192,20 +1217,37 @@ def _evaluate_buy(player_name: str, fee_eur: float, _salary_eur: float) -> dict:
     else:                 pts, tag = -8, f"Pocos datos ({minutes} min) — riesgo deportivo alto"
     score += pts; reasons.append(("📊", "Rendimiento deportivo", tag, formula2, pts))
 
-    # Factor 3: Necesidad de plantilla — peso 25 pts
+    # Factor 3: Necesidad de plantilla — cobertura por posicion y por perfil exacto
     missing, reinforce = _get_squad_needs_roles()
     pos       = stats.get("position") or "?"
     pos_count = _squad_pos_count(pos[:2] if pos else "")
     in_miss = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in missing)
     in_rein = any(pos.lower() in r.lower() or r.lower() in pos.lower() for r in reinforce)
-    formula3 = (f"Posición '{pos}' · jugadores actuales: {pos_count}"
-                f"  ·  Necesidad 'fichar': {'Sí' if in_miss else 'No'}"
-                f"  ·  Necesidad 'reforzar': {'Sí' if in_rein else 'No'}"
-                f"  [Prioritaria→+25 · Refuerzo→+12 · Cubierta(≥3)→−15 · Otra→−5]")
-    if in_miss:        pts, tag = 25, f"NECESIDAD PRIORITARIA — '{pos}' está en la lista de fichajes"
-    elif in_rein:      pts, tag = 12, f"Posición '{pos}' en lista de refuerzo — mejora la plantilla"
-    elif pos_count>=3: pts, tag =-15, f"Ya tenemos {pos_count} jugadores en '{pos}' — oportunidad, no necesidad"
-    else:              pts, tag = -5, f"Posición '{pos}' no es prioridad — oportunidad de mercado puntual"
+    role_info  = _get_role_info(player_name)
+    overlap    = _get_rayo_overlap(role_info["lat_code"], role_info["role_code"])
+    n_pos      = len(overlap["by_position"])   # jugadores Rayo misma posicion lateral
+    n_prof     = len(overlap["by_profile"])    # jugadores Rayo mismo perfil exacto (pos+rol)
+    lat_lbl    = role_info["lat_label"] or pos
+    role_lbl   = role_info["role_label"]
+    formula3 = (f"Posicion '{lat_lbl}': {n_pos} jugadores Rayo  ·  "
+                f"Perfil exacto '{lat_lbl}+{role_lbl}': {n_prof} jugadores Rayo  ·  "
+                f"Necesidad 'fichar': {'Si' if in_miss else 'No'}  ·  "
+                f"Necesidad 'reforzar': {'Si' if in_rein else 'No'}  "
+                f"[Necesidad+hueco perfil→+28 · Necesidad→+20 · Refuerzo+hueco→+12 · Perfil cubierto(2+)→-20 · Posicion cubierta→-10]")
+    if in_miss and n_prof == 0:
+        pts, tag = 28, f"NECESIDAD PRIORITARIA y perfil '{lat_lbl}+{role_lbl}' SIN cubrir — fichaje ideal"
+    elif in_miss:
+        pts, tag = 20, f"NECESIDAD PRIORITARIA aunque el perfil ya lo tienen {n_prof} jugadores"
+    elif in_rein and n_prof == 0:
+        pts, tag = 12, f"Refuerzo necesario y perfil unico — aporta algo diferente"
+    elif n_prof >= 2:
+        pts, tag = -20, f"Perfil '{lat_lbl}+{role_lbl}' YA cubierto por {n_prof} jugadores — fichaje redundante"
+    elif n_prof == 1:
+        pts, tag = -8, f"Perfil similar ya cubierto por 1 jugador — solapamiento moderado"
+    elif n_pos >= 3:
+        pts, tag = -10, f"Posicion '{lat_lbl}' ya tiene {n_pos} jugadores aunque el estilo difiere"
+    else:
+        pts, tag = -5, f"Posicion '{lat_lbl}' no es prioridad declarada"
     score += pts; reasons.append(("🎯", "Necesidad de plantilla", tag, formula3, pts))
 
     # Factor 4: Edad y proyección — peso 15 pts
@@ -1721,50 +1763,79 @@ def _fich_sell_card(player_name):
     role_info  = _get_role_info(player_name)
     lat_label  = role_info["lat_label"]
     role_label = role_info["role_label"]
+    lat_code   = role_info["lat_code"]
+    role_code  = role_info["role_code"]
+    overlap    = _get_rayo_overlap(lat_code, role_code)
+    n_pos      = len(overlap["by_position"])
+    n_prof     = len(overlap["by_profile"])
 
-    badges = []
+    profile_badges = []
     if lat_label:
-        badges.append(_role_badge(lat_label, "#3B82F6"))
+        profile_badges.append(_role_badge(lat_label, "#3B82F6"))
     if role_label:
-        badges.append(_role_badge(role_label, "#8B5CF6"))
+        profile_badges.append(_role_badge(role_label, "#8B5CF6"))
 
-    if badges:
-        warning_row = html.Div(
-            [
-                html.I(className="ti ti-alert-triangle",
-                       style={"color":"#F59E0B","fontSize":"13px","marginRight":"6px"}),
-                html.Span("Al vender el Rayo pierde: ",
-                          style={"fontSize":"11px","color":"#92400E","marginRight":"6px"}),
-                *badges,
-            ],
-            style={"display":"flex","alignItems":"center","marginTop":"6px",
-                   "background":"#FFFBEB","borderRadius":"6px","padding":"5px 8px",
-                   "border":"1px solid #FDE68A"},
-        )
+    def _player_row(p):
+        parts = [html.Span(p["name"], style={"fontSize":"11px","color":"#374151","marginRight":"5px"})]
+        if p.get("role_label"):
+            parts.append(_role_badge(p["role_label"], "#8B5CF6"))
+        return html.Div(parts, style={"display":"flex","alignItems":"center","marginBottom":"1px"})
+
+    # Desglose por posicion
+    if n_pos > 0:
+        pos_bg, pos_border = ("#F0FDF4","#A7F3D0") if n_pos >= 2 else ("#FFFBEB","#FDE68A")
+        pos_lbl_color = "#166534" if n_pos >= 2 else "#92400E"
+        pos_section = html.Div([
+            html.Div([
+                html.Span(f"Posicion {lat_label or '?'}: ", style={"fontSize":"10px","color":pos_lbl_color,"marginRight":"4px","fontWeight":"600"}),
+                html.Span(f"{n_pos} jugador{'es' if n_pos!=1 else ''} del Rayo",
+                          style={"fontSize":"10px","color":pos_lbl_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"3px"}),
+            *[_player_row(p) for p in overlap["by_position"]],
+        ], style={"background":pos_bg,"borderRadius":"6px","padding":"5px 8px",
+                  "border":f"1px solid {pos_border}","marginTop":"5px"})
     else:
-        warning_row = html.Div(
-            [
-                html.I(className="ti ti-alert-triangle",
-                       style={"color":"#D1D5DB","fontSize":"13px","marginRight":"6px"}),
-                html.Span("Perfil de posicion/estilo no disponible",
-                          style={"fontSize":"11px","color":"#9CA3AF"}),
-            ],
-            style={"display":"flex","alignItems":"center","marginTop":"6px",
-                   "background":"#F9FAFB","borderRadius":"6px","padding":"5px 8px",
-                   "border":"1px solid #E5E7EB"},
-        )
+        pos_section = html.Div([
+            html.Span(f"Posicion {lat_label or '?'}: ", style={"fontSize":"10px","color":"#6366F1","fontWeight":"600","marginRight":"4px"}),
+            html.Span("sin cobertura en el Rayo", style={"fontSize":"10px","color":"#6366F1"}),
+        ], style={"display":"flex","alignItems":"center","marginTop":"5px",
+                  "background":"#EEF2FF","borderRadius":"6px","padding":"5px 8px","border":"1px solid #C7D2FE"})
 
-    card = html.Div([
-        html.Div([
-            html.Span(player_name, style={"fontSize":"12px","fontWeight":"700",
-                                          "color":"#1A1A2E","marginRight":"8px"}),
-            html.Span(stats.get("position") or "?",
-                      style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px",
-                             "borderRadius":"99px","background":"#F3F4F6","color":"#374151"}),
-        ], style={"display":"flex","alignItems":"center"}),
-        warning_row,
-    ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"7px",
-              "padding":"8px 10px"})
+    # Desglose por perfil exacto
+    if n_prof > 0:
+        prof_bg, prof_border = ("#FFF7ED","#FED7AA") if n_prof == 1 else ("#FEF3C7","#FDE68A")
+        prof_lbl_color = "#92400E"
+        prof_section = html.Div([
+            html.Div([
+                html.Span(f"Perfil exacto ({lat_label}+{role_label}): ", style={"fontSize":"10px","color":prof_lbl_color,"fontWeight":"600","marginRight":"4px"}),
+                html.Span(f"{n_prof} jugador{'es' if n_prof!=1 else ''} similar{'es' if n_prof!=1 else ''}",
+                          style={"fontSize":"10px","color":prof_lbl_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"3px"}),
+            *[_player_row(p) for p in overlap["by_profile"]],
+        ], style={"background":prof_bg,"borderRadius":"6px","padding":"5px 8px",
+                  "border":f"1px solid {prof_border}","marginTop":"4px"})
+    elif lat_code or role_code:
+        prof_section = html.Div([
+            html.I(className="ti ti-alert-triangle",
+                   style={"color":"#DC2626","fontSize":"12px","marginRight":"5px"}),
+            html.Span(f"Perfil exacto ({lat_label}+{role_label}): UNICO en la plantilla",
+                      style={"fontSize":"10px","color":"#9F1239","fontWeight":"600"}),
+        ], style={"display":"flex","alignItems":"center","marginTop":"4px",
+                  "background":"#FFF1F2","borderRadius":"6px","padding":"5px 8px","border":"1px solid #FECACA"})
+    else:
+        prof_section = html.Div()
+
+    header_row = html.Div([
+        html.Span(player_name, style={"fontSize":"12px","fontWeight":"700","color":"#1A1A2E","marginRight":"8px"}),
+        html.Span(stats.get("position") or "?",
+                  style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px",
+                         "borderRadius":"99px","background":"#F3F4F6","color":"#374151"}),
+        *([html.Span(" → ", style={"color":"#9CA3AF","margin":"0 4px"})] + profile_badges if profile_badges else []),
+    ], style={"display":"flex","alignItems":"center"})
+
+    card = html.Div([header_row, pos_section, prof_section],
+                    style={"background":"#F9FAFB","border":"1px solid #E5E7EB",
+                           "borderRadius":"7px","padding":"8px 10px"})
     return card, hint
 
 
@@ -1786,110 +1857,4 @@ def _fich_buy_card(player_name):
     ) if mv else html.Div()
 
     role_info  = _get_role_info(player_name)
-    lat_label  = role_info["lat_label"]
-    role_label = role_info["role_label"]
-    lat_code   = role_info["lat_code"]
-    role_code  = role_info["role_code"]
-
-    profile_parts = []
-    if lat_label or role_label:
-        profile_parts = [
-            html.Span("Perfil: ", style={"fontSize":"11px","color":"#374151","marginRight":"4px"}),
-        ]
-        if lat_label:
-            profile_parts.append(_role_badge(lat_label, "#3B82F6"))
-        if role_label:
-            profile_parts.append(_role_badge(role_label, "#8B5CF6"))
-    profile_row = html.Div(
-        profile_parts,
-        style={"display":"flex","alignItems":"center","marginTop":"6px"},
-    ) if profile_parts else html.Div()
-
-    overlap = _get_rayo_overlap(lat_code, role_code)
-    if overlap:
-        overlap_items = []
-        for p in overlap:
-            dot_color = "#10B981" if p["exact"] else "#F59E0B"
-            row_parts = [
-                html.Span("●", style={"color":dot_color,"marginRight":"5px","fontSize":"10px"}),
-                html.Span(p["name"], style={"fontSize":"11px","color":"#1A1A2E","marginRight":"6px"}),
-            ]
-            if p.get("lat_label"):
-                row_parts.append(_role_badge(p["lat_label"], "#3B82F6"))
-            if p.get("role_label"):
-                row_parts.append(_role_badge(p["role_label"], "#8B5CF6"))
-            overlap_items.append(
-                html.Div(row_parts, style={"display":"flex","alignItems":"center","marginBottom":"2px"})
-            )
-        overlap_panel = html.Div([
-            html.Div(
-                "● exacto  ● parcial",
-                style={"fontSize":"9px","color":"#9CA3AF","marginBottom":"4px"},
-            ),
-            *overlap_items,
-        ], style={"marginTop":"6px","background":"#F0FDF4","borderRadius":"6px",
-                   "padding":"6px 8px","border":"1px solid #A7F3D0"})
-    elif lat_code or role_code:
-        overlap_panel = html.Div(
-            [
-                html.I(className="ti ti-bolt",
-                       style={"color":"#6366F1","fontSize":"13px","marginRight":"6px"}),
-                html.Span("Sin jugadores del Rayo con este perfil — hueco real en plantilla",
-                          style={"fontSize":"11px","color":"#4338CA","fontWeight":"600"}),
-            ],
-            style={"display":"flex","alignItems":"center","marginTop":"6px",
-                   "background":"#EEF2FF","borderRadius":"6px","padding":"5px 8px",
-                   "border":"1px solid #C7D2FE"},
-        )
-    else:
-        overlap_panel = html.Div()
-
-    card = html.Div([
-        html.Div([
-            html.Span(player_name, style={"fontSize":"12px","fontWeight":"700",
-                                          "color":"#1A1A2E","marginRight":"8px"}),
-            html.Span(
-                f"{stats.get('position') or '?'}  ·  {stats.get('team','?')}  ·  {stats.get('league','?')}",
-                style={"fontSize":"10px","color":"#6B7280"}
-            ),
-        ], style={"display":"flex","alignItems":"center"}),
-        profile_row,
-        overlap_panel,
-    ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"7px",
-              "padding":"8px 10px"})
-    return card, hint
-
-
-@callback(Output("fich-result","children"),
-          Input("fich-analyze-btn","n_clicks"),
-          State("fich-sell-player","value"),
-          State("fich-sell-price","value"),
-          State("fich-buy-player","value"),
-          State("fich-buy-fee","value"),
-          prevent_initial_call=True)
-def _fich_analyze(n_clicks, sell_player, sell_price_m, buy_player, buy_fee_m):
-    if not n_clicks:
-        return html.Div()
-
-    sell_eur = (sell_price_m or 0) * 1_000_000
-    buy_eur  = (buy_fee_m   or 0) * 1_000_000
-    fin      = _load_finances()
-    pmap     = {p["name"]: p for p in fin["player_salaries"]}
-    badges   = []
-
-    if sell_player:
-        badges.append(_render_eval_badge(_evaluate_sale(sell_player, sell_eur, pmap)))
-    if buy_player:
-        badges.append(_render_eval_badge(_evaluate_buy(buy_player, buy_eur, 0)))
-
-    if not badges:
-        return html.Div([
-            html.I(className="ti ti-info-circle",
-                   style={"color":"#F59E0B","marginRight":"8px","fontSize":"16px"}),
-            html.Span("Selecciona al menos un jugador para analizar la operacion",
-                      style={"fontSize":"12px","color":"#92400E"}),
-        ], style={"background":"#FFFBEB","border":"1px solid #FDE68A","borderRadius":"8px",
-                  "padding":"12px 14px","display":"flex","alignItems":"center"})
-
-    return html.Div(badges)
-                                                             
+    lat_label
