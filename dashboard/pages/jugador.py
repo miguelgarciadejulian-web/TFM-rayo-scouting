@@ -761,6 +761,8 @@ def _fit_rayo_card(name: str) -> html.Div:
 def layout(**_params):
     return html.Div([
         dcc.Location(id="jugador-loc"),
+        dcc.Store(id="tm-reload-trigger", data=None),
+        html.Div(id="tm-reload-dummy", style={"display": "none"}),
         html.Div([
             html.P("SCOUTING", style={"fontSize": "10px", "fontWeight": "600",
                    "color": "#6B7280", "letterSpacing": ".08em", "margin": "0 0 3px"}),
@@ -960,6 +962,7 @@ def save_note(n, text, key):
 
 @callback(
     Output("tm-fetch-status", "children"),
+    Output("tm-reload-trigger", "data"),
     Input("btn-fetch-tm", "n_clicks"),
     State("tm-id-input", "value"),
     State("player-note-key", "data"),
@@ -969,10 +972,10 @@ def save_note(n, text, key):
 def fetch_from_tm(n, tm_id_raw, key, opta_id):
     """Guarda el tm_id y obtiene datos frescos de la API de TM."""
     if not n or not key:
-        return no_update
+        return no_update, no_update
     tm_id = str(tm_id_raw or "").strip().replace(".0", "")
     if not tm_id.isdigit():
-        return "ID invalido — debe ser un numero (ej. 258923)"
+        return "ID invalido — debe ser un numero (ej. 258923)", no_update
 
     name = key.split("|")[0]
 
@@ -999,7 +1002,7 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
                 }])], ignore_index=True)
             em.to_csv(entity_map_path, index=False)
     except Exception as e:
-        return f"Error actualizando entity_map: {e}"
+        return f"Error actualizando entity_map: {e}", no_update
 
     # 2. Llamar API TM alpha
     try:
@@ -1008,13 +1011,13 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
         r = requests.get(api_url, headers={"Accept": "application/json",
                          "User-Agent": "RayoScoutingTool/1.0"}, timeout=12)
         if r.status_code == 404:
-            return "tm_id guardado, pero no encontrado en la API de TM (ID incorrecto?)"
+            return "tm_id guardado, pero no encontrado en la API de TM (ID incorrecto?)", no_update
         if r.status_code != 200:
-            return "tm_id guardado. API respondio {}, reintenta mas tarde".format(r.status_code)
+            return "tm_id guardado. API respondio {}, reintenta mas tarde".format(r.status_code), no_update
         data = r.json()
         d = data.get("data", data)
     except Exception as e:
-        return "tm_id guardado. Error conectando con TM API: {}".format(str(e)[:60])
+        return "tm_id guardado. Error conectando con TM API: {}".format(str(e)[:60]), no_update
 
     # 3. Parsear respuesta
     def _safe(fn):
@@ -1071,11 +1074,11 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
         pass
 
     parts = []
-    if mv:    parts.append("Valor: {:.1f}M euros".format(mv / 1e6))
+    if mv:    parts.append("Valor: {:.1f}M EUR".format(mv / 1e6))
     if con:   parts.append("Contrato: {}".format(con))
-    if photo: parts.append("Foto actualizada")
-    msg = " - ".join(parts) if parts else "Datos guardados"
-    return "OK: {} - Recarga la pagina para ver los cambios.".format(msg)
+    if photo: parts.append("Foto OK")
+    msg = " · ".join(parts) if parts else "Datos guardados"
+    return "Actualizando... {}".format(msg), 1
 
 
 # ---------------------------------------------------------------------------
@@ -1105,4 +1108,22 @@ def save_lateral(n_clicks, lateral_pos, role_type, key):
     ov[_norm(key)] = entry
     _save_overrides(ov)
     return "Guardado correctamente"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                                                                                    
+# ---------------------------------------------------------------------------
+# Clientside callback: recargar página tras actualizar TM
+# ---------------------------------------------------------------------------
+from dash import clientside_callback
+
+clientside_callback(
+    """
+    function(trigger) {
+        if (trigger) {
+            setTimeout(function() { window.location.reload(); }, 800);
+        }
+        return '';
+    }
+    """,
+    Output("tm-reload-dummy", "children"),
+    Input("tm-reload-trigger", "data"),
+    prevent_initial_call=True,
+)
