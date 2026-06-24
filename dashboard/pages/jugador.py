@@ -1030,6 +1030,17 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
     h     = _safe(lambda: str(d["attributes"]["height"]))
     photo = _safe(lambda: d["portraitUrl"] if str(d.get("portraitUrl","")).startswith("http") else None)
     rc    = _safe(lambda: float(d["attributes"]["releaseClause"]))
+    # Edad: directa o calculada desde dateOfBirth
+    age   = _safe(lambda: int(d["attributes"]["age"]))
+    if age is None:
+        def _calc_age():
+            from datetime import date
+            dob_str = str(d["attributes"]["dateOfBirth"])[:10]
+            dob = date.fromisoformat(dob_str)
+            today = date.today()
+            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        age = _safe(_calc_age)
+    pos   = _safe(lambda: d["attributes"]["position"]["name"])
 
     # 4. Actualizar overrides
     ov = _load_overrides()
@@ -1040,6 +1051,8 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
     if h:     entry["height"] = float(h)
     if photo: entry["photo_url"] = photo
     if rc:    entry["release_clause_eur"] = rc
+    if age:   entry["age"] = age
+    if pos:   entry["position"] = pos
     ov[_norm(name)] = entry
     _save_overrides(ov)
 
@@ -1051,7 +1064,9 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
         row_data = {"name": name, "tm_id": tm_id,
                     "market_value_eur": mv or "",
                     "contract_until": con or "",
-                    "tm_photo_url": photo or ""}
+                    "tm_photo_url": photo or "",
+                    "age": age or "",
+                    "position": pos or ""}
         if not mv_df.empty and "name" in mv_df.columns:
             idx = mv_df[mv_df["name"].apply(_norm) == _norm(name)].index
             if not idx.empty:
@@ -1104,26 +1119,4 @@ def save_lateral(n_clicks, lateral_pos, role_type, key):
     if role_type is not None:
         entry["role_type"] = role_type
     elif "role_type" in entry:
-        del entry["role_type"]
-    ov[_norm(key)] = entry
-    _save_overrides(ov)
-    return "Guardado correctamente"
-
-# ---------------------------------------------------------------------------
-# Clientside callback: recargar página tras actualizar TM
-# ---------------------------------------------------------------------------
-from dash import clientside_callback
-
-clientside_callback(
-    """
-    function(trigger) {
-        if (trigger) {
-            setTimeout(function() { window.location.reload(); }, 800);
-        }
-        return '';
-    }
-    """,
-    Output("tm-reload-dummy", "children"),
-    Input("tm-reload-trigger", "data"),
-    prevent_initial_call=True,
-)
+        de
