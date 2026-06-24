@@ -168,11 +168,11 @@ def _opts(values):
             for v in sorted(str(v) for v in values if pd.notna(v) and str(v) != "nan")]
 
 
-def _filter_chip(id_, label_txt, placeholder, options, multi=True):
+def _filter_chip(id_, label_txt, placeholder, options, multi=True, value=None):
     return html.Div([
         html.Span(label_txt, className="filter-label"),
         dcc.Dropdown(options, multi=multi, id=id_, placeholder=placeholder,
-                     style={"fontSize": "12px"}),
+                     value=value, style={"fontSize": "12px"}),
     ])
 
 
@@ -232,7 +232,7 @@ def layout(**_params):
                 dbc.Col(_filter_chip("f-player",   "Jugador",          "Todos",  player_opt, multi=False), md=2),
                 dbc.Col(_filter_chip("f-lateral",  "Posición",         "Todas",  lat_opt,    multi=True),  md=2),
                 dbc.Col(_filter_chip("f-role-type","Tipo de jugador",  "Todos",  role_opt,   multi=True),  md=2),
-                dbc.Col(_filter_chip("f-league",   "Liga",             "Todas",  leagues),                 md=2),
+                dbc.Col(_filter_chip("f-league",   "Liga",             "Todas",  leagues, value=["Spain_Primera_Division"]),  md=2),
                 dbc.Col(_filter_chip("f-team",     "Equipo",           "Todos",  []),                      md=2),
                 dbc.Col(_filter_chip("f-foot",     "Pie dominante",    "Todos",  foot_opt, multi=False),   md=2),
                 dbc.Col(html.Div([
@@ -459,4 +459,21 @@ def go_to_player(active_cell, view_data):
         return no_update
     row = view_data[idx]
     pid    = urllib.parse.quote(str(row.get("player_id") or row.get("player_id_src") or row.get("name", "")))
-    nombre = urllib.parse.quote(str(row.get("n
+    nombre = urllib.parse.quote(str(row.get("name", "")))
+    equipo = urllib.parse.quote(str(row.get("team", "")))
+    return f"/jugador?id={pid}&name={nombre}&team={equipo}"
+
+
+clientside_callback(
+    """
+    function(url) {
+        if (url) {
+            window.location.href = url;
+        }
+        return null;
+    }
+    """,
+    Output("scouting-nav-url", "data", allow_duplicate=True),
+    Input("scouting-nav-url", "data"),
+    prevent_initial_call=True,
+)
