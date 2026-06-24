@@ -72,46 +72,44 @@ def _load() -> pd.DataFrame:
     eco = get_economic()
     if eco is not None:
         try:
-            _eco_want = ["opta_id", "canonical_name", "market_value_eur", "contract_until", "foot"]
+            _ECO_COLS = ["market_value_eur", "contract_until", "foot", "age", "height", "position"]
+            _eco_want = ["opta_id", "canonical_name"] + _ECO_COLS
             eco = eco[[c for c in _eco_want if c in eco.columns]]
 
             # 1. Merge por opta_id (preciso, vectorizado)
+            _merge_cols = [c for c in _ECO_COLS if c in eco.columns]
             eco_by_id = (eco.dropna(subset=["opta_id"])
                          .drop_duplicates("opta_id")
-                         .set_index("opta_id")[["market_value_eur", "contract_until"]])
+                         .set_index("opta_id")[_merge_cols])
             id_col = "player_id" if "player_id" in df.columns else None
             if id_col:
                 df = df.merge(
                     eco_by_id.add_suffix("_eco"),
                     left_on=id_col, right_index=True, how="left"
                 )
-                for col in ("market_value_eur", "contract_until"):
+                for col in _merge_cols:
                     eco_col = f"{col}_eco"
+                    if eco_col not in df.columns:
+                        continue
                     if col not in df.columns:
                         df[col] = df[eco_col]
                     else:
                         df[col] = df[col].combine_first(df[eco_col])
                 df = df[[c for c in df.columns if not c.endswith("_eco")]]
 
-            # 2. Fallback por nombre normalizado (vectorizado, sin bucle)
-            for _c in ("contract_until", "market_value_eur", "foot"):
+            # 2. Fallback por nombre normalizado
+            for _c in _ECO_COLS:
                 if _c not in df.columns:
                     df[_c] = None
 
             eco_name = (eco.assign(_nn=eco["canonical_name"].apply(_norm))
                         .drop_duplicates("_nn")
                         .set_index("_nn"))
-            name_to_mv   = eco_name["market_value_eur"].to_dict() if "market_value_eur" in eco_name.columns else {}
-            name_to_cu   = eco_name["contract_until"].to_dict()   if "contract_until"   in eco_name.columns else {}
-            name_to_foot = eco_name["foot"].to_dict()              if "foot"             in eco_name.columns else {}
-
             df["_nn"] = df["name"].apply(_norm)
-            mask_mv   = df["market_value_eur"].isna()
-            mask_cu   = df["contract_until"].isna()
-            mask_foot = df["foot"].isna()
-            df.loc[mask_mv,   "market_value_eur"] = df.loc[mask_mv,   "_nn"].map(name_to_mv)
-            df.loc[mask_cu,   "contract_until"]   = df.loc[mask_cu,   "_nn"].map(name_to_cu)
-            df.loc[mask_foot, "foot"]             = df.loc[mask_foot, "_nn"].map(name_to_foot)
+            for col in _ECO_COLS:
+                if col in eco_name.columns:
+                    mask = df[col].isna()
+                    df.loc[mask, col] = df.loc[mask, "_nn"].map(eco_name[col])
             df = df.drop(columns=["_nn"], errors="ignore")
 
         except Exception:
@@ -496,3 +494,4 @@ clientside_callback(
     Input("scouting-nav-url", "data"),
     prevent_initial_call=True,
 )
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              

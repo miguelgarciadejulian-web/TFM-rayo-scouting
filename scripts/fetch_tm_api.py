@@ -553,6 +553,21 @@ def update_market_values_csv(mv: pd.DataFrame, economic_by_opta: dict) -> None:
         if econ.get("photo_url"):
             mv.at[idx, "tm_photo_url"] = econ["photo_url"]
             changed = True
+        if econ.get("age") is not None:
+            if "age" not in mv.columns:
+                mv["age"] = None
+            mv.at[idx, "age"] = econ["age"]
+            changed = True
+        if econ.get("foot"):
+            if "foot" not in mv.columns:
+                mv["foot"] = None
+            mv.at[idx, "foot"] = econ["foot"]
+            changed = True
+        if econ.get("height"):
+            if "height" not in mv.columns:
+                mv["height"] = None
+            mv.at[idx, "height"] = econ["height"]
+            changed = True
         if changed:
             updated += 1
 
@@ -752,20 +767,3 @@ def main():
 
     print(f"\n[INFO] Iniciando fetch de {total:,} jugadores...")
     print("-" * 60)
-
-    for i, player in enumerate(fetch_list, 1):
-        tm_id = player["tm_id"]
-        name  = player["name"]
-        pct   = 100 * i / total
-
-        print(f"[{i}/{total} {pct:.0f}%] {name} (tm_id={tm_id})", end=" ... ", flush=True)
-
-        raw = fetch_tm_player(tm_id, session)
-
-        if raw:
-            raw["_fetched_at"]    = datetime.utcnow().isoformat()
-            raw["_opta_id"]       = player["opta_id"]
-            raw["_match_method"]  = player["method"]
-            raw_cache[tm_id]      = raw
-            ok_count += 1
-          
