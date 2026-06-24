@@ -247,7 +247,72 @@ def _get_tm_id_for_player(name, opta_id=None):
     return ""
 
 
-def _notes_box(key, notes, overrides, opta_id=None):
+def _tm_strip(key, opta_id=None):
+    """Barra de gestión de Transfermarkt – aparece justo debajo del header del perfil."""
+    name = key.split("|")[0]
+    current_tm_id = _get_tm_id_for_player(name, opta_id)
+    tm_profile_url = (
+        "https://www.transfermarkt.es/spieler/profil/spieler/{}".format(current_tm_id)
+        if current_tm_id else "https://www.transfermarkt.es/"
+    )
+    return html.Div([
+        dcc.Store(id="player-note-key", data=key),
+        dcc.Store(id="player-opta-id", data=opta_id or ""),
+        # Icono + label
+        html.Div([
+            html.I(className="ti ti-brand-transfermarkt",
+                   style={"fontSize": "18px", "color": "#1D4ED8", "marginRight": "6px"}),
+            html.Span("Transfermarkt", style={
+                "fontSize": "12px", "fontWeight": "700", "color": "#1A1A2E",
+                "marginRight": "14px",
+            }),
+        ], style={"display": "flex", "alignItems": "center"}),
+        # Link al perfil
+        html.A(
+            [html.I(className="ti ti-external-link", style={"marginRight": "4px", "fontSize": "11px"}),
+             "Ver perfil"],
+            href=tm_profile_url, target="_blank",
+            style={"fontSize": "12px", "color": "#1D4ED8", "textDecoration": "none",
+                   "fontWeight": "600", "marginRight": "18px", "whiteSpace": "nowrap"},
+        ),
+        # Separador vertical
+        html.Div(style={"width": "1px", "height": "24px", "background": "#E5E7EB",
+                        "marginRight": "18px"}),
+        # Label ID
+        html.Span("ID:", style={"fontSize": "11px", "color": "#6B7280",
+                                "marginRight": "6px", "whiteSpace": "nowrap"}),
+        # Input ID
+        dcc.Input(
+            id="tm-id-input", type="text",
+            value=current_tm_id,
+            placeholder="ej. 258923",
+            style={"width": "120px", "fontSize": "12px", "padding": "5px 9px",
+                   "border": "1px solid #D1D5DB", "borderRadius": "7px",
+                   "marginRight": "8px"},
+        ),
+        # Botón actualizar
+        html.Button(
+            [html.I(className="ti ti-refresh", style={"marginRight": "5px"}),
+             "Actualizar desde TM"],
+            id="btn-fetch-tm", n_clicks=0,
+            style={"background": "#1D4ED8", "color": "#fff", "border": "none",
+                   "borderRadius": "7px", "padding": "5px 13px",
+                   "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
+                   "whiteSpace": "nowrap"},
+        ),
+        # Status
+        html.Span(id="tm-fetch-status", style={
+            "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
+        }),
+    ], style={
+        "display": "flex", "alignItems": "center", "flexWrap": "wrap", "gap": "0px",
+        "background": "#F0F4FF", "border": "1px solid #C7D7FD",
+        "borderRadius": "10px", "padding": "10px 16px",
+        "marginBottom": "12px",
+    })
+
+
+def _notes_box(key, notes, overrides):
     txt = notes.get(key, "")
     name = key.split("|")[0]
     key_norm = _norm(name)
@@ -256,11 +321,6 @@ def _notes_box(key, notes, overrides, opta_id=None):
         "lateral_pos": ov_entry.get("lateral_pos"),
         "role_type": ov_entry.get("role_type"),
     }
-    current_tm_id = _get_tm_id_for_player(name, opta_id)
-    tm_url = (
-        "https://www.transfermarkt.es/spieler/profil/spieler/{}".format(current_tm_id)
-        if current_tm_id else "https://www.transfermarkt.es/"
-    )
 
     return html.Div([
         # ── Notas ────────────────────────────────────────────────────────────
@@ -282,50 +342,6 @@ def _notes_box(key, notes, overrides, opta_id=None):
             }),
             html.Span(id="note-status", style={
                 "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
-            }),
-        ]),
-        dcc.Store(id="player-note-key", data=key),
-        dcc.Store(id="player-opta-id", data=opta_id or ""),
-        html.Hr(style={"margin": "14px 0", "borderColor": "#F3F4F6"}),
-
-        # ── Transfermarkt ─────────────────────────────────────────────────
-        html.P("Transfermarkt", style={
-            "fontSize": "11px", "fontWeight": "700", "color": "#9CA3AF",
-            "textTransform": "uppercase", "margin": "0 0 8px",
-        }),
-        html.Div([
-            html.A(
-                [html.I(className="ti ti-external-link", style={"marginRight": "5px"}),
-                 "Ver en Transfermarkt"],
-                href=tm_url, target="_blank",
-                style={"fontSize": "12px", "color": "#1D4ED8", "textDecoration": "none",
-                       "fontWeight": "600", "marginBottom": "8px", "display": "inline-block"},
-            ),
-        ]),
-        html.Div([
-            html.Span("ID de Transfermarkt", style={
-                "fontSize": "10px", "color": "#6B7280", "display": "block", "marginBottom": "4px",
-            }),
-            html.Div([
-                dcc.Input(
-                    id="tm-id-input", type="text",
-                    value=current_tm_id,
-                    placeholder="ej. 258923",
-                    style={"width": "160px", "fontSize": "12px", "padding": "7px 10px",
-                           "border": "1px solid #D1D5DB", "borderRadius": "8px"},
-                ),
-                html.Button(
-                    [html.I(className="ti ti-refresh", style={"marginRight": "5px"}),
-                     "Actualizar desde TM"],
-                    id="btn-fetch-tm", n_clicks=0,
-                    style={"background": "#1D4ED8", "color": "#fff", "border": "none",
-                           "borderRadius": "8px", "padding": "7px 14px",
-                           "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
-                           "marginLeft": "8px"},
-                ),
-            ], style={"display": "flex", "alignItems": "center"}),
-            html.Div(id="tm-fetch-status", style={
-                "fontSize": "11px", "marginTop": "6px", "color": "#166534",
             }),
         ]),
         html.Hr(style={"margin": "14px 0", "borderColor": "#F3F4F6"}),
@@ -854,8 +870,8 @@ def render_player(search):
                 opta_id = str(match.iloc[0]["player_id_src"])
         except Exception:
             pass
-    return html.Div([detail, fit_card, risk_card,
-                     _notes_box(key, _load_notes(), ovs, opta_id=opta_id)])
+    return html.Div([detail, _tm_strip(key, opta_id), fit_card, risk_card,
+                     _notes_box(key, _load_notes(), ovs)])
 
 
 @callback(Output("current-player", "data"),

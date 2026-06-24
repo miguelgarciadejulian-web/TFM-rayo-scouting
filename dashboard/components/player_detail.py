@@ -553,9 +553,6 @@ def build_detail(name, team=None, league=None, age=None,
                             "background": "#EFF6FF", "borderRadius": "99px",
                             "padding": "2px 9px", "marginRight": "6px",
                         }) ] if _foot_val else []),
-                (html.A("Ver en Transfermarkt", href=tm_url, target="_blank",
-                        style={"fontSize": "11px", "marginLeft": "4px", "color": "#1D4ED8"})
-                 if tm_url else html.Span()),
             ]),
             html.Div([
                 (html.Span(f"Valor: {mvinfo['value_eur']/1e6:.1f}M EUR" if mvinfo.get('value_eur') else "Valor: n/d",
@@ -702,3 +699,4 @@ def build_detail(name, team=None, league=None, age=None,
                  style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
                         "padding": "10px 14px", "overflowX": "auto"}),
     ])
+                                                                                                                                                                                                                         
