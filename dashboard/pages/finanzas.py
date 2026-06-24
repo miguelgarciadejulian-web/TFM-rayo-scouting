@@ -956,22 +956,21 @@ def _get_rayo_overlap(lat_code: str | None, role_code: str | None) -> list[dict]
                 for p in section:
                     rayo_names.add(_norm(p["name"]))
 
-        # Filtrar lateral map a Rayo y con match de posición/rol
+        # Filtrar lateral map a Rayo — sólo coincidencia exacta en ambas dimensiones
         lm["_nn"] = lm["name"].astype(str).apply(_norm)
         rayo_lm = lm[lm["_nn"].isin(rayo_names)]
-        matches = rayo_lm[
-            (rayo_lm["lateral_pos"] == lat_code) |
-            (rayo_lm["role_type"]   == role_code)
-        ]
+        mask = rayo_lm["lateral_pos"] == lat_code
+        if role_code:
+            mask = mask & (rayo_lm["role_type"] == role_code)
+        matches = rayo_lm[mask]
         result = []
         for _, r in matches.iterrows():
             result.append({
                 "name":       r["name"],
                 "lat_label":  LATERAL_LABELS.get(r.get("lateral_pos"), "") if r.get("lateral_pos") else "",
                 "role_label": role_type_label(r.get("role_type")),
-                "exact":      r.get("lateral_pos") == lat_code and r.get("role_type") == role_code,
+                "exact":      True,
             })
-        result.sort(key=lambda x: -x["exact"])
         return result
     except Exception:
         return []
@@ -1893,3 +1892,4 @@ def _fich_analyze(n_clicks, sell_player, sell_price_m, buy_player, buy_fee_m):
                   "padding":"12px 14px","display":"flex","alignItems":"center"})
 
     return html.Div(badges)
+                                                             
