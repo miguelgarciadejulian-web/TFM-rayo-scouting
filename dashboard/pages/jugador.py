@@ -1119,4 +1119,4 @@ def save_lateral(n_clicks, lateral_pos, role_type, key):
     if role_type is not None:
         entry["role_type"] = role_type
     elif "role_type" in entry:
-        
+        del entry["role_type"]
