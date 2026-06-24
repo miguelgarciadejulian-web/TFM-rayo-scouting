@@ -1810,23 +1810,7 @@ def update_sim(out_players, new_salary_m, income_m, fee_m, years, player_name):
         margin=dict(l=20, r=20, t=50, b=10),
     )
 
-    # ── Evaluación inteligente de la operación ──────────────────────────────
-    eval_badges = []
-    try:
-        if out_players and income > 0:
-            split_income = income / max(len(out_players), 1)
-            for pname in out_players:
-                eval_badges.append(_render_eval_badge(_evaluate_sale(pname, split_income, pmap)))
-        elif out_players:
-            for pname in out_players:
-                eval_badges.append(_render_eval_badge(_evaluate_sale(pname, 0, pmap)))
-        if player_name and (fee > 0 or new_sal > 0):
-            eval_badges.append(_render_eval_badge(_evaluate_buy(player_name, fee, new_sal)))
-    except Exception as _ex:
-        eval_badges.append(html.P(f"Error evaluación: {_ex}", style={"fontSize":"11px","color":"#DC2626"}))
-
     return html.Div([
-        *eval_badges,
         html.Div([
             html.I(className=f"ti {'ti-circle-check' if ok else 'ti-alert-triangle'}",
                    style={"fontSize":"18px","color":"#10B981" if ok else "#DC2626","marginRight":"8px"}),
@@ -2057,4 +2041,4 @@ def _fich_buy_card(player_name):
     ) if mv else html.Div()
 
     role_info  = _get_role_info(player_name)
-    lat_label
+    lat_label                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
