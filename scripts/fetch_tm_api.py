@@ -565,18 +565,52 @@ def update_market_values_csv(mv: pd.DataFrame, economic_by_opta: dict) -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+def load_all_from_entity_map() -> pd.DataFrame:
+    """
+    Carga TODOS los jugadores con tm_id en player_entity_map.csv,
+    cruzando con player_seasons_enriched.parquet para obtener nombre y equipo.
+    Alternativa a load_master_current() cuando queremos procesar más allá
+    de la temporada actual.
+    """
+    em = pd.read_csv(ENTITY_MAP)
+    em = em[em["tm_id"].notna()].copy()
+    em["tm_id"] = em["tm_id"].astype(str).str.replace(".0", "", regex=False).str.strip()
+    em = em[em["tm_id"].str.isdigit()]
+
+    enriched_path = ROOT / "data" / "processed" / "player_seasons_enriched.parquet"
+    if enriched_path.exists():
+        enr = pd.read_parquet(enriched_path)
+        if "season" in enr.columns:
+            enr = enr.sort_values("season", ascending=False)
+        enr = enr.drop_duplicates(subset=["player_id_src"], keep="first")
+        enr = enr.rename(columns={"player_id_src": "opta_id"})
+        enr["opta_id"] = enr["opta_id"].astype(str)
+        merged = em.merge(enr[["opta_id", "name", "team", "league"]], on="opta_id", how="left")
+    else:
+        merged = em.copy()
+        if "name" not in merged.columns:
+            merged["name"] = ""
+
+    merged = merged.rename(columns={"opta_id": "player_id"})
+    print(f"[INFO] Jugadores con tm_id en entity_map: {len(merged):,}")
+    return merged
+
+
 def main():
     parser = argparse.ArgumentParser(description="Fetch económico desde TM API")
-    parser.add_argument("--sample",  type=int, default=0,
+    parser.add_argument("--sample",          type=int, default=0,
                         help="Modo prueba: sólo N jugadores")
-    parser.add_argument("--limit",   type=int, default=0,
+    parser.add_argument("--limit",           type=int, default=0,
                         help="Máximo de llamadas API en esta ejecución")
-    parser.add_argument("--days",    type=int, default=0,
+    parser.add_argument("--days",            type=int, default=0,
                         help="Refetch si los datos tienen más de N días")
-    parser.add_argument("--force",   action="store_true",
+    parser.add_argument("--force",           action="store_true",
                         help="Refetch aunque ya existan datos")
-    parser.add_argument("--dry-run", action="store_true",
+    parser.add_argument("--dry-run",         action="store_true",
                         help="Muestra estadísticas sin llamar la API")
+    parser.add_argument("--from-entity-map", action="store_true",
+                        help="Procesar TODOS los jugadores con tm_id en entity_map "
+                             "(no solo la temporada actual de master_players)")
     args = parser.parse_args()
 
     # ---- Cargar fuentes ----
@@ -584,9 +618,12 @@ def main():
     print("fetch_tm_api.py — ETL económico Transfermarkt")
     print("=" * 60)
 
-    current_players = load_master_current()
-    mv              = load_market_values()
-    raw_cache       = load_raw_cache()
+    if args.from_entity_map:
+        current_players = load_all_from_entity_map()
+    else:
+        current_players = load_master_current()
+    mv        = load_market_values()
+    raw_cache = load_raw_cache()
 
     # Cargar parquet existente para merge incremental
     existing_econ = None
@@ -630,8 +667,13 @@ def main():
         opta_id = str(row.get("player_id", "")).strip()
         name    = str(row.get("name", "")).strip()
 
+        # Con --from-entity-map el tm_id ya viene en la fila directamente
+        if args.from_entity_map and "tm_id" in row and str(row.get("tm_id", "")).strip().isdigit():
+            tm_id  = str(row["tm_id"]).strip()
+            method = str(row.get("match_type", "entity_map"))
+            em_used += 1
         # 1. Lookup directo en entity_map (más fiable que name-matching)
-        if opta_id in em_lookup:
+        elif opta_id in em_lookup:
             tm_id, method = em_lookup[opta_id]
             em_used += 1
         else:
@@ -726,66 +768,4 @@ def main():
             raw["_match_method"]  = player["method"]
             raw_cache[tm_id]      = raw
             ok_count += 1
-            print("OK")
-        else:
-            err_count += 1
-            print("ERROR")
-
-        # Guardar cache incremental cada 50 llamadas
-        if i % 50 == 0:
-            save_raw_cache(raw_cache)
-            print(f"  [CACHE] Guardado. OK={ok_count}, ERR={err_count}")
-
-        if i < total:
-            time.sleep(REQUEST_DELAY)
-
-    # Guardar cache final
-    save_raw_cache(raw_cache)
-    print("-" * 60)
-    print(f"[INFO] Fetch completado: {ok_count} OK, {err_count} errores")
-
-    # ---- Construir dataset económico ----
-    print("\n[INFO] Construyendo player_economic.parquet ...")
-    economic_by_opta: dict = {}
-
-    for player in players_to_fetch:
-        opta_id = player["opta_id"]
-        tm_id   = player["tm_id"]
-        if not tm_id:
-            continue
-
-        raw = raw_cache.get(tm_id)
-        if not raw:
-            continue
-
-        parsed = parse_tm_response(raw, tm_id)
-        parsed["match_method"]     = player["method"]
-        parsed["match_confidence"] = player["confidence"]
-        parsed["last_updated"]     = raw.get("_fetched_at", "")[:10]
-
-        economic_by_opta[opta_id] = parsed
-
-    econ_df = build_economic_parquet(current_players, economic_by_opta, existing_econ)
-
-    ECONOMIC_PQ.parent.mkdir(parents=True, exist_ok=True)
-    econ_df.to_parquet(ECONOMIC_PQ, index=False)
-
-    with_value    = econ_df["market_value_eur"].notna().sum()
-    with_contract = econ_df["contract_until"].notna().sum()
-    print(f"  player_economic.parquet guardado: {len(econ_df):,} filas")
-    print(f"  Con valor de mercado:   {with_value:,}")
-    print(f"  Con fin de contrato:    {with_contract:,}")
-
-    # ---- Actualizar market_values.csv ----
-    print("\n[INFO] Actualizando market_values.csv ...")
-    update_market_values_csv(mv, economic_by_opta)
-
-    print("\n[DONE] ETL completado.")
-    print(f"  Archivos generados:")
-    print(f"    {ECONOMIC_PQ}")
-    print(f"    {RAW_JSON}")
-    print(f"    {MV_CSV}")
-
-
-if __name__ == "__main__":
-    main()
+          
