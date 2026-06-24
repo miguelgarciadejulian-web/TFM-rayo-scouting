@@ -281,6 +281,121 @@ def _criteria_badge(text, color="#1D4ED8", bg="#EFF6FF"):
               "marginBottom": "14px", "display": "flex", "alignItems": "flex-start"})
 
 
+
+def _load_needs():
+    p = PROC / "squad_profile.json"
+    if p.exists():
+        return json.load(open(p, encoding="utf-8")).get("needs", {})
+    return {}
+
+
+def _needs_panel() -> html.Div:
+    """Panel de necesidades de plantilla visible en la pestaña Fichar de Decisiones."""
+    needs = _load_needs()
+    if not needs:
+        return html.Span()
+
+    squad_p = PROC / "squad_profile.json"
+    n_total = 0
+    if squad_p.exists():
+        try:
+            n_total = len(json.load(open(squad_p, encoding="utf-8")).get("squad", []))
+        except Exception:
+            pass
+
+    cap        = needs.get("squad_cap", 25)
+    n_profiled = needs.get("n_profiled", n_total)
+    missing    = needs.get("missing", [])
+    reinforce  = needs.get("reinforce", [])
+    aging      = needs.get("aging_or_expiring", [])
+    formation  = needs.get("formation_used", "4-2-3-1")
+    slots_free = cap - n_total
+
+    def _chip(label, bg, fg, icon=""):
+        return html.Span(
+            [html.Span(icon + " ", style={"marginRight": "2px"}) if icon else "", label],
+            style={"fontSize": "10px", "fontWeight": "600", "padding": "2px 8px",
+                   "borderRadius": "99px", "background": bg, "color": fg,
+                   "marginRight": "4px", "marginBottom": "4px", "display": "inline-block"},
+        )
+
+    pct_full = min(n_total / cap * 100, 100)
+    bar_color = "#DC2626" if slots_free > 3 else "#F59E0B" if slots_free > 0 else "#10B981"
+
+    return html.Div([
+        html.Div([
+            html.Div([
+                html.I(className="ti ti-users-group",
+                       style={"fontSize": "14px", "color": "#B8960C", "marginRight": "6px"}),
+                html.Strong("Plantilla 2026/27 \u2014 an\u00e1lisis de necesidades",
+                            style={"fontSize": "12px", "color": "#1A1A2E"}),
+                html.Span(f"  formaci\u00f3n base: {formation}",
+                          style={"fontSize": "10px", "color": "#9CA3AF", "marginLeft": "8px"}),
+            ], style={"display": "flex", "alignItems": "center", "marginBottom": "6px"}),
+
+            html.Div([
+                html.Div([
+                    html.Div(style={"height": "6px", "borderRadius": "99px",
+                                    "width": f"{pct_full:.0f}%", "background": bar_color}),
+                ], style={"flex": "1", "height": "6px", "background": "#F3F4F6",
+                          "borderRadius": "99px", "overflow": "hidden", "alignSelf": "center"}),
+                html.Span(
+                    f"{n_total} / {cap} jugadores  \u00b7  {slots_free} hueco{'s' if slots_free != 1 else ''} libre{'s' if slots_free != 1 else ''}",
+                    style={"fontSize": "11px", "fontWeight": "700",
+                           "color": bar_color, "marginLeft": "10px", "whiteSpace": "nowrap"},
+                ),
+            ], style={"display": "flex", "alignItems": "center", "gap": "8px",
+                      "marginBottom": "10px"}),
+        ]),
+
+        dbc.Row([
+            dbc.Col([
+                html.Div("Sin cobertura",
+                         style={"fontSize": "10px", "fontWeight": "700", "color": "#991B1B",
+                                "marginBottom": "4px"}),
+                html.Div(
+                    [_chip(r, "#FEE2E2", "#991B1B", "\u25cf") for r in missing]
+                    or [html.Span("Ninguna", style={"fontSize": "10px", "color": "#9CA3AF"})],
+                    style={"display": "flex", "flexWrap": "wrap"},
+                ),
+            ], md=4),
+            dbc.Col([
+                html.Div("A reforzar",
+                         style={"fontSize": "10px", "fontWeight": "700", "color": "#92400E",
+                                "marginBottom": "4px"}),
+                html.Div(
+                    [_chip(r, "#FEF3C7", "#92400E", "\u25b2") for r in reinforce]
+                    or [html.Span("Ninguna", style={"fontSize": "10px", "color": "#9CA3AF"})],
+                    style={"display": "flex", "flexWrap": "wrap"},
+                ),
+            ], md=4),
+            dbc.Col([
+                html.Div("Veteranos / fin contrato 2026",
+                         style={"fontSize": "10px", "fontWeight": "700", "color": "#1E40AF",
+                                "marginBottom": "4px"}),
+                html.Div(
+                    [_chip(
+                        f"{a['name'].split()[-1]} ({a.get('role_label', a.get('role', '?'))})",
+                        "#EFF6FF", "#1E40AF"
+                    ) for a in aging[:5]]
+                    or [html.Span("Ninguno", style={"fontSize": "10px", "color": "#9CA3AF"})],
+                    style={"display": "flex", "flexWrap": "wrap"},
+                ),
+            ], md=4),
+        ], className="g-2"),
+
+        html.P(
+            f"Plantilla objetivo ({cap} jugadores) derivada autom\u00e1ticamente de la formaci\u00f3n base. "
+            "La compatibilidad de cada t\u00e9cnico se pondera contra estas carencias.",
+            style={"fontSize": "9px", "color": "#9CA3AF", "margin": "8px 0 0",
+                   "fontStyle": "italic"},
+        ),
+    ], style={
+        "background": "#FFFBEB", "border": "1px solid #FDE68A", "borderRadius": "10px",
+        "padding": "12px 16px", "marginBottom": "14px",
+    })
+
+
 def layout(**_params):
     data = _load_squad()
     dec = squad_decisions(data.get("squad", []), data.get("needs", {}))
@@ -294,6 +409,7 @@ def layout(**_params):
             "encaje economico (valor de mercado vs presupuesto) · riesgo contractual "
             "(duracion + clausula). Candidatos generados automaticamente por rol."
         ),
+        _needs_panel(),
 
         html.Div([
             html.Div([
