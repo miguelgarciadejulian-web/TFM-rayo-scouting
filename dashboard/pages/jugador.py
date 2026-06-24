@@ -1030,12 +1030,12 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
     h     = _safe(lambda: str(d["attributes"]["height"]))
     photo = _safe(lambda: d["portraitUrl"] if str(d.get("portraitUrl","")).startswith("http") else None)
     rc    = _safe(lambda: float(d["attributes"]["releaseClause"]))
-    # Edad: directa o calculada desde dateOfBirth
-    age   = _safe(lambda: int(d["attributes"]["age"]))
+    # Edad y posición (estructura real de la API TM)
+    age   = _safe(lambda: int(d["lifeDates"]["age"]))
     if age is None:
         def _calc_age():
             from datetime import date
-            dob_str = str(d["attributes"]["dateOfBirth"])[:10]
+            dob_str = str(d["lifeDates"]["dateOfBirth"])[:10]
             dob = date.fromisoformat(dob_str)
             today = date.today()
             return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
@@ -1119,4 +1119,4 @@ def save_lateral(n_clicks, lateral_pos, role_type, key):
     if role_type is not None:
         entry["role_type"] = role_type
     elif "role_type" in entry:
-        de
+        
