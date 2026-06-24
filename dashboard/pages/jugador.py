@@ -221,24 +221,49 @@ def _clause_risk_card(name: str, overrides: dict) -> html.Div:
     })
 
 
-def _notes_box(key, notes, photos, overrides):
+def _get_tm_id_for_player(name, opta_id=None):
+    """Devuelve el tm_id actual del jugador desde entity_map o market_values."""
+    entity_map_path = PROC / "player_entity_map.csv"
+    try:
+        import pandas as pd
+        if opta_id and entity_map_path.exists():
+            em = pd.read_csv(entity_map_path)
+            row = em[em["opta_id"].astype(str) == str(opta_id)]
+            if not row.empty:
+                tid = str(row.iloc[0].get("tm_id", "")).replace(".0", "").strip()
+                if tid.isdigit():
+                    return tid
+        # Fallback: market_values por nombre
+        mv_path = PROC.parent / "config" / "market_values.csv"
+        if mv_path.exists():
+            mv = pd.read_csv(mv_path)
+            match = mv[mv["name"].apply(_norm) == _norm(name)]
+            if not match.empty:
+                tid = str(match.iloc[0].get("tm_id", "")).replace(".0", "").strip()
+                if tid.isdigit():
+                    return tid
+    except Exception:
+        pass
+    return ""
+
+
+def _notes_box(key, notes, overrides, opta_id=None):
     txt = notes.get(key, "")
     name = key.split("|")[0]
     key_norm = _norm(name)
     ov_entry = overrides.get(key_norm, {})
-    _cv = get_value(name)
     _mk = {
-        "val": round(float(ov_entry.get("value_eur") or _cv.get("value_eur")) / 1e6, 1)
-               if (ov_entry.get("value_eur") or _cv.get("value_eur")) else None,
-        "clause": ov_entry.get("clause_eur_millions"),
-        "con": str(ov_entry.get("contract_until") or _cv.get("contract_until") or "")[:10] or None,
-        "foot": ov_entry.get("foot") or _cv.get("foot") or None,
-        "height": (float(ov_entry["height"]) if ov_entry.get("height") else
-                   float(_cv["height"]) if _cv.get("height") else None),
         "lateral_pos": ov_entry.get("lateral_pos"),
         "role_type": ov_entry.get("role_type"),
     }
+    current_tm_id = _get_tm_id_for_player(name, opta_id)
+    tm_url = (
+        "https://www.transfermarkt.es/spieler/profil/spieler/{}".format(current_tm_id)
+        if current_tm_id else "https://www.transfermarkt.es/"
+    )
+
     return html.Div([
+        # ── Notas ────────────────────────────────────────────────────────────
         html.P("Notas de scouting (se guardan)", style={
             "fontSize": "11px", "fontWeight": "700",
             "color": "#9CA3AF", "textTransform": "uppercase", "margin": "16px 0 8px",
@@ -260,75 +285,47 @@ def _notes_box(key, notes, photos, overrides):
             }),
         ]),
         dcc.Store(id="player-note-key", data=key),
+        dcc.Store(id="player-opta-id", data=opta_id or ""),
         html.Hr(style={"margin": "14px 0", "borderColor": "#F3F4F6"}),
-        html.P("Foto manual (pega la URL de la imagen si no sale automatica)", style={
+
+        # ── Transfermarkt ─────────────────────────────────────────────────
+        html.P("Transfermarkt", style={
             "fontSize": "11px", "fontWeight": "700", "color": "#9CA3AF",
-            "textTransform": "uppercase", "margin": "0 0 6px",
+            "textTransform": "uppercase", "margin": "0 0 8px",
         }),
         html.Div([
-            dcc.Input(id="player-photo-url", type="text",
-                      placeholder="https://img.a.transfermarkt.technology/portrait/big/...jpg",
-                      value=photos.get(key, ""),
-                      style={"flex": "1", "fontSize": "12px", "padding": "7px 10px",
-                             "border": "1px solid #D1D5DB", "borderRadius": "8px"}),
-            html.Button("Guardar foto", id="save-photo", n_clicks=0, style={
-                "background": "#1A1A2E", "color": "#fff", "border": "none",
-                "borderRadius": "8px", "padding": "7px 14px",
-                "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
-                "marginLeft": "8px",
-            }),
-        ], style={"display": "flex"}),
-        html.Span(id="photo-status", style={"fontSize": "11px", "color": "#166534"}),
-        html.Hr(style={"margin": "14px 0", "borderColor": "#F3F4F6"}),
-        html.P("Datos de mercado y clausula (manual)", style={
-            "fontSize": "11px", "fontWeight": "700", "color": "#9CA3AF",
-            "textTransform": "uppercase", "margin": "0 0 6px",
-        }),
-        dbc.Row([
-            dbc.Col([
-                html.Span("Valor (M€)", style={"fontSize": "10px", "color": "#6B7280"}),
-                dcc.Input(id="mkt-value", type="number", min=0, step=0.5,
-                          value=_mk.get("val"), placeholder="ej. 8.0",
-                          style={"width": "100%", "fontSize": "12px", "padding": "7px 10px",
-                                 "border": "1px solid #D1D5DB", "borderRadius": "8px"}),
-            ], md=2),
-            dbc.Col([
-                html.Span("Clausula (M€)", style={"fontSize": "10px", "color": "#6B7280"}),
-                dcc.Input(id="mkt-clause", type="number", min=0, step=0.5,
-                          value=_mk.get("clause"), placeholder="ej. 30.0",
-                          style={"width": "100%", "fontSize": "12px", "padding": "7px 10px",
-                                 "border": "1px solid #D1D5DB", "borderRadius": "8px"}),
-            ], md=2),
-            dbc.Col([
-                html.Span("Fin contrato (AAAA-MM-DD)", style={"fontSize": "10px", "color": "#6B7280"}),
-                dcc.Input(id="mkt-contract", type="text", value=_mk.get("con"),
-                          placeholder="2028-06-30",
-                          style={"width": "100%", "fontSize": "12px", "padding": "7px 10px",
-                                 "border": "1px solid #D1D5DB", "borderRadius": "8px"}),
-            ], md=3),
-            dbc.Col([
-                html.Span("Pie", style={"fontSize": "10px", "color": "#6B7280"}),
-                dcc.Input(id="mkt-foot", type="text", value=_mk.get("foot"),
-                          placeholder="Derecho",
-                          style={"width": "100%", "fontSize": "12px", "padding": "7px 10px",
-                                 "border": "1px solid #D1D5DB", "borderRadius": "8px"}),
-            ], md=2),
-            dbc.Col([
-                html.Span("Altura (m)", style={"fontSize": "10px", "color": "#6B7280"}),
-                dcc.Input(id="mkt-height", type="number", step=0.01, value=_mk.get("height"),
-                          placeholder="1.85",
-                          style={"width": "100%", "fontSize": "12px", "padding": "7px 10px",
-                                 "border": "1px solid #D1D5DB", "borderRadius": "8px"}),
-            ], md=3),
-        ], className="g-2"),
+            html.A(
+                [html.I(className="ti ti-external-link", style={"marginRight": "5px"}),
+                 "Ver en Transfermarkt"],
+                href=tm_url, target="_blank",
+                style={"fontSize": "12px", "color": "#1D4ED8", "textDecoration": "none",
+                       "fontWeight": "600", "marginBottom": "8px", "display": "inline-block"},
+            ),
+        ]),
         html.Div([
-            html.Button("Guardar datos de mercado", id="save-market", n_clicks=0, style={
-                "background": "#166534", "color": "#fff", "border": "none",
-                "borderRadius": "8px", "padding": "7px 16px", "fontSize": "12px",
-                "fontWeight": "600", "cursor": "pointer", "marginTop": "8px",
+            html.Span("ID de Transfermarkt", style={
+                "fontSize": "10px", "color": "#6B7280", "display": "block", "marginBottom": "4px",
             }),
-            html.Span(id="market-status", style={
-                "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
+            html.Div([
+                dcc.Input(
+                    id="tm-id-input", type="text",
+                    value=current_tm_id,
+                    placeholder="ej. 258923",
+                    style={"width": "160px", "fontSize": "12px", "padding": "7px 10px",
+                           "border": "1px solid #D1D5DB", "borderRadius": "8px"},
+                ),
+                html.Button(
+                    [html.I(className="ti ti-refresh", style={"marginRight": "5px"}),
+                     "Actualizar desde TM"],
+                    id="btn-fetch-tm", n_clicks=0,
+                    style={"background": "#1D4ED8", "color": "#fff", "border": "none",
+                           "borderRadius": "8px", "padding": "7px 14px",
+                           "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
+                           "marginLeft": "8px"},
+                ),
+            ], style={"display": "flex", "alignItems": "center"}),
+            html.Div(id="tm-fetch-status", style={
+                "fontSize": "11px", "marginTop": "6px", "color": "#166534",
             }),
         ]),
         html.Hr(style={"margin": "14px 0", "borderColor": "#F3F4F6"}),
@@ -845,8 +842,20 @@ def render_player(search):
     ovs = _load_overrides()
     fit_card = _fit_rayo_card(name)
     risk_card = _clause_risk_card(name, ovs)
+    # Obtener opta_id para lookup de tm_id
+    opta_id = params.get("id", "") if search and search.startswith("?") else ""
+    if not opta_id:
+        try:
+            import pandas as pd
+            enr = pd.read_parquet(PROC / "player_seasons_enriched.parquet",
+                                  columns=["player_id_src", "name"])
+            match = enr[enr["name"] == name]
+            if not match.empty:
+                opta_id = str(match.iloc[0]["player_id_src"])
+        except Exception:
+            pass
     return html.Div([detail, fit_card, risk_card,
-                     _notes_box(key, _load_notes(), _load_photos(), ovs)])
+                     _notes_box(key, _load_notes(), ovs, opta_id=opta_id)])
 
 
 @callback(Output("current-player", "data"),
@@ -946,67 +955,150 @@ def save_note(n, text, key):
     return "Guardada"
 
 
-@callback(Output("photo-status", "children"),
-          Input("save-photo", "n_clicks"),
-          State("player-photo-url", "value"), State("player-note-key", "data"),
-          prevent_initial_call=True)
-def save_photo(n, url, key):
+@callback(
+    Output("tm-fetch-status", "children"),
+    Input("btn-fetch-tm", "n_clicks"),
+    State("tm-id-input", "value"),
+    State("player-note-key", "data"),
+    State("player-opta-id", "data"),
+    prevent_initial_call=True,
+)
+def fetch_from_tm(n, tm_id_raw, key, opta_id):
+    """Guarda el tm_id y obtiene datos frescos de la API de TM."""
     if not n or not key:
         return no_update
-    photos = _load_photos()
-    photos[key] = (url or "").strip()
-    _save_photos(photos)
-    return "Foto guardada — recarga la pagina para verla"
+    tm_id = str(tm_id_raw or "").strip().replace(".0", "")
+    if not tm_id.isdigit():
+        return "ID invalido — debe ser un numero (ej. 258923)"
 
-
-@callback(Output("market-status", "children"),
-          Input("save-market", "n_clicks"),
-          State("mkt-value", "value"), State("mkt-clause", "value"),
-          State("mkt-contract", "value"),
-          State("mkt-foot", "value"), State("mkt-height", "value"),
-          State("player-note-key", "data"),
-          prevent_initial_call=True)
-def save_market(n, value_m, clause_m, contract, foot, height, key):
-    if not n or not key:
-        return no_update
     name = key.split("|")[0]
+
+    # 1. Actualizar entity_map
+    try:
+        import pandas as pd
+        from datetime import datetime, timezone
+        entity_map_path = PROC / "player_entity_map.csv"
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+        if entity_map_path.exists():
+            em = pd.read_csv(entity_map_path)
+        else:
+            em = pd.DataFrame(columns=["opta_id", "tm_id", "match_type", "match_confidence", "updated_at"])
+        if opta_id:
+            mask = em["opta_id"].astype(str) == str(opta_id)
+            if mask.any():
+                em.loc[mask, "tm_id"] = tm_id
+                em.loc[mask, "match_type"] = "manual"
+                em.loc[mask, "updated_at"] = now
+            else:
+                em = pd.concat([em, pd.DataFrame([{
+                    "opta_id": opta_id, "tm_id": tm_id,
+                    "match_type": "manual", "match_confidence": 1.0, "updated_at": now,
+                }])], ignore_index=True)
+            em.to_csv(entity_map_path, index=False)
+    except Exception as e:
+        return f"Error actualizando entity_map: {e}"
+
+    # 2. Llamar API TM alpha
+    try:
+        import requests
+        api_url = "https://tmapi-alpha.transfermarkt.technology/player/{}".format(tm_id)
+        r = requests.get(api_url, headers={"Accept": "application/json",
+                         "User-Agent": "RayoScoutingTool/1.0"}, timeout=12)
+        if r.status_code == 404:
+            return "tm_id guardado, pero no encontrado en la API de TM (ID incorrecto?)"
+        if r.status_code != 200:
+            return "tm_id guardado. API respondio {}, reintenta mas tarde".format(r.status_code)
+        data = r.json()
+        d = data.get("data", data)
+    except Exception as e:
+        return "tm_id guardado. Error conectando con TM API: {}".format(str(e)[:60])
+
+    # 3. Parsear respuesta
+    def _safe(fn):
+        try: return fn()
+        except Exception: return None
+
+    mv    = _safe(lambda: float(d["marketValueDetails"]["current"]["value"]))
+    con   = _safe(lambda: str(d["attributes"]["contractUntil"])[:10])
+    foot  = _safe(lambda: d["attributes"]["preferredFoot"]["name"])
+    h     = _safe(lambda: str(d["attributes"]["height"]))
+    photo = _safe(lambda: d["portraitUrl"] if str(d.get("portraitUrl","")).startswith("http") else None)
+    rc    = _safe(lambda: float(d["attributes"]["releaseClause"]))
+
+    # 4. Actualizar overrides
     ov = _load_overrides()
     entry = ov.get(_norm(name), {})
-    if value_m not in (None, ""):
-        entry["value_eur"] = float(value_m) * 1_000_000
-    if clause_m not in (None, ""):
-        entry["clause_eur_millions"] = float(clause_m)
-    if contract:
-        entry["contract_until"] = str(contract).strip()
-    if foot:
-        entry["foot"] = str(foot).strip()
-    if height not in (None, ""):
-        entry["height"] = height
+    if mv:    entry["value_eur"] = mv
+    if con:   entry["contract_until"] = con
+    if foot:  entry["foot"] = foot
+    if h:     entry["height"] = float(h)
+    if photo: entry["photo_url"] = photo
+    if rc:    entry["release_clause_eur"] = rc
     ov[_norm(name)] = entry
     _save_overrides(ov)
-    return "Guardado — recarga la pagina para verlo"
+
+    # 5. Actualizar market_values.csv
+    try:
+        import pandas as pd
+        mv_path = PROC.parent / "config" / "market_values.csv"
+        mv_df = pd.read_csv(mv_path) if mv_path.exists() else pd.DataFrame()
+        row_data = {"name": name, "tm_id": tm_id,
+                    "market_value_eur": mv or "",
+                    "contract_until": con or "",
+                    "tm_photo_url": photo or ""}
+        if not mv_df.empty and "name" in mv_df.columns:
+            idx = mv_df[mv_df["name"].apply(_norm) == _norm(name)].index
+            if not idx.empty:
+                for col, val in row_data.items():
+                    if col in mv_df.columns and val:
+                        mv_df.loc[idx[0], col] = val
+            else:
+                mv_df = pd.concat([mv_df, pd.DataFrame([row_data])], ignore_index=True)
+        else:
+            mv_df = pd.DataFrame([row_data])
+        mv_df.to_csv(mv_path, index=False)
+    except Exception:
+        pass
+
+    # 6. Invalidar cache
+    try:
+        from src.utils.market import invalidate_cache
+        invalidate_cache()
+    except Exception:
+        pass
+
+    parts = []
+    if mv:    parts.append("Valor: {:.1f}M euros".format(mv / 1e6))
+    if con:   parts.append("Contrato: {}".format(con))
+    if photo: parts.append("Foto actualizada")
+    msg = " - ".join(parts) if parts else "Datos guardados"
+    return "OK: {} - Recarga la pagina para ver los cambios.".format(msg)
 
 
-@callback(Output("lateral-status", "children"),
-          Input("save-lateral", "n_clicks"),
-          State("mkt-lateral-pos", "value"),
-          State("mkt-role-type", "value"),
-          State("player-note-key", "data"),
-          prevent_initial_call=True)
-def save_lateral(n, lateral_pos, role_type, key):
-    if not n or not key:
-        return no_update
-    name = key.split("|")[0]
+# ---------------------------------------------------------------------------
+# Callback: guardar posicion lateral y tipo de rol
+# ---------------------------------------------------------------------------
+@callback(
+    Output("lateral-status", "children"),
+    Input("save-lateral", "n_clicks"),
+    State("mkt-lateral-pos", "value"),
+    State("mkt-role-type", "value"),
+    State("player-note-key", "data"),
+    prevent_initial_call=True,
+)
+def save_lateral(n_clicks, lateral_pos, role_type, key):
+    if not key:
+        return "Sin jugador cargado"
     ov = _load_overrides()
-    entry = ov.get(_norm(name), {})
-    if lateral_pos:
+    entry = ov.get(_norm(key), {})
+    if lateral_pos is not None:
         entry["lateral_pos"] = lateral_pos
     elif "lateral_pos" in entry:
-        del entry["lateral_pos"]   # borrar override → vuelve al inferido
-    if role_type:
+        del entry["lateral_pos"]
+    if role_type is not None:
         entry["role_type"] = role_type
     elif "role_type" in entry:
-        del entry["role_type"]   # borrar override → vuelve al inferido
-    ov[_norm(name)] = entry
+        del entry["role_type"]
+    ov[_norm(key)] = entry
     _save_overrides(ov)
-    return "Guardado"
+    return "Guardado correctamente"
