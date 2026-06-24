@@ -784,6 +784,7 @@ def tab_simulador(fin):
 
     return html.Div([
         dcc.Store(id="sim-buys", data=[]),
+        dcc.Store(id="sim-sells", data=[]),
 
         html.Div([
             html.I(className="ti ti-info-circle",style={"marginRight":"8px","color":"#1D4ED8"}),
@@ -792,17 +793,31 @@ def tab_simulador(fin):
         ], style={"background":"#EFF6FF","border":"1px solid #BFDBFE","borderRadius":"10px","padding":"12px 16px","marginBottom":"16px","display":"flex","alignItems":"center"}),
 
         dbc.Row([
-            # ── Salidas ──────────────────────────────────────────────────────
+            # ── Salidas (acumulativas) ────────────────────────────────────────
             dbc.Col(html.Div([
                 html.Div([html.I(className="ti ti-arrow-up-right",style={"color":"#FFD600","marginRight":"8px","fontSize":"16px"}),
                           html.Span("Salidas simuladas",style={"fontSize":"13px","fontWeight":"600","color":"#1A1A2E"})],
                          style={"display":"flex","alignItems":"center","marginBottom":"12px"}),
-                html.Span("Jugadores del Rayo que salen",style=lbl),
-                dcc.Dropdown(player_opts,multi=True,id="sim-out",placeholder="Selecciona uno o varios..."),
-                html.Div(style={"height":"1px","background":"#F3F4F6","margin":"14px 0"}),
-                html.Span("Ingreso total por ventas (M€)",style=lbl),
-                dcc.Input(id="sim-income",type="number",min=0,value=0,step=0.5,placeholder="0.0",style=inp),
-                html.Div(id="sim-out-summary",style={"marginTop":"10px"}),
+
+                html.Span("Jugador del Rayo que sale",style=lbl),
+                dcc.Dropdown(player_opts, id="sim-out-player",
+                             placeholder="Selecciona jugador...", clearable=True),
+                html.Div(id="sim-out-player-info", style={"marginTop":"6px","marginBottom":"6px"}),
+                html.Div(style={"height":"1px","background":"#F3F4F6","margin":"8px 0"}),
+                html.Span("Ingreso por esta venta (M€)",style=lbl),
+                dcc.Input(id="sim-income-one", type="number", min=0, value=None,
+                          step=0.5, placeholder="Ej: 15.0", style=inp),
+
+                html.Button([
+                    html.I(className="ti ti-plus",style={"marginRight":"6px","fontSize":"13px"}),
+                    "Añadir venta a la simulación",
+                ], id="sim-add-sell", n_clicks=0, style={
+                    "width":"100%","marginTop":"10px","padding":"9px","border":"none",
+                    "borderRadius":"8px","background":"#FFD600","color":"#0D0D0D",
+                    "fontSize":"12px","fontWeight":"700","cursor":"pointer","letterSpacing":".02em",
+                }),
+
+                html.Div(id="sim-sells-list", style={"marginTop":"10px"}),
             ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px","height":"100%"}), md=4),
 
             # ── Altas (múltiples) ─────────────────────────────────────────────
@@ -1710,19 +1725,74 @@ def show_fee_comparison(fee_m, clause_m):
             style={"background":"#FFFBEB","border":"1px solid #FDE68A","borderRadius":"7px","padding":"7px 10px","display":"flex","alignItems":"center"})
     return html.Span("Igual a la clausula",style={"fontSize":"11px","color":"#6B7280"})
 
-@callback(Output("sim-out-summary","children"),Input("sim-out","value"))
-def show_out_summary(out_players):
-    if not out_players: return html.Div()
+@callback(Output("sim-out-player-info","children"), Input("sim-out-player","value"))
+def _show_sell_player_info(name):
+    if not name: return html.Div()
     fin = _load_finances()
     pmap = {p["name"]:p for p in fin["player_salaries"]}
+    p = pmap.get(name)
+    if not p: return html.Div()
     return html.Div([
-        html.Div([
-            html.Span(n,style={"fontSize":"11px","fontWeight":"600","color":"#1A1A2E","flex":"1"}),
-            html.Span(_fmt(pmap[n]["salary_annual"]),style={"fontSize":"11px","color":"#FFD600","marginRight":"8px"}),
-            html.Span(f"clausula: {_fmt(pmap[n].get('release_clause'))}",style={"fontSize":"10px","color":"#6B7280"}),
-        ], style={"display":"flex","alignItems":"center","padding":"5px 0","borderBottom":"1px solid #F3F4F6"})
-        for n in out_players if n in pmap
-    ])
+        html.Span(p["position"], style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px",
+            "borderRadius":"99px","background":"#F3F4F6","color":"#374151","marginRight":"8px"}),
+        html.Span(f"Sal: {_fmt(p['salary_annual'])}/año", style={"fontSize":"11px","color":"#FFD600","marginRight":"8px"}),
+        html.Span(f"Cláusula: {_fmt(p.get('release_clause'))}", style={"fontSize":"11px","color":"#6B7280"}),
+    ], style={"display":"flex","alignItems":"center","flexWrap":"wrap","gap":"4px"})
+
+
+@callback(
+    Output("sim-sells", "data"),
+    Input("sim-add-sell", "n_clicks"),
+    Input({"type": "sim-del-sell", "index": ALL}, "n_clicks"),
+    State("sim-out-player", "value"),
+    State("sim-income-one", "value"),
+    State("sim-sells", "data"),
+    prevent_initial_call=True,
+)
+def _manage_sells(add_n, del_clicks, player_name, income_m, sells):
+    sells = list(sells or [])
+    trig = ctx.triggered_id
+    if trig == "sim-add-sell":
+        if player_name:
+            sells.append({"name": player_name, "income": float(income_m or 0)})
+    elif isinstance(trig, dict) and trig.get("type") == "sim-del-sell":
+        idx = trig["index"]
+        if 0 <= idx < len(sells):
+            sells.pop(idx)
+    return sells
+
+
+@callback(Output("sim-sells-list", "children"), Input("sim-sells", "data"))
+def _render_sells_list(sells):
+    if not sells:
+        return html.P("Ninguna venta añadida todavía.",
+                      style={"fontSize":"11px","color":"#9CA3AF","margin":"4px 0","fontStyle":"italic"})
+    fin = _load_finances()
+    pmap = {p["name"]:p for p in fin["player_salaries"]}
+    items = []
+    for i, s in enumerate(sells):
+        sal = pmap.get(s["name"],{}).get("salary_annual", 0)
+        items.append(html.Div([
+            html.Div([
+                html.Span(s["name"].split()[-1], style={"fontSize":"11px","fontWeight":"700","color":"#1A1A2E","flex":"1"}),
+                html.Span(f"-{_fmt(sal)}/año", style={"fontSize":"10px","color":"#10B981","marginRight":"6px"}),
+                html.Span(f"+{s['income']:.1f}M€", style={"fontSize":"10px","color":"#B8960C","marginRight":"6px"}),
+                html.Button("✕", id={"type":"sim-del-sell","index":i}, n_clicks=0,
+                    style={"background":"none","border":"none","color":"#DC2626","cursor":"pointer",
+                           "fontSize":"12px","fontWeight":"700","padding":"0 2px"}),
+            ], style={"display":"flex","alignItems":"center"}),
+        ], style={"padding":"5px 8px","background":"#FFFBEB","borderRadius":"6px",
+                  "marginBottom":"4px","border":"1px solid #FDE68A"}))
+    total_income = sum(s["income"] for s in sells)
+    total_sal    = sum(pmap.get(s["name"],{}).get("salary_annual",0) for s in sells)
+    items.append(html.Div([
+        html.Span(f"{len(sells)} venta{'s' if len(sells)!=1 else ''} · "
+                  f"Ahorro sal: {_fmt(total_sal)}/año · "
+                  f"Ingreso: +{total_income:.1f}M€",
+                  style={"fontSize":"10px","color":"#92400E","fontWeight":"600"}),
+    ], style={"padding":"4px 8px","background":"#FEF3C7","borderRadius":"6px","marginTop":"4px"}))
+    return items
+
 
 @callback(
     Output("sim-buys", "data"),
@@ -1784,10 +1854,9 @@ def _render_buys_list(buys):
 
 
 @callback(Output("sim-results","children"),
-          Input("sim-out","value"),
-          Input("sim-income","value"),
+          Input("sim-sells","data"),
           Input("sim-buys","data"))
-def update_sim(out_players, income_m, buys):
+def update_sim(sells, buys):
     fin = _load_finances()
     pmap  = {p["name"]:p for p in fin["player_salaries"]}
     scl   = fin["squad_cost_limit"]
@@ -1800,11 +1869,12 @@ def update_sim(out_players, income_m, buys):
     except Exception:
         budget_cash = 12_000_000
 
-    buys = buys or []
-    saved     = sum(pmap[n]["salary_annual"] for n in (out_players or []) if n in pmap)
+    sells = sells or []
+    buys  = buys  or []
+    saved     = sum(pmap.get(s["name"],{}).get("salary_annual",0) for s in sells)
+    income    = sum(s.get("income",0)*1_000_000 for s in sells)
     new_sal   = sum(b.get("salary",0)*1_000_000 for b in buys)
     fee       = sum(b.get("fee",0)*1_000_000 for b in buys)
-    income    = (income_m or 0)*1_000_000
     new_amort_buys = sum(b.get("fee",0)*1_000_000 / (b.get("years",5) or 5) for b in buys)
 
     # Coste de plantilla LaLiga = salarios + amortizaciones
@@ -1902,7 +1972,7 @@ def update_sim(out_players, income_m, buys):
         html.P("Desglose de coste",
                style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF","textTransform":"uppercase","margin":"8px 0 4px"}),
         row("Masa salarial actual",        _fmt(base),      "#374151"),
-        row("Ahorro por salidas",          f"-{_fmt(saved)}","#10B981"),
+        row(f"Ahorro salidas ({len(sells)} ventas)",f"-{_fmt(saved)}","#10B981"),
         row(f"Nuevo salario ({len(buys)} altas)", f"+{_fmt(new_sal)}","#B8960C"),
         row("Amortiz. altas/año",          f"+{_fmt(new_amort_buys)}","#B8960C"),
         row("Coste total plantilla",       _fmt(squad_cost), "#1A1A2E"),
@@ -1910,7 +1980,7 @@ def update_sim(out_players, income_m, buys):
         html.Div(style={"borderTop":"2px solid #E5E7EB","margin":"8px 0"}),
         html.P("Tesorería",
                style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF","textTransform":"uppercase","margin":"4px 0"}),
-        row("Ingresos ventas",    f"+{_fmt(income)}",           "#10B981"),
+        row(f"Ingresos ventas ({len(sells)})", f"+{_fmt(income)}", "#10B981"),
         row("Traspaso pagado",    f"-{_fmt(fee)}",              "#B8960C"),
         row("Gasto neto",         _fmt(net_spend),              "#B8960C" if net_spend>0 else "#10B981"),
         row("Presupuesto caja",   _fmt(budget_cash),            "#374151"),
