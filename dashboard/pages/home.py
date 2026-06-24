@@ -132,96 +132,50 @@ def _load_scouting_kpis() -> dict:
 
 def _kpi_card(icon: str, label: str, value: str, sub: str,
               danger: bool = False) -> html.Div:
-    icon_bg    = "linear-gradient(135deg,#991B1B,#DC2626)" if danger else "linear-gradient(135deg,#E30613,#C4000F)"
-    top_border = "#991B1B" if danger else "#E30613"
+    variant = "danger" if danger else ""
     return html.Div([
         html.Div([
-            html.I(className=f"ti {icon}",
-                   style={"fontSize": "20px", "color": _WHITE}),
-        ], style={
-            "background": icon_bg, "borderRadius": "10px",
-            "width": "42px", "height": "42px",
-            "display": "flex", "alignItems": "center", "justifyContent": "center",
-            "flexShrink": "0", "marginBottom": "12px",
-            "boxShadow": "0 4px 10px rgba(0,0,0,.18)",
-        }),
-        html.Div(value, style={
-            "fontSize": "26px", "fontWeight": "900", "color": _DARK,
-            "lineHeight": "1", "marginBottom": "3px",
-        }),
-        html.Div(label, style={
-            "fontSize": "11px", "fontWeight": "700", "color": _DARK,
-            "marginBottom": "2px",
-        }),
-        html.Div(sub, style={"fontSize": "10px", "color": _GRAY}),
-    ], style={
-        "background": _WHITE,
-        "border": "1px solid rgba(0,0,0,.07)",
-        "borderTop": f"3px solid {top_border}",
-        "borderRadius": "14px",
-        "padding": "16px 18px",
-        "height": "100%",
-        "boxShadow": "0 2px 8px rgba(0,0,0,.05)",
-    })
+            html.I(className=f"ti {icon}"),
+        ], className=f"kpi-icon {variant}"),
+        html.Div(value, className="kpi-value"),
+        html.Div(label, className="kpi-label"),
+        html.Div(sub, className="kpi-sub"),
+    ], className=f"kpi-modern {variant}")
 
 
 def _module_card(icon: str, title: str, desc: str, href: str,
                  key: str, badge: str | None = None) -> dcc.Link:
-    grad, light, accent = MODULE_META.get(
-        key, (_RED, "#FFF1F2", _RED))
     return dcc.Link(
         html.Div([
             html.Div([
-                html.I(className=f"ti {icon}",
-                       style={"fontSize": "24px", "color": _WHITE}),
+                html.I(className=f"ti {icon}"),
                 *([ html.Span(badge, style={
-                        "background": "rgba(255,255,255,.22)",
-                        "color": _WHITE, "fontSize": "9px", "fontWeight": "700",
-                        "borderRadius": "20px", "padding": "2px 7px",
+                        "background": "rgba(255,255,255,.18)",
+                        "color": "rgba(255,255,255,.9)",
+                        "fontSize": "9px", "fontWeight": "700",
+                        "borderRadius": "20px", "padding": "2px 8px",
+                        "border": "1px solid rgba(255,255,255,.15)",
                     }) ] if badge else []),
-            ], style={
-                "background": grad, "borderRadius": "12px 12px 0 0",
-                "padding": "16px 16px 14px",
-                "display": "flex", "justifyContent": "space-between",
-                "alignItems": "flex-start", "minHeight": "66px",
-            }),
+            ], className="module-card-head"),
             html.Div([
-                html.Strong(title, style={
-                    "fontSize": "13px", "fontWeight": "800",
-                    "color": _DARK, "display": "block", "marginBottom": "4px",
-                }),
-                html.P(desc, style={
-                    "fontSize": "10px", "color": _GRAY,
-                    "margin": "0 0 8px", "lineHeight": "1.5",
-                }),
-                html.Span("Abrir →", style={
-                    "fontSize": "10px", "fontWeight": "700", "color": accent,
-                }),
-            ], style={"padding": "12px 14px"}),
-        ], style={
-            "background": _WHITE,
-            "border": "1px solid #E5E7EB",
-            "borderRadius": "14px",
-            "overflow": "hidden",
-            "height": "100%",
-            "boxShadow": "0 2px 8px rgba(0,0,0,.06)",
-            "cursor": "pointer",
-        }),
-        href=href, style={"textDecoration": "none"},
+                html.Div(title, className="module-card-title"),
+                html.Div(desc, className="module-card-desc"),
+                html.Div([
+                    "Abrir módulo",
+                    html.I(className="ti ti-arrow-right", style={"fontSize": "11px"}),
+                ], className="module-card-cta"),
+            ], className="module-card-body"),
+        ], style={"height": "100%"}),
+        href=href, className="module-card",
     )
 
 
-def _alert_pill(icon: str, text: str, color: str, bg: str) -> html.Span:
+def _alert_pill(icon: str, text: str, variant: str = "warning") -> html.Span:
+    cls = f"alert-pill alert-pill-{variant}"
     return html.Span([
-        html.I(className=f"ti {icon}",
-               style={"fontSize": "12px", "marginRight": "5px", "color": color}),
-        html.Span(text, style={"fontSize": "11px", "color": color, "fontWeight": "600"}),
-    ], style={
-        "background": bg, "border": f"1px solid {color}40",
-        "borderRadius": "20px", "padding": "5px 12px",
-        "display": "inline-flex", "alignItems": "center",
-        "marginRight": "8px", "marginBottom": "8px",
-    })
+        html.I(className=f"ti {icon}", style={"fontSize": "12px"}),
+        html.Span(text, style={"fontSize": "11px", "fontWeight": "600"}),
+    ], className=cls)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -344,162 +298,128 @@ def layout(**_p):
     mv_fmt    = f"{sq['total_mv']/1e6:.0f}M€" if sq["total_mv"] >= 1e6 else f"{sq['total_mv']:,}€"
     today_str = date.today().strftime("%d %b %Y").lstrip("0")
 
+    # ── Alertas activas ───────────────────────────────────────────────────────
     pills = []
     if sq["expiring_6m"] > 0:
         pills.append(_alert_pill("ti-urgent",
-                                 f"{sq['expiring_6m']} contratos críticos ≤6m",
-                                 "#991B1B", "#FEF2F2"))
+                                 f"{sq['expiring_6m']} contratos críticos ≤6 meses",
+                                 "danger"))
     if sq["expiring_1y"] > 0:
         pills.append(_alert_pill("ti-alert-triangle",
                                  f"{sq['expiring_1y']} contratos vencen en ≤12 meses",
-                                 "#92400E", "#FFFBEB"))
+                                 "warning"))
     if sq["loans_in"] > 0:
         pills.append(_alert_pill("ti-transfer-in",
                                  f"{sq['loans_in']} cedidos en plantilla",
-                                 "#1D4ED8", "#EFF6FF"))
+                                 "info"))
+
+    # ── Helpers de stats en hero ──────────────────────────────────────────────
+    def _hero_stat(val, lbl, sep=True):
+        border = "1px solid rgba(255,255,255,.12)" if sep else "none"
+        return html.Div([
+            html.Div(val, style={
+                "fontSize": "28px", "fontWeight": "900", "color": _WHITE,
+                "lineHeight": "1", "letterSpacing": "-.03em",
+            }),
+            html.Div(lbl, style={
+                "fontSize": "9px", "color": "rgba(255,255,255,.45)",
+                "fontWeight": "600", "marginTop": "3px", "textTransform": "uppercase",
+                "letterSpacing": ".06em",
+            }),
+        ], style={"textAlign": "center", "padding": "0 22px", "borderRight": border})
 
     return html.Div([
 
         # ── Hero ─────────────────────────────────────────────────────────────
         html.Div([
+            # Izquierda: logo + título
             html.Div([
                 html.Img(
                     src="https://upload.wikimedia.org/wikipedia/en/d/d8/Rayo_Vallecano_logo.svg",
-                    style={"height": "58px", "marginRight": "20px", "flexShrink": "0"},
+                    style={"height": "60px", "marginRight": "20px", "flexShrink": "0",
+                           "filter": "drop-shadow(0 3px 10px rgba(227,6,19,.45))"},
                 ),
                 html.Div([
                     html.Div("PANEL DE DIRECCIÓN DEPORTIVA", style={
-                        "fontSize": "9px", "fontWeight": "700",
-                        "color": "rgba(255,255,255,.55)",
-                        "letterSpacing": ".14em", "marginBottom": "4px",
+                        "fontSize": "8.5px", "fontWeight": "700",
+                        "color": "rgba(255,255,255,.38)",
+                        "letterSpacing": ".16em", "marginBottom": "5px",
                     }),
-                    html.H1("Rayo Vallecano · 2026/27", style={
-                        "fontSize": "24px", "fontWeight": "900",
-                        "color": _WHITE, "margin": "0 0 3px",
+                    html.H1("Rayo Vallecano", style={
+                        "fontSize": "26px", "fontWeight": "900",
+                        "color": _WHITE, "margin": "0", "letterSpacing": "-.03em",
                     }),
-                    html.Div(f"Datos actualizados · {today_str}", style={
-                        "fontSize": "10px", "color": "rgba(255,255,255,.5)",
-                    }),
+                    html.Div([
+                        html.Span("Temporada 2026/27", style={
+                            "fontSize": "12px", "color": "rgba(255,255,255,.55)",
+                            "fontWeight": "500",
+                        }),
+                        html.Span(" · ", style={"color": "rgba(255,255,255,.2)", "margin": "0 6px"}),
+                        html.Span(f"Actualizado {today_str}", style={
+                            "fontSize": "11px", "color": "rgba(255,255,255,.35)",
+                        }),
+                    ], style={"marginTop": "4px"}),
                 ]),
             ], style={"display": "flex", "alignItems": "center", "flex": "1"}),
 
+            # Derecha: stats clave
             html.Div([
-                *[html.Div([
-                    html.Div(val, style={
-                        "fontSize": "26px", "fontWeight": "900", "color": _WHITE,
-                        "lineHeight": "1",
-                    }),
-                    html.Div(lbl, style={
-                        "fontSize": "9px", "color": "rgba(255,255,255,.55)",
-                        "fontWeight": "600", "marginTop": "2px",
-                    }),
-                ], style={"textAlign": "center", "padding": "0 18px",
-                          "borderRight": sep})
-                  for val, lbl, sep in [
-                    (str(sq["n_players"]), "jugadores",
-                     "1px solid rgba(255,255,255,.15)"),
-                    (mv_fmt, "valor mercado",
-                     "1px solid rgba(255,255,255,.15)"),
-                    (f"{sk['candidates']:,}", "candidatos", "none"),
-                ]],
+                _hero_stat(str(sq["n_players"]), "Jugadores"),
+                _hero_stat(mv_fmt, "Valor mercado"),
+                _hero_stat(f"{sk['candidates']:,}", "Candidatos scouting", sep=False),
             ], style={"display": "flex", "alignItems": "center", "flexShrink": "0"}),
 
-        ], style={
-            "background": "linear-gradient(135deg,#0D0D0D 0%,#1A1A1A 60%,#2A2A2A 100%)",
-            "borderRadius": "18px", "padding": "22px 28px",
-            "marginBottom": "18px",
-            "display": "flex", "justifyContent": "space-between", "alignItems": "center",
-            "boxShadow": "0 8px 28px rgba(255,214,0,.18)",
-        }),
+        ], className="hero-dashboard"),
 
         # ── Alertas ──────────────────────────────────────────────────────────
-        *([html.Div(pills, style={
-               "display": "flex", "flexWrap": "wrap", "marginBottom": "16px",
-           })] if pills else []),
+        *([html.Div(pills, style={"display": "flex", "flexWrap": "wrap", "marginBottom": "20px"})] if pills else []),
 
         # ── KPIs ─────────────────────────────────────────────────────────────
-        html.P("RESUMEN DE PLANTILLA", style={
-            "fontSize": "9px", "fontWeight": "700", "color": _GRAY,
-            "letterSpacing": ".08em", "marginBottom": "10px",
-        }),
+        html.Div("Resumen de plantilla", className="section-label", style={"marginBottom": "14px"}),
         dbc.Row([
-            dbc.Col(_kpi_card(
-                "ti-users", "Jugadores", str(sq["n_players"]),
-                "Rayo Vallecano 2026/27",
-            ), md=2),
-            dbc.Col(_kpi_card(
-                "ti-calendar", "Edad media", f"{sq['avg_age']}a",
-                "años en primera plantilla",
-            ), md=2),
-            dbc.Col(_kpi_card(
-                "ti-coin-euro", "Valor de mercado", mv_fmt,
-                "valor total Transfermarkt",
-            ), md=2),
-            dbc.Col(_kpi_card(
-                "ti-alert-triangle", "Contratos urgentes", str(sq["expiring_1y"]),
-                "vencen en ≤12 meses",
-                danger=True,
-            ), md=2),
-            dbc.Col(_kpi_card(
-                "ti-clock-exclamation", "Críticos ≤6m", str(sq["expiring_6m"]),
-                "decisión inmediata",
-                danger=True,
-            ), md=2),
-            dbc.Col(_kpi_card(
-                "ti-search", "Scouting", f"{sk['candidates']:,}",
-                f"candidatos en {sk['ligas']} ligas",
-            ), md=2),
-        ], className="g-3 mb-4"),
+            dbc.Col(_kpi_card("ti-users",            "Jugadores",         str(sq["n_players"]),   "Rayo Vallecano 2026/27"),     md=2),
+            dbc.Col(_kpi_card("ti-calendar",          "Edad media",        f"{sq['avg_age']}a",    "años · primera plantilla"),   md=2),
+            dbc.Col(_kpi_card("ti-coin-euro",         "Valor de mercado",  mv_fmt,                  "Transfermarkt total"),        md=2),
+            dbc.Col(_kpi_card("ti-alert-triangle",    "Contratos urgentes",str(sq["expiring_1y"]), "vencen en ≤12 meses", danger=True), md=2),
+            dbc.Col(_kpi_card("ti-clock-exclamation", "Críticos ≤6m",      str(sq["expiring_6m"]), "decisión inmediata",  danger=True), md=2),
+            dbc.Col(_kpi_card("ti-search",            "Scouting",          f"{sk['candidates']:,}", f"{sk['ligas']} ligas"),       md=2),
+        ], className="g-3 mb-4 stagger animate-fade"),
 
         # ── Gráficos + Módulos ────────────────────────────────────────────────
         dbc.Row([
 
-            # Gráficos (izquierda, 8 cols)
+            # Gráficos (izquierda)
             dbc.Col([
-                html.P("ANÁLISIS VISUAL", style={
-                    "fontSize": "9px", "fontWeight": "700", "color": _GRAY,
-                    "letterSpacing": ".08em", "marginBottom": "10px",
-                }),
+                html.Div("Análisis visual de plantilla", className="section-label", style={"marginBottom": "14px"}),
                 dbc.Row([
                     dbc.Col(html.Div(dcc.Graph(
                         figure=_chart_age(sq["ages"]),
                         config=GRAPH_CONFIG_SIMPLE,
-                        style={"height": "200px"},
-                    ), style={"background": _WHITE, "borderRadius": "12px",
-                               "border": "1px solid #E5E7EB", "overflow": "hidden",
-                               "boxShadow": "0 1px 5px rgba(0,0,0,.05)"}), md=6),
+                        style={"height": "210px"},
+                    ), className="chart-wrap"), md=6),
                     dbc.Col(html.Div(dcc.Graph(
                         figure=_chart_positions(sq["positions"]),
                         config=GRAPH_CONFIG_SIMPLE,
-                        style={"height": "200px"},
-                    ), style={"background": _WHITE, "borderRadius": "12px",
-                               "border": "1px solid #E5E7EB", "overflow": "hidden",
-                               "boxShadow": "0 1px 5px rgba(0,0,0,.05)"}), md=6),
+                        style={"height": "210px"},
+                    ), className="chart-wrap"), md=6),
                 ], className="g-3 mb-3"),
                 dbc.Row([
                     dbc.Col(html.Div(dcc.Graph(
                         figure=_chart_contracts(players_raw),
                         config=GRAPH_CONFIG_SIMPLE,
-                        style={"height": "200px"},
-                    ), style={"background": _WHITE, "borderRadius": "12px",
-                               "border": "1px solid #E5E7EB", "overflow": "hidden",
-                               "boxShadow": "0 1px 5px rgba(0,0,0,.05)"}), md=6),
+                        style={"height": "210px"},
+                    ), className="chart-wrap"), md=6),
                     dbc.Col(html.Div(dcc.Graph(
                         figure=_chart_mv(players_raw),
                         config=GRAPH_CONFIG_SIMPLE,
-                        style={"height": "200px"},
-                    ), style={"background": _WHITE, "borderRadius": "12px",
-                               "border": "1px solid #E5E7EB", "overflow": "hidden",
-                               "boxShadow": "0 1px 5px rgba(0,0,0,.05)"}), md=6),
+                        style={"height": "210px"},
+                    ), className="chart-wrap"), md=6),
                 ], className="g-3"),
             ], md=8),
 
-            # Módulos (derecha, 4 cols)
+            # Módulos (derecha)
             dbc.Col([
-                html.P("MÓDULOS", style={
-                    "fontSize": "9px", "fontWeight": "700", "color": _GRAY,
-                    "letterSpacing": ".08em", "marginBottom": "10px",
-                }),
+                html.Div("Módulos", className="section-label", style={"marginBottom": "14px"}),
                 dbc.Row([
                     dbc.Col(_module_card(
                         "ti-users-group", "Plantilla",
@@ -509,7 +429,7 @@ def layout(**_p):
                     ), md=6, className="mb-3"),
                     dbc.Col(_module_card(
                         "ti-search", "Scouting",
-                        "Buscador fuzzy con perfil completo.",
+                        "Buscador con perfil y percentiles completos.",
                         "/scouting", "scouting",
                         f"{sk['candidates']:,} candidatos",
                     ), md=6, className="mb-3"),
@@ -526,12 +446,12 @@ def layout(**_p):
                     ), md=6, className="mb-3"),
                     dbc.Col(_module_card(
                         "ti-clipboard-check", "Decisiones",
-                        "Rankings: fichar, renovar, vender, ceder.",
+                        "Rankings automáticos: fichar, renovar, vender.",
                         "/decisiones", "decisiones",
                         f"{sq['expiring_1y']} urgentes" if sq["expiring_1y"] else None,
                     ), md=6, className="mb-3"),
                     dbc.Col(_module_card(
-                        "ti-coins", "Finanzas",
+                        "ti-report-money", "Finanzas",
                         "Masa salarial y simulación presupuestaria.",
                         "/finanzas", "finanzas",
                     ), md=6, className="mb-3"),
@@ -540,9 +460,11 @@ def layout(**_p):
 
         ], className="g-4 mb-3"),
 
-        html.P(
-            "Datos: Transfermarkt · OPTA · Scores calculados automáticamente.",
+        # Footer
+        html.Div(
+            "Datos: Transfermarkt · OPTA · Scores calculados automáticamente por el sistema.",
             style={"fontSize": "10px", "color": "#9CA3AF",
-                   "textAlign": "center", "marginTop": "4px"},
+                   "textAlign": "center", "marginTop": "8px", "paddingBottom": "4px"},
         ),
     ])
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         

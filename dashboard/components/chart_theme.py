@@ -41,14 +41,14 @@ SERIES_COLORS = [
 _FONT_FAMILY = "'Inter', 'Helvetica Neue', Arial, sans-serif"
 
 _AXIS_COMMON = dict(
-    gridcolor="#F0F0F4",
+    gridcolor="#EAECF0",
     linecolor="#E5E7EB",
-    tickcolor="#E5E7EB",
-    tickfont=dict(size=11, color=RAYO_GRAY, family=_FONT_FAMILY),
-    title_font=dict(size=11, color="#374151", family=_FONT_FAMILY),
+    tickcolor="rgba(0,0,0,0)",
+    tickfont=dict(size=10.5, color="#9CA3AF", family=_FONT_FAMILY),
+    title_font=dict(size=10.5, color="#6B7280", family=_FONT_FAMILY),
     showgrid=True,
     zeroline=False,
-    showline=True,
+    showline=False,
 )
 
 _TEMPLATE = go.layout.Template(
