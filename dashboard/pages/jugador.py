@@ -248,7 +248,7 @@ def _get_tm_id_for_player(name, opta_id=None):
 
 
 def _tm_strip(key, opta_id=None):
-    """Barra de gestión de Transfermarkt – aparece justo debajo del header del perfil."""
+    """Bloque TM compacto para incrustar en el header del perfil (a la izq. de Volver)."""
     name = key.split("|")[0]
     current_tm_id = _get_tm_id_for_player(name, opta_id)
     tm_profile_url = (
@@ -258,57 +258,43 @@ def _tm_strip(key, opta_id=None):
     return html.Div([
         dcc.Store(id="player-note-key", data=key),
         dcc.Store(id="player-opta-id", data=opta_id or ""),
-        # Icono + label
-        html.Div([
-            html.I(className="ti ti-brand-transfermarkt",
-                   style={"fontSize": "18px", "color": "#1D4ED8", "marginRight": "6px"}),
-            html.Span("Transfermarkt", style={
-                "fontSize": "12px", "fontWeight": "700", "color": "#1A1A2E",
-                "marginRight": "14px",
-            }),
-        ], style={"display": "flex", "alignItems": "center"}),
-        # Link al perfil
+        # Link "Comprobar en TM"
         html.A(
-            [html.I(className="ti ti-external-link", style={"marginRight": "4px", "fontSize": "11px"}),
-             "Ver perfil"],
+            [html.I(className="ti ti-external-link",
+                    style={"fontSize": "11px", "marginRight": "4px"}),
+             "Comprobar en Transfermarkt"],
             href=tm_profile_url, target="_blank",
             style={"fontSize": "12px", "color": "#1D4ED8", "textDecoration": "none",
-                   "fontWeight": "600", "marginRight": "18px", "whiteSpace": "nowrap"},
-        ),
-        # Separador vertical
-        html.Div(style={"width": "1px", "height": "24px", "background": "#E5E7EB",
-                        "marginRight": "18px"}),
-        # Label ID
-        html.Span("ID:", style={"fontSize": "11px", "color": "#6B7280",
-                                "marginRight": "6px", "whiteSpace": "nowrap"}),
-        # Input ID
-        dcc.Input(
-            id="tm-id-input", type="text",
-            value=current_tm_id,
-            placeholder="ej. 258923",
-            style={"width": "120px", "fontSize": "12px", "padding": "5px 9px",
-                   "border": "1px solid #D1D5DB", "borderRadius": "7px",
-                   "marginRight": "8px"},
-        ),
-        # Botón actualizar
-        html.Button(
-            [html.I(className="ti ti-refresh", style={"marginRight": "5px"}),
-             "Actualizar desde TM"],
-            id="btn-fetch-tm", n_clicks=0,
-            style={"background": "#1D4ED8", "color": "#fff", "border": "none",
-                   "borderRadius": "7px", "padding": "5px 13px",
-                   "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
+                   "fontWeight": "600", "display": "block", "marginBottom": "6px",
                    "whiteSpace": "nowrap"},
         ),
-        # Status
+        # Fila: ID input + botón
+        html.Div([
+            dcc.Input(
+                id="tm-id-input", type="text",
+                value=current_tm_id,
+                placeholder="ID TM (ej. 258923)",
+                style={"width": "130px", "fontSize": "11px", "padding": "4px 8px",
+                       "border": "1px solid #D1D5DB", "borderRadius": "6px",
+                       "marginRight": "5px"},
+            ),
+            html.Button(
+                [html.I(className="ti ti-refresh", style={"marginRight": "3px"}),
+                 "Actualizar"],
+                id="btn-fetch-tm", n_clicks=0,
+                style={"background": "#1D4ED8", "color": "#fff", "border": "none",
+                       "borderRadius": "6px", "padding": "4px 10px",
+                       "fontSize": "11px", "fontWeight": "600", "cursor": "pointer",
+                       "whiteSpace": "nowrap"},
+            ),
+        ], style={"display": "flex", "alignItems": "center"}),
         html.Span(id="tm-fetch-status", style={
-            "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
+            "fontSize": "10px", "color": "#166534", "marginTop": "4px", "display": "block",
         }),
     ], style={
-        "display": "flex", "alignItems": "center", "flexWrap": "wrap", "gap": "0px",
         "background": "#F0F4FF", "border": "1px solid #C7D7FD",
-        "borderRadius": "10px", "padding": "10px 16px",
-        "marginBottom": "12px",
+        "borderRadius": "10px", "padding": "10px 14px",
+        "minWidth": "190px", "alignSelf": "flex-start",
     })
 
 
@@ -850,14 +836,8 @@ def render_player(search):
             "Usa el buscador de arriba o selecciona un jugador desde Scouting.",
             style={"color": "#6B7280", "fontSize": "13px", "padding": "20px"},
         )
-    try:
-        detail = build_detail(name, team=team or None)
-    except Exception as exc:
-        return dbc.Alert(f"No se pudo construir el perfil: {exc}", color="warning")
     key = f"{name}|{team}"
     ovs = _load_overrides()
-    fit_card = _fit_rayo_card(name)
-    risk_card = _clause_risk_card(name, ovs)
     # Obtener opta_id para lookup de tm_id
     opta_id = params.get("id", "") if search and search.startswith("?") else ""
     if not opta_id:
@@ -870,7 +850,14 @@ def render_player(search):
                 opta_id = str(match.iloc[0]["player_id_src"])
         except Exception:
             pass
-    return html.Div([detail, _tm_strip(key, opta_id), fit_card, risk_card,
+    try:
+        tm_elem = _tm_strip(key, opta_id)
+        detail = build_detail(name, team=team or None, extra_header_right=tm_elem)
+    except Exception as exc:
+        return dbc.Alert(f"No se pudo construir el perfil: {exc}", color="warning")
+    fit_card = _fit_rayo_card(name)
+    risk_card = _clause_risk_card(name, ovs)
+    return html.Div([detail, fit_card, risk_card,
                      _notes_box(key, _load_notes(), ovs)])
 
 
@@ -1118,3 +1105,4 @@ def save_lateral(n_clicks, lateral_pos, role_type, key):
     ov[_norm(key)] = entry
     _save_overrides(ov)
     return "Guardado correctamente"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   

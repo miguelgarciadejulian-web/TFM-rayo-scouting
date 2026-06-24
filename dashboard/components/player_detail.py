@@ -442,7 +442,8 @@ def _radar(role_scores: dict):
 
 
 def build_detail(name, team=None, league=None, age=None,
-                 coach_style="Bloque medio / Equilibrado", with_photo=True):
+                 coach_style="Bloque medio / Equilibrado", with_photo=True,
+                 extra_header_right=None):
     rows = _find_rows(name, team)
     if rows.empty:
         return dbc.Alert(f"No hay datos Opta de '{name}' en el scope actual.", color="warning")
@@ -586,6 +587,7 @@ def build_detail(name, team=None, league=None, age=None,
                 ),
             ], style={"marginTop": "4px"}) if mvinfo.get("data_source") or mvinfo.get("last_updated") else html.Div(),
         ], style={"flex": "1"}),
+        *([ extra_header_right ] if extra_header_right is not None else []),
         html.A("← Volver al Scouting", href="/scouting", style={"fontSize": "12px",
                "color": "#B8960C", "textDecoration": "none", "alignSelf": "flex-start"}),
     ], style={"display": "flex", "gap": "18px", "alignItems": "flex-start", "marginBottom": "18px"})
@@ -699,4 +701,4 @@ def build_detail(name, team=None, league=None, age=None,
                  style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
                         "padding": "10px 14px", "overflowX": "auto"}),
     ])
-                                                                                                                                                                                                                         
+                                                                                                  
