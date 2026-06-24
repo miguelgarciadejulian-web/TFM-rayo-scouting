@@ -484,8 +484,23 @@ def tab_presupuesto(fin):
             dbc.Col(_fkpi("ti-trophy","Conference League",_fmt(rev["conference_league_eur"]),"final 2024-25 (Crystal Palace 1-0)","#92400E","#F59E0B"),md=3),
         ], className="g-3 mb-3"),
         dbc.Row([
+            # ── Ingresos con donut integrado
             dbc.Col(html.Div([
-                html.P("Ingresos",style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","marginBottom":"16px"}),
+                html.P("Ingresos",style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","marginBottom":"10px"}),
+                dcc.Graph(
+                    figure=apply_theme(go.Figure(go.Pie(
+                        labels=["TV LaLiga","Conference League","Taquilla","Comercial","Otros"],
+                        values=[rev["tv_laliga_eur"],rev["conference_league_eur"],rev["matchday_eur"],
+                                rev["commercial_sponsorship_eur"],rev["other_eur"]],
+                        hole=0.52,
+                        marker=dict(colors=["#047857","#059669","#10B981","#34D399","#6EE7B7"]),
+                        textinfo="none",
+                        hovertemplate="<b>%{label}</b><br>%{value:,.0f}€<br>%{percent}<extra></extra>",
+                    )), height=150, transparent=True, compact=True) or go.Figure(),
+                    config={"displayModeBar":False},
+                    style={"marginBottom":"6px"},
+                ),
+                html.Div(style={"borderTop":"1px solid #F3F4F6","margin":"8px 0"}),
                 rev_row("Derechos TV LaLiga",    rev["tv_laliga_eur"],           "ti-tv",             "est. 2026-27"),
                 rev_row("Conference League UEFA",rev["conference_league_eur"],   "ti-trophy",         "final 24-25"),
                 rev_row("Taquilla / Matchday",   rev["matchday_eur"],            "ti-ticket",         "Vallecas ~14.700"),
@@ -495,9 +510,25 @@ def tab_presupuesto(fin):
                 html.Div([html.Span("TOTAL",style={"fontSize":"11px","fontWeight":"700","color":"#374151","flex":"1"}),
                           html.Span(_fmt(total_rev),style={"fontSize":"15px","fontWeight":"700","color":"#10B981"})],
                          style={"display":"flex","alignItems":"center"}),
-            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}), md=6),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px","height":"100%"}), md=4),
+
+            # ── Gastos con donut integrado
             dbc.Col(html.Div([
-                html.P("Gastos",style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","marginBottom":"16px"}),
+                html.P("Gastos",style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","marginBottom":"10px"}),
+                dcc.Graph(
+                    figure=apply_theme(go.Figure(go.Pie(
+                        labels=["Masa salarial","Amortizaciones","Operativos","Traspasos netos"],
+                        values=[exp["wage_bill_gross_eur"]+exp["bonus_bill_eur"],
+                                exp["amortizations_eur"],exp["operating_costs_eur"],exp["transfers_net_eur"]],
+                        hole=0.52,
+                        marker=dict(colors=["#9F1239","#B91C1C","#DC2626","#F87171"]),
+                        textinfo="none",
+                        hovertemplate="<b>%{label}</b><br>%{value:,.0f}€<br>%{percent}<extra></extra>",
+                    )), height=150, transparent=True, compact=True) or go.Figure(),
+                    config={"displayModeBar":False},
+                    style={"marginBottom":"6px"},
+                ),
+                html.Div(style={"borderTop":"1px solid #F3F4F6","margin":"8px 0"}),
                 exp_row("Masa salarial (base+bonus)",  exp["wage_bill_gross_eur"]+exp["bonus_bill_eur"],"ti-users"),
                 exp_row("Amortizaciones traspasos",    exp["amortizations_eur"],  "ti-chart-line-down"),
                 exp_row("Costes operativos",           exp["operating_costs_eur"],"ti-building"),
@@ -506,73 +537,55 @@ def tab_presupuesto(fin):
                 html.Div([html.Span("TOTAL",style={"fontSize":"11px","fontWeight":"700","color":"#374151","flex":"1"}),
                           html.Span(_fmt(total_exp),style={"fontSize":"15px","fontWeight":"700","color":"#B8960C"})],
                          style={"display":"flex","alignItems":"center"}),
-            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}), md=6),
-        ], className="g-3"),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px","height":"100%"}), md=4),
 
-        # ── Gráfico comparativa ───────────────────────────────────────────────
-        dbc.Row([
-            dbc.Col(html.Div([
-                html.P("Ingresos", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
-                    "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 0","textAlign":"center"}),
-                dcc.Graph(
-                    figure=apply_theme(go.Figure(go.Pie(
-                        labels=["Derechos TV","Conference League","Taquilla","Comercial","Otros"],
-                        values=[rev["tv_laliga_eur"],rev["conference_league_eur"],rev["matchday_eur"],
-                                rev["commercial_sponsorship_eur"],rev["other_eur"]],
-                        hole=0.55,
-                        marker=dict(colors=["#047857","#059669","#10B981","#34D399","#6EE7B7"]),
-                        textinfo="none",
-                        hovertemplate="<b>%{label}</b><br>%{value:,.0f}€<br>%{percent}<extra></extra>",
-                    )), height=160, transparent=True, compact=True) or go.Figure(),
-                    config={"displayModeBar":False},
-                ),
-            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"12px 16px"}), md=4),
-
-            dbc.Col(html.Div([
-                html.P("Gastos", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
-                    "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 0","textAlign":"center"}),
-                dcc.Graph(
-                    figure=apply_theme(go.Figure(go.Pie(
-                        labels=["Masa salarial","Amortizaciones","Operativos","Traspasos netos"],
-                        values=[exp["wage_bill_gross_eur"]+exp["bonus_bill_eur"],
-                                exp["amortizations_eur"],exp["operating_costs_eur"],exp["transfers_net_eur"]],
-                        hole=0.55,
-                        marker=dict(colors=["#9F1239","#B91C1C","#DC2626","#F87171"]),
-                        textinfo="none",
-                        hovertemplate="<b>%{label}</b><br>%{value:,.0f}€<br>%{percent}<extra></extra>",
-                    )), height=160, transparent=True, compact=True) or go.Figure(),
-                    config={"displayModeBar":False},
-                ),
-            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"12px 16px"}), md=4),
-
+            # ── Panel derecho: balance + waterfall
             dbc.Col(html.Div([
                 html.P("Balance 2026/27", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
-                    "textTransform":"uppercase","letterSpacing":".06em","marginBottom":"12px","textAlign":"center"}),
+                    "textTransform":"uppercase","letterSpacing":".06em","marginBottom":"10px","textAlign":"center"}),
                 html.Div([
                     html.I(className="ti ti-arrow-up",
                            style={"color":"#10B981","fontSize":"14px","marginRight":"6px"}),
                     html.Span("Ingresos", style={"fontSize":"11px","color":"#374151","flex":"1"}),
                     html.Span(_fmt(total_rev), style={"fontSize":"13px","fontWeight":"700","color":"#10B981"}),
-                ], style={"display":"flex","alignItems":"center","marginBottom":"8px"}),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"6px"}),
                 html.Div([
                     html.I(className="ti ti-arrow-down",
                            style={"color":"#DC2626","fontSize":"14px","marginRight":"6px"}),
                     html.Span("Gastos", style={"fontSize":"11px","color":"#374151","flex":"1"}),
                     html.Span(_fmt(total_exp), style={"fontSize":"13px","fontWeight":"700","color":"#DC2626"}),
-                ], style={"display":"flex","alignItems":"center","marginBottom":"8px"}),
-                html.Div(style={"borderTop":"2px solid #E5E7EB","margin":"10px 0"}),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"6px"}),
+                html.Div(style={"borderTop":"2px solid #E5E7EB","margin":"8px 0"}),
                 html.Div([
                     html.I(className=f"ti ti-{'trending-up' if balance>=0 else 'trending-down'}",
-                           style={"color":"#10B981" if balance>=0 else "#DC2626","fontSize":"14px","marginRight":"6px"}),
+                           style={"color":"#10B981" if balance>=0 else "#DC2626","fontSize":"16px","marginRight":"6px"}),
                     html.Span("Balance", style={"fontSize":"11px","color":"#374151","flex":"1"}),
                     html.Span(("+" if balance>=0 else "")+_fmt(balance),
-                              style={"fontSize":"18px","fontWeight":"900",
+                              style={"fontSize":"20px","fontWeight":"900",
                                      "color":"#10B981" if balance>=0 else "#DC2626"}),
-                ], style={"display":"flex","alignItems":"center"}),
-                html.P("superávit" if balance>=0 else "déficit",
-                       style={"fontSize":"10px","color":"#9CA3AF","margin":"4px 0 0","textAlign":"right"}),
-            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px",
-                      "height":"100%","display":"flex","flexDirection":"column","justifyContent":"center"}), md=4),
+                ], style={"display":"flex","alignItems":"center","marginBottom":"4px"}),
+                html.P("superávit operativo" if balance>=0 else "déficit operativo",
+                       style={"fontSize":"10px","color":"#9CA3AF","margin":"0 0 10px","textAlign":"right"}),
+
+                # Waterfall ingresos → gastos → balance
+                dcc.Graph(
+                    figure=apply_theme(go.Figure(go.Waterfall(
+                        orientation="v",
+                        measure=["absolute","relative","total"],
+                        x=["Ingresos","Gastos","Balance"],
+                        y=[total_rev, -total_exp, 0],
+                        text=[_fmt(total_rev), f"-{_fmt(total_exp)}", _fmt(abs(balance))],
+                        textposition="outside",
+                        textfont=dict(size=9),
+                        connector={"line":{"color":"#E5E7EB","width":1}},
+                        increasing={"marker":{"color":"#10B981"}},
+                        decreasing={"marker":{"color":"#DC2626"}},
+                        totals={"marker":{"color":"#10B981" if balance>=0 else "#DC2626"}},
+                        hovertemplate="<b>%{x}</b>: %{y:,.0f}€<extra></extra>",
+                    )), height=200, transparent=True, compact=True) or go.Figure(),
+                    config={"displayModeBar":False},
+                ),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px","height":"100%"}), md=4),
         ], className="g-3 mb-3"),
 
         # ── Editor de partidas del usuario (ingresos/gastos) ─────────────────
@@ -646,53 +659,55 @@ def tab_riesgo(fin):
             for p in libres],
         ], style={"background":"#FFF1F2","border":"1px solid #FECACA","borderRadius":"10px","padding":"14px 16px","marginBottom":"14px"}),
 
-        # Editor de cláusulas + tarjetas de riesgo
-        html.Div([
-            html.Div([
-                html.P("Score de riesgo — jugadores con contrato vigente",
-                       style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 2px"}),
-                html.P("Factores: contrato restante · edad · ratio cláusula/valor TM · interés real (jun-2026)",
-                       style={"fontSize":"11px","color":"#6B7280","margin":"0 0 6px"}),
-                html.Span("Puedes editar las cláusulas directamente — el score se recalcula al pulsar ↵ o salir del campo.",
-                          style={"fontSize":"10px","color":"#9CA3AF","fontStyle":"italic"}),
-            ], style={"marginBottom":"14px"}),
-
-            # Tabla editable de cláusulas
-            html.Div([
-                html.Table([
-                    html.Thead(html.Tr([
-                        html.Th("Jugador",    style=HEAD),
-                        html.Th("Pos.",       style=HEAD),
-                        html.Th("Cláusula (M€) — editable", style={**HEAD,"color":"#FFD600"}),
-                        html.Th("Confirmada",style=HEAD),
-                        html.Th("Valor TM",  style=HEAD),
-                        html.Th("Contrato",  style=HEAD),
-                    ])),
-                    html.Tbody([
-                        html.Tr([
-                            html.Td(html.Strong(p["name"],style={"fontSize":"12px"}), style=CELL),
-                            html.Td(html.Span(p["position"],style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px","borderRadius":"99px","background":"#F3F4F6","color":"#374151"}), style=CELL),
-                            html.Td(dcc.Input(
-                                id={"type":"clause-edit","index":p["name"]},
-                                type="number", min=0, step=0.5,
-                                value=round((p.get("release_clause") or 0)/1e6, 1),
-                                debounce=True,
-                                style=inp_s,
-                            ), style=CELL),
-                            html.Td(html.Span("✓" if p.get("clause_confirmed") else "~",
-                                style={"color":"#166534" if p.get("clause_confirmed") else "#9CA3AF","fontWeight":"700"}), style=CELL),
-                            html.Td(_fmt(MV_MAP.get(p["name"])), style=CELL),
-                            html.Td([_contract_dot(p["contract_end"]), str(p["contract_end"])[:4]], style=CELL),
-                        ])
-                        for p in sorted(activos, key=lambda x: -(x.get("release_clause") or 0))
-                    ]),
-                ], style={"width":"100%","borderCollapse":"collapse"}),
-            ], style={"overflowX":"auto","marginBottom":"16px",
-                      "border":"1px solid #E5E7EB","borderRadius":"10px"}),
-
-            # Tarjetas de riesgo dinámicas + gráfico lateral
+        # Editor de cláusulas + tarjetas de riesgo + panel lateral
         dbc.Row([
-            dbc.Col(html.Div(id="risk-cards-container"), md=8),
+            dbc.Col(html.Div([
+                html.Div([
+                    html.P("Score de riesgo — jugadores con contrato vigente",
+                           style={"fontSize":"10px","fontWeight":"600","color":"#9CA3AF","textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 2px"}),
+                    html.P("Factores: contrato restante · edad · ratio cláusula/valor TM · interés real (jun-2026)",
+                           style={"fontSize":"11px","color":"#6B7280","margin":"0 0 6px"}),
+                    html.Span("Edita las cláusulas directamente — el score se recalcula al pulsar ↵.",
+                              style={"fontSize":"10px","color":"#9CA3AF","fontStyle":"italic"}),
+                ], style={"marginBottom":"12px"}),
+
+                # Tabla editable de cláusulas
+                html.Div([
+                    html.Table([
+                        html.Thead(html.Tr([
+                            html.Th("Jugador",    style=HEAD),
+                            html.Th("Pos.",       style=HEAD),
+                            html.Th("Cláusula (M€)", style={**HEAD,"color":"#FFD600"}),
+                            html.Th("✓",style=HEAD),
+                            html.Th("Valor TM",  style=HEAD),
+                            html.Th("Contrato",  style=HEAD),
+                        ])),
+                        html.Tbody([
+                            html.Tr([
+                                html.Td(html.Strong(p["name"],style={"fontSize":"12px"}), style=CELL),
+                                html.Td(html.Span(p["position"],style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px","borderRadius":"99px","background":"#F3F4F6","color":"#374151"}), style=CELL),
+                                html.Td(dcc.Input(
+                                    id={"type":"clause-edit","index":p["name"]},
+                                    type="number", min=0, step=0.5,
+                                    value=round((p.get("release_clause") or 0)/1e6, 1),
+                                    debounce=True,
+                                    style=inp_s,
+                                ), style=CELL),
+                                html.Td(html.Span("✓" if p.get("clause_confirmed") else "~",
+                                    style={"color":"#166534" if p.get("clause_confirmed") else "#9CA3AF","fontWeight":"700"}), style=CELL),
+                                html.Td(_fmt(MV_MAP.get(p["name"])), style=CELL),
+                                html.Td([_contract_dot(p["contract_end"]), str(p["contract_end"])[:4]], style=CELL),
+                            ])
+                            for p in sorted(activos, key=lambda x: -(x.get("release_clause") or 0))
+                        ]),
+                    ], style={"width":"100%","borderCollapse":"collapse"}),
+                ], style={"overflowX":"auto","marginBottom":"14px","border":"1px solid #E5E7EB","borderRadius":"10px"}),
+
+                # Tarjetas de riesgo dinámicas
+                html.Div(id="risk-cards-container"),
+            ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}), md=8),
+
+            # Panel lateral: gráficos
             dbc.Col(html.Div([
                 html.P("Distribución de riesgo", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
                     "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 6px","textAlign":"center"}),
@@ -710,16 +725,44 @@ def tab_riesgo(fin):
                         textposition="inside",
                         textfont=dict(size=10, color="#fff"),
                         hovertemplate="<b>%{y}</b>: %{x} jugadores<extra></extra>",
-                    )), height=180, transparent=True, compact=True) or go.Figure(),
+                    )), height=170, transparent=True, compact=True) or go.Figure(),
                     config={"displayModeBar":False},
                 ),
+
                 html.Div(style={"borderTop":"1px solid #F3F4F6","margin":"10px 0"}),
+
+                # Cláusula vs Valor TM scatter
+                html.P("Cláusula vs Valor TM", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
+                    "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 6px","textAlign":"center"}),
+                dcc.Graph(
+                    figure=apply_theme(go.Figure(go.Scatter(
+                        x=[MV_MAP.get(p["name"],0)/1e6 for p in activos],
+                        y=[(p.get("release_clause") or 0)/1e6 for p in activos],
+                        mode="markers+text",
+                        text=[p["name"].split()[-1] for p in activos],
+                        textposition="top center",
+                        textfont=dict(size=8),
+                        marker=dict(
+                            size=10,
+                            color=[(p.get("release_clause") or 0)/(MV_MAP.get(p["name"],1) or 1)
+                                   for p in activos],
+                            colorscale=[[0,"#DC2626"],[0.5,"#F59E0B"],[1,"#10B981"]],
+                            showscale=False,
+                            line=dict(color="white",width=1),
+                        ),
+                        hovertemplate="<b>%{text}</b><br>TM: %{x:.1f}M€<br>Cláusula: %{y:.1f}M€<extra></extra>",
+                    )), height=200, transparent=True, compact=True) or go.Figure(),
+                    config={"displayModeBar":False},
+                ),
+
+                html.Div(style={"borderTop":"1px solid #F3F4F6","margin":"10px 0"}),
+
                 html.P("Interés externo", style={"fontSize":"10px","fontWeight":"700","color":"#9CA3AF",
                     "textTransform":"uppercase","letterSpacing":".06em","margin":"0 0 8px","textAlign":"center"}),
                 *[html.Div([
                     html.Strong(n["player"].split()[-1],
                                style={"fontSize":"11px","color":"#1A1A2E","flex":"1"}),
-                    html.Span(n.get("note","")[:28],
+                    html.Span(n.get("note","")[:26],
                              style={"fontSize":"10px","color":"#6B7280","fontStyle":"italic","flex":"2"}),
                     html.Span("●", style={"color":"#DC2626" if n.get("interest_level")=="confirmed" else "#F59E0B",
                                          "marginLeft":"6px","fontSize":"8px"}),
@@ -727,7 +770,6 @@ def tab_riesgo(fin):
                   for n in news[:6]],
             ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"14px"}), md=4),
         ], className="g-3"),
-        ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"10px","padding":"16px 18px"}),
     ])
 
 # ── Tab 4: Simulador ──────────────────────────────────────────────────────────
