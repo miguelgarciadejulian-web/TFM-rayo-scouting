@@ -884,6 +884,99 @@ def update_risk_cards(values, ids):
 
 # ── Helpers de evaluación de operaciones de mercado ─────────────────────────
 
+def _get_role_info(name: str) -> dict:
+    """Devuelve lateral_pos y role_type (código + label) para un jugador."""
+    try:
+        from src.utils.lateral_position import (
+            build_lateral_map, LATERAL_LABELS, ROLE_TYPE_LABELS, role_type_label
+        )
+        import unicodedata as _ud, json as _json
+        def _norm(x):
+            return _ud.normalize("NFKD", str(x)).encode("ascii","ignore").decode().lower().strip()
+
+        lat_code = role_code = None
+
+        # 1. Lateral map (inferido de datos)
+        enriched = PROC_DIR / "player_seasons_enriched.parquet"
+        master   = PROC_DIR / "master_players.parquet"
+        if enriched.exists() and master.exists():
+            lm = build_lateral_map(enriched, master)
+            row = lm[lm["name"].astype(str).apply(_norm) == _norm(name)]
+            if not row.empty:
+                lat_code  = row.iloc[0].get("lateral_pos")
+                role_code = row.iloc[0].get("role_type")
+
+        # 2. Override manual (prioridad)
+        ov_path = PROC_DIR / "player_overrides.json"
+        if ov_path.exists():
+            try:
+                ov = _json.load(open(ov_path, encoding="utf-8"))
+                entry = ov.get(_norm(name), {})
+                if entry.get("lateral_pos"): lat_code  = entry["lateral_pos"]
+                if entry.get("role_type"):   role_code = entry["role_type"]
+            except Exception:
+                pass
+
+        return {
+            "lat_code":   lat_code,
+            "role_code":  role_code,
+            "lat_label":  LATERAL_LABELS.get(lat_code, "") if lat_code else "",
+            "role_label": role_type_label(role_code) if role_code else "",
+        }
+    except Exception:
+        return {"lat_code": None, "role_code": None, "lat_label": "", "role_label": ""}
+
+
+def _get_rayo_overlap(lat_code: str | None, role_code: str | None) -> list[dict]:
+    """Jugadores del Rayo con la misma posición lateral y/o tipo de rol."""
+    if not lat_code and not role_code:
+        return []
+    try:
+        from src.utils.lateral_position import (
+            build_lateral_map, LATERAL_LABELS, role_type_label
+        )
+        import unicodedata as _ud, yaml as _yaml
+        def _norm(x):
+            return _ud.normalize("NFKD", str(x)).encode("ascii","ignore").decode().lower().strip()
+
+        enriched = PROC_DIR / "player_seasons_enriched.parquet"
+        master   = PROC_DIR / "master_players.parquet"
+        if not (enriched.exists() and master.exists()):
+            return []
+
+        lm = build_lateral_map(enriched, master)
+
+        # Plantilla Rayo actual
+        cp_path = ROOT / "config" / "club_profile.yaml"
+        with open(cp_path, encoding="utf-8") as f:
+            cp = _yaml.safe_load(f)
+        rayo_names = set()
+        for section in cp.get("squad_2025_26", {}).values():
+            if isinstance(section, list):
+                for p in section:
+                    rayo_names.add(_norm(p["name"]))
+
+        # Filtrar lateral map a Rayo y con match de posición/rol
+        lm["_nn"] = lm["name"].astype(str).apply(_norm)
+        rayo_lm = lm[lm["_nn"].isin(rayo_names)]
+        matches = rayo_lm[
+            (rayo_lm["lateral_pos"] == lat_code) |
+            (rayo_lm["role_type"]   == role_code)
+        ]
+        result = []
+        for _, r in matches.iterrows():
+            result.append({
+                "name":       r["name"],
+                "lat_label":  LATERAL_LABELS.get(r.get("lateral_pos"), "") if r.get("lateral_pos") else "",
+                "role_label": role_type_label(r.get("role_type")),
+                "exact":      r.get("lateral_pos") == lat_code and r.get("role_type") == role_code,
+            })
+        result.sort(key=lambda x: -x["exact"])
+        return result
+    except Exception:
+        return []
+
+
 def _get_player_stats(name: str) -> dict:
     """Stats reales del jugador — TM market data + enriched para minutos/goles."""
     out = {"name": name, "mv": MV_MAP.get(name), "minutes": 0, "goals": 0,
@@ -1597,87 +1690,4 @@ def _sim_update_leagues(leagues):
 
 # ── Callbacks Simulador Fichajes ────────────────────────────────────────────
 
-@callback(Output("fich-buy-player","options"), Input("fich-buy-leagues","value"))
-def _fich_update_players(leagues):
-    if not leagues:
-        leagues = ['Spain_Primera_Division','Spain_Segunda_Division']
-    return _load_master_opts(leagues)
-
-
-@callback(Output("fich-sell-card","children"), Output("fich-sell-hint","children"),
-          Input("fich-sell-player","value"))
-def _fich_sell_card(player_name):
-    if not player_name:
-        return html.Div(), html.Div()
-    stats = _get_player_stats(player_name)
-    mv, mins, age = stats["mv"], stats["minutes"], stats["age"]
-    hint = html.Span(
-        f"Valor TM estimado: {_fmt(mv)}  ·  Edad: {age}  ·  Minutos: {mins}",
-        style={"fontSize":"10px","color":"#9CA3AF","fontStyle":"italic"}
-    ) if mv else html.Div()
-    card = html.Div([
-        html.Span(player_name, style={"fontSize":"12px","fontWeight":"700","color":"#1A1A2E","marginRight":"8px"}),
-        html.Span(stats.get("position") or "?",
-                  style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px","borderRadius":"99px",
-                         "background":"#F3F4F6","color":"#374151"}),
-    ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"7px",
-              "padding":"8px 10px","display":"flex","alignItems":"center"})
-    return card, hint
-
-
-@callback(Output("fich-buy-card","children"), Output("fich-buy-hint","children"),
-          Input("fich-buy-player","value"))
-def _fich_buy_card(player_name):
-    if not player_name:
-        return html.Div(), html.Div()
-    stats  = _get_player_stats(player_name)
-    mv     = stats["mv"]
-    mins   = stats["minutes"] or 0
-    goals  = stats["goals"]   or 0
-    asts   = stats["assists"] or 0
-    age    = stats["age"]
-    g90    = (goals + asts) / (mins / 90) if mins > 90 else 0
-    hint = html.Span(
-        f"Valor TM: {_fmt(mv)}  ·  Edad: {age}  ·  {mins} min  ·  {goals}G+{asts}A ({g90:.2f}/90)",
-        style={"fontSize":"10px","color":"#9CA3AF","fontStyle":"italic"}
-    ) if mv else html.Div()
-    card = html.Div([
-        html.Span(player_name, style={"fontSize":"12px","fontWeight":"700","color":"#1A1A2E","marginRight":"8px"}),
-        html.Span(f"{stats.get('position') or '?'}  ·  {stats.get('team','?')}  ·  {stats.get('league','?')}",
-                  style={"fontSize":"10px","color":"#6B7280"}),
-    ], style={"background":"#F9FAFB","border":"1px solid #E5E7EB","borderRadius":"7px","padding":"8px 10px"})
-    return card, hint
-
-
-@callback(Output("fich-result","children"),
-          Input("fich-analyze-btn","n_clicks"),
-          State("fich-sell-player","value"),
-          State("fich-sell-price","value"),
-          State("fich-buy-player","value"),
-          State("fich-buy-fee","value"),
-          prevent_initial_call=True)
-def _fich_analyze(n_clicks, sell_player, sell_price_m, buy_player, buy_fee_m):
-    if not n_clicks:
-        return html.Div()
-
-    sell_eur = (sell_price_m or 0) * 1_000_000
-    buy_eur  = (buy_fee_m   or 0) * 1_000_000
-    fin      = _load_finances()
-    pmap     = {p["name"]: p for p in fin["player_salaries"]}
-    badges   = []
-
-    if sell_player:
-        badges.append(_render_eval_badge(_evaluate_sale(sell_player, sell_eur, pmap)))
-    if buy_player:
-        badges.append(_render_eval_badge(_evaluate_buy(buy_player, buy_eur, 0)))
-
-    if not badges:
-        return html.Div([
-            html.I(className="ti ti-info-circle",
-                   style={"color":"#F59E0B","marginRight":"8px","fontSize":"16px"}),
-            html.Span("Selecciona al menos un jugador para analizar la operación",
-                      style={"fontSize":"12px","color":"#92400E"}),
-        ], style={"background":"#FFFBEB","border":"1px solid #FDE68A","borderRadius":"8px",
-                  "padding":"12px 14px","display":"flex","alignItems":"center"})
-
-    return html.Div(badges)
+@callback(Output("fich-buy-player","options"), Input("fich-buy-leagues","value")
