@@ -168,29 +168,30 @@ def layout():
         html.Div([
             html.Div([
                 html.Div([html.I(className="ti ti-git-compare",
-                           style={"fontSize":"28px","color":"#fff"})],
-                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
-                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                           style={"fontSize":"26px","color":"#fff"})],
+                    style={"background":"rgba(227,6,19,.20)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0",
+                           "border":"1px solid rgba(227,6,19,.30)"}),
                 html.Div([
                     html.Div("ANÁLISIS COMPARATIVO", style={"fontSize":"9px","fontWeight":"700",
-                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                        "color":"rgba(255,255,255,.45)","letterSpacing":".14em","marginBottom":"3px"}),
                     html.H1("Comparador de Fichajes", style={"fontSize":"22px","fontWeight":"900",
-                        "color":"#fff","margin":"0 0 2px"}),
+                        "color":"#fff","margin":"0 0 2px","letterSpacing":"-.02em"}),
                     html.Div("Compara hasta 6 jugadores · Fit Rayo 0–100 calculado automáticamente",
-                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                        style={"fontSize":"10.5px","color":"rgba(255,255,255,.45)"}),
                 ]),
             ], style={"display":"flex","alignItems":"center"}),
-        ], style={"background":"linear-gradient(135deg,#5B21B6 0%,#6D28D9 60%,#7C3AED 100%)",
+        ], style={"background":"linear-gradient(135deg,#0A0B0E 0%,#1E2028 60%,#141519 100%)",
                   "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
-                  "boxShadow":"0 8px 24px rgba(91,33,182,.25)"}),
+                  "boxShadow":"0 8px 32px rgba(0,0,0,.28)","borderLeft":"4px solid #E30613"}),
 
         # ── Panel de selección ────────────────────────────────────────────────
         html.Div([
             html.Div([
                 html.I(className="ti ti-users",
-                       style={"fontSize":"14px","color":"#7C3AED","marginRight":"7px"}),
+                       style={"fontSize":"14px","color":"var(--rayo-red)","marginRight":"7px"}),
                 html.Span("SELECCIÓN DE JUGADORES", style={"fontSize":"9px","fontWeight":"700",
-                    "color":"#7C3AED","letterSpacing":".10em"}),
+                    "color":"var(--t4)","letterSpacing":".10em"}),
             ], style={"marginBottom":"14px","display":"flex","alignItems":"center"}),
             dbc.Row([
                 dbc.Col([
@@ -225,18 +226,13 @@ def layout():
                     ),
                 ], md=3),
             ], className="g-3 mb-3"),
-            dbc.Button(
+            html.Button(
                 [html.I(className="ti ti-chart-radar", style={"marginRight":"6px"}),
                  "Comparar jugadores"],
                 id="comp-run-btn",
-                style={"background":"linear-gradient(135deg,#5B21B6,#7C3AED)",
-                       "border":"none","borderRadius":"10px","fontWeight":"700",
-                       "fontSize":"13px","padding":"9px 20px","color":"#fff",
-                       "boxShadow":"0 4px 12px rgba(91,33,182,.3)"},
+                className="btn-primary",
             ),
-        ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"14px",
-                  "padding":"18px 20px","marginBottom":"18px",
-                  "boxShadow":"0 2px 8px rgba(0,0,0,.05)"}),
+        ], className="filter-panel"),
 
         # ── Resultados ───────────────────────────────────────────────────────
         html.Div(id="comp-results"),
@@ -786,4 +782,29 @@ def _mini_stat(label: str, val) -> html.Div:
             "borderRadius": "6px",
             "padding": "4px 8px",
             "textAlign": "center",
-            "minWidth": "58px"
+            "minWidth": "58px",
+        },
+    )
+
+
+def _stat_row(label: str, val) -> html.Div:
+    return html.Div(
+        [
+            html.Span(label, style={"color": "#555", "fontSize": "0.78rem"}),
+            html.Span(str(val), style={"fontWeight": "600", "fontSize": "0.78rem"}),
+        ],
+        style={"display": "flex", "justifyContent": "space-between",
+               "padding": "1px 0"},
+    )
+
+
+def _fmt_mv(v) -> str:
+    if v is None or (isinstance(v, float) and (v != v or v <= 0)):
+        return "N/D"
+    v = float(v)
+    if v >= 1_000_000:
+        return f"€{v/1_000_000:.1f}M"
+    if v >= 1_000:
+        return f"€{v/1_000:.0f}K"
+    return f"€{v:.0f}"
+                                                                                                                                                                                                                                                                                                                     

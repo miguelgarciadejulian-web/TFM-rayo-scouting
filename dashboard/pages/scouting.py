@@ -222,28 +222,30 @@ def layout(**_params):
         html.Div([
             html.Div([
                 html.Div([html.I(className="ti ti-search",
-                           style={"fontSize":"28px","color":"#fff"})],
-                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
-                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                           style={"fontSize":"26px","color":"#fff"})],
+                    style={"background":"rgba(227,6,19,.20)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0",
+                           "border":"1px solid rgba(227,6,19,.30)"}),
                 html.Div([
                     html.Div("BASE DE SCOUTING", style={"fontSize":"9px","fontWeight":"700",
-                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                        "color":"rgba(255,255,255,.45)","letterSpacing":".14em","marginBottom":"3px"}),
                     html.H1("Scouting de Jugadores", style={"fontSize":"22px","fontWeight":"900",
-                        "color":"#fff","margin":"0 0 2px"}),
+                        "color":"#fff","margin":"0 0 2px","letterSpacing":"-.02em"}),
                     html.Div("Búsqueda avanzada · datos más recientes por jugador",
-                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                        style={"fontSize":"10.5px","color":"rgba(255,255,255,.45)"}),
                 ]),
             ], style={"display":"flex","alignItems":"center"}),
-        ], style={"background":"linear-gradient(135deg,#065F46 0%,#047857 60%,#059669 100%)",
+        ], style={"background":"linear-gradient(135deg,#0A0B0E 0%,#1E2028 60%,#141519 100%)",
                   "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
-                  "boxShadow":"0 8px 24px rgba(6,95,70,.25)"}),
+                  "boxShadow":"0 8px 32px rgba(0,0,0,.28)",
+                  "borderLeft":"4px solid #E30613"}),
 
         html.Div([
             html.Div([
                 html.I(className="ti ti-adjustments-horizontal",
-                       style={"fontSize":"14px","color":"#065F46","marginRight":"7px"}),
+                       style={"fontSize":"14px","color":"var(--rayo-red)","marginRight":"7px"}),
                 html.Span("FILTROS", style={"fontSize":"9px","fontWeight":"700",
-                    "color":"#065F46","letterSpacing":".10em"}),
+                    "color":"var(--t4)","letterSpacing":".10em"}),
             ], style={"marginBottom":"12px","display":"flex","alignItems":"center"}),
             dbc.Row([
                 dbc.Col(_filter_chip("f-player",   "Jugador",          "Todos",  player_opt, multi=False), md=2),
@@ -276,18 +278,16 @@ def layout(**_params):
                                updatemode="mouseup"),
                 ]), md=3),
             ], className="g-3 mt-2"),
-        ], style={"background":"#fff","border":"1px solid #E5E7EB","borderRadius":"14px",
-               "padding":"18px 20px","marginBottom":"16px",
-               "boxShadow":"0 2px 8px rgba(0,0,0,.05)"}),
+        ], className="filter-panel"),
 
         dbc.Row([
             dbc.Col(html.Div(id="scouting-count",
-                             style={"fontSize":"12px","color":"#6B7280","paddingBottom":"6px"})),
+                             style={"fontSize":"12px","color":"var(--t3)","paddingBottom":"6px"})),
             dbc.Col(html.Div([
                 html.I(className="ti ti-hand-click",
-                       style={"fontSize":"13px","marginRight":"5px","color":"#065F46"}),
+                       style={"fontSize":"13px","marginRight":"5px","color":"var(--rayo-red)"}),
                 html.Span("Clic en cualquier fila para abrir el perfil",
-                          style={"fontSize":"12px","color":"#6B7280"}),
+                          style={"fontSize":"12px","color":"var(--t3)"}),
             ], style={"textAlign":"right","paddingBottom":"6px"})),
         ]),
 
@@ -297,36 +297,14 @@ def layout(**_params):
             sort_action="native",
             filter_action="native",
             style_table={"overflowX": "auto"},
-            style_header={
-                "backgroundColor": "#1A1A2E",
-                "color": "white",
-                "fontWeight": "600",
-                "fontSize": "11px",
-                "textTransform": "uppercase",
-                "letterSpacing": "0.05em",
-                "padding": "10px 12px",
-                "border": "none",
-            },
-            style_cell={
-                "fontSize": "13px",
-                "padding": "9px 12px",
-                "fontFamily": "Inter, system-ui, sans-serif",
-                "border": "none",
-                "borderBottom": "1px solid #E5E7EB",
-            "color": "#1A1A2E",
-            "backgroundColor": "#FFFFFF",
-            "cursor": "pointer",
-        },
-        style_data_conditional=[
-            {"if": {"row_index": "odd"},
-             "backgroundColor": "#FAFAFA"},
-            {"if": {"state": "selected"},
-             "backgroundColor": "#FDE8E8",
-             "borderLeft": "3px solid #FFD600"},
-        ],
-        style_filter={"fontSize": "12px", "padding": "4px 8px"},
-        page_action="native",
-    ),
+            style_data_conditional=[
+                {"if": {"state": "selected"},
+                 "backgroundColor": "#FEE2E2 !important",
+                 "borderLeft": "3px solid #E30613 !important"},
+            ],
+            style_filter={"fontSize": "12px", "padding": "4px 8px"},
+            page_action="native",
+        ),
 
     html.Div(id="scouting-btn-container", style={"marginTop": "14px"}),
         criteria_accordion("scouting"),
@@ -494,4 +472,4 @@ clientside_callback(
     Input("scouting-nav-url", "data"),
     prevent_initial_call=True,
 )
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

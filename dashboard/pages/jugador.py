@@ -163,11 +163,8 @@ def _clause_risk_card(name: str, overrides: dict) -> html.Div:
         html.Div([
             html.I(className="ti ti-shield-exclamation me-2",
                    style={"color": fg, "fontSize": "14px"}),
-            html.Span("Riesgo de clausula de rescision", style={
-                "fontSize": "11px", "fontWeight": "700",
-                "color": "#9CA3AF", "textTransform": "uppercase",
-                "letterSpacing": ".06em",
-            }),
+            html.Span("Riesgo de clausula de rescision", className="section-label",
+                      style={"marginBottom": "0"}),
         ], style={"marginBottom": "10px"}),
 
         dbc.Row([
@@ -214,11 +211,7 @@ def _clause_risk_card(name: str, overrides: dict) -> html.Div:
                 }),
             ], md=4),
         ]),
-    ], style={
-        "background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "12px",
-        "padding": "16px 18px", "marginTop": "16px",
-        "boxShadow": "0 1px 3px rgba(0,0,0,.06)",
-    })
+    ], className="card-modern", style={"marginTop": "16px"})
 
 
 def _get_tm_id_for_player(name, opta_id=None):
@@ -282,20 +275,15 @@ def _tm_strip(key, opta_id=None):
                 [html.I(className="ti ti-refresh", style={"marginRight": "3px"}),
                  "Actualizar"],
                 id="btn-fetch-tm", n_clicks=0,
-                style={"background": "#1D4ED8", "color": "#fff", "border": "none",
-                       "borderRadius": "6px", "padding": "4px 10px",
-                       "fontSize": "11px", "fontWeight": "600", "cursor": "pointer",
-                       "whiteSpace": "nowrap"},
+                className="btn-primary",
+                style={"fontSize": "11px", "whiteSpace": "nowrap", "padding": "4px 10px"},
             ),
         ], style={"display": "flex", "alignItems": "center"}),
         html.Span(id="tm-fetch-status", style={
             "fontSize": "10px", "color": "#166534", "marginTop": "4px", "display": "block",
         }),
-    ], style={
-        "background": "#F0F4FF", "border": "1px solid #C7D7FD",
-        "borderRadius": "10px", "padding": "10px 14px",
-        "minWidth": "190px", "alignSelf": "flex-start",
-    })
+    ], className="card-flat",
+       style={"minWidth": "190px", "alignSelf": "flex-start"})
 
 
 def _notes_box(key, notes, overrides):
@@ -320,12 +308,8 @@ def _notes_box(key, notes, overrides):
                             "padding": "10px", "border": "1px solid #D1D5DB",
                             "borderRadius": "8px"}),
         html.Div([
-            html.Button("Guardar nota", id="save-note", n_clicks=0, style={
-                "background": "#FFD600", "color": "#0D0D0D", "border": "none",
-                "borderRadius": "8px", "padding": "7px 16px",
-                "fontSize": "12px", "fontWeight": "600", "cursor": "pointer",
-                "marginTop": "8px",
-            }),
+            html.Button("Guardar nota", id="save-note", n_clicks=0,
+                className="btn-primary", style={"marginTop": "8px"}),
             html.Span(id="note-status", style={
                 "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
             }),
@@ -360,19 +344,13 @@ def _notes_box(key, notes, overrides):
             ], md=4),
         ], className="g-2"),
         html.Div([
-            html.Button("Guardar posición y tipología", id="save-lateral", n_clicks=0, style={
-                "background": "#1A1A2E", "color": "#fff", "border": "none",
-                "borderRadius": "8px", "padding": "7px 16px", "fontSize": "12px",
-                "fontWeight": "600", "cursor": "pointer", "marginTop": "8px",
-            }),
+            html.Button("Guardar posición y tipología", id="save-lateral", n_clicks=0,
+                className="btn-dark", style={"marginTop": "8px"}),
             html.Span(id="lateral-status", style={
                 "fontSize": "11px", "color": "#166534", "marginLeft": "10px",
             }),
         ]),
-    ], style={
-        "background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "12px",
-        "padding": "16px 18px", "marginTop": "16px",
-    })
+    ], className="card-modern", style={"marginTop": "16px"})
 
 
 # ---------------------------------------------------------------------------
@@ -643,10 +621,7 @@ def _fit_rayo_card(name: str) -> html.Div:
 
     breakdown_panel = html.Div([
         html.Div([
-            html.Div("Desglose de sub-scores", style={
-                "fontSize": "9px", "fontWeight": "700", "color": "#9CA3AF",
-                "textTransform": "uppercase", "letterSpacing": ".05em", "marginBottom": "8px",
-            }),
+            html.Div("Desglose de sub-scores", className="section-label"),
             html.Div("Fit Rayo = 0.40 × Rendimiento + 0.30 × Económico + 0.15 × Edad + 0.15 × Disponibilidad",
                      style={"fontSize": "9px", "color": "#6B7280", "fontStyle": "italic",
                             "marginBottom": "10px", "fontFamily": "monospace"}),
@@ -672,10 +647,7 @@ def _fit_rayo_card(name: str) -> html.Div:
                 ), md=6),
             ], className="g-2 mt-1"),
         ]),
-    ], style={
-        "background": "#F9FAFB", "borderRadius": "8px", "padding": "12px 14px",
-        "marginTop": "14px", "border": "1px solid #F3F4F6",
-    })
+    ], className="card-flat", style={"marginTop": "14px"})
 
     # Tabla resumen fórmula
     formula_items = [
@@ -705,23 +677,18 @@ def _fit_rayo_card(name: str) -> html.Div:
     ]))
     formula_panel = html.Div([
         html.Table(formula_rows, style={"width": "100%", "borderCollapse": "collapse"}),
-    ], style={
-        "background": "#F9FAFB", "borderRadius": "8px", "padding": "10px 12px",
-        "marginTop": "14px", "border": "1px solid #F3F4F6",
-    })
+    ], className="card-flat", style={"marginTop": "14px"})
 
     return html.Div([
         html.Div([
-            html.I(className="ti ti-heart-rate-monitor me-2",
-                   style={"color": "#B8960C", "fontSize": "14px"}),
-            html.Span("Fit Rayo Vallecano", style={
-                "fontSize": "11px", "fontWeight": "700",
-                "color": "#9CA3AF", "textTransform": "uppercase",
-                "letterSpacing": ".06em",
-            }),
-            html.Span("  ·  calculado automáticamente desde datos Opta + Transfermarkt",
-                      style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic"}),
-        ], style={"marginBottom": "10px"}),
+            html.I(className="ti ti-heart-rate-monitor",
+                   style={"color": "var(--rayo-red)", "fontSize": "14px", "marginRight": "7px"}),
+            html.Span("Fit Rayo Vallecano", className="section-label",
+                      style={"marginBottom": "0", "flex": "unset"}),
+            html.Span("  calculado automáticamente desde datos Opta + Transfermarkt",
+                      style={"fontSize": "9px", "color": "var(--t4)", "fontStyle": "italic",
+                             "marginLeft": "8px"}),
+        ], style={"marginBottom": "10px", "display": "flex", "alignItems": "center"}),
 
         # Score principal
         html.Div([
@@ -751,11 +718,7 @@ def _fit_rayo_card(name: str) -> html.Div:
         # Fórmula resumen + desglose por sub-score
         formula_panel,
         breakdown_panel,
-    ], style={
-        "background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "12px",
-        "padding": "16px 18px", "marginTop": "16px",
-        "boxShadow": "0 1px 3px rgba(0,0,0,.06)",
-    })
+    ], className="card-modern", style={"marginTop": "16px"})
 
 
 def layout(**_params):
@@ -764,11 +727,11 @@ def layout(**_params):
         dcc.Store(id="tm-reload-trigger", data=None),
         html.Div(id="tm-reload-dummy", style={"display": "none"}),
         html.Div([
-            html.P("SCOUTING", style={"fontSize": "10px", "fontWeight": "600",
-                   "color": "#6B7280", "letterSpacing": ".08em", "margin": "0 0 3px"}),
+            html.Div("SCOUTING", className="section-label",
+                     style={"marginBottom": "3px"}),
             html.H1("Perfil de jugador", className="page-title"),
             html.Div([
-                html.Span("Buscar jugador: ", style={"fontSize": "12px", "color": "#6B7280",
+                html.Span("Buscar jugador: ", style={"fontSize": "12px", "color": "var(--t3)",
                           "marginRight": "8px"}),
                 dcc.Dropdown(id="jugador-search", options=[],
                              placeholder="Escribe un nombre...",
@@ -778,13 +741,9 @@ def layout(**_params):
                     html.Button([
                         html.I(className="ti ti-file-download", style={"marginRight": "6px"}),
                         "Descargar PDF",
-                    ], id="dl-pdf-btn", n_clicks=0, style={
-                        "background": "#1A1A2E", "color": "#fff",
-                        "border": "none", "borderRadius": "8px", "padding": "8px 16px",
-                        "fontSize": "13px", "fontWeight": "600", "cursor": "pointer",
-                    }),
+                    ], id="dl-pdf-btn", n_clicks=0, className="btn-dark"),
                     dcc.Download(id="dl-pdf"),
-                ], style={"marginLeft": "12px"}), type="circle", color="#FFD600"),
+                ], style={"marginLeft": "12px"}), type="circle", color="#E30613"),
                 dcc.Store(id="current-player"),
                 dcc.Store(id="jugador-picked-store"),
             ], style={"display": "flex", "alignItems": "center", "marginTop": "6px"}),
@@ -1119,4 +1078,4 @@ def save_lateral(n_clicks, lateral_pos, role_type, key):
     if role_type is not None:
         entry["role_type"] = role_type
     elif "role_type" in entry:
-        del entry["role_type"]
+        del entry["role_type"]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          

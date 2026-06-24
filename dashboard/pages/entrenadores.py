@@ -1032,17 +1032,13 @@ def layout(**_params):
     top = profiles[0]
     styles = sorted({c.get("style_main", "") for c in profiles if c.get("style_main")})
 
-    def _kpi(icon, label, value, sub, grad, light):
+    def _kpi(icon, label, value, sub, _grad=None, _light=None, variant=""):
         return html.Div([
-            html.Div([html.I(className=f"ti {icon}", style={"fontSize":"18px","color":"#fff"})],
-                style={"background":grad,"borderRadius":"10px","width":"38px","height":"38px",
-                       "display":"flex","alignItems":"center","justifyContent":"center",
-                       "marginBottom":"10px","boxShadow":"0 3px 8px rgba(0,0,0,.14)"}),
-            html.Div(value, style={"fontSize":"24px","fontWeight":"900","color":"#1A1A2E","lineHeight":"1","marginBottom":"2px"}),
-            html.Div(label, style={"fontSize":"11px","fontWeight":"700","color":"#1A1A2E","marginBottom":"1px"}),
-            html.Div(sub,   style={"fontSize":"10px","color":"#6B7280"}),
-        ], style={"background":light,"border":"1px solid rgba(0,0,0,.06)","borderRadius":"14px",
-                  "padding":"14px 16px","height":"100%","boxShadow":"0 2px 6px rgba(0,0,0,.05)"})
+            html.Div([html.I(className=f"ti {icon}")], className=f"kpi-icon {variant}"),
+            html.Div(value, className="kpi-value"),
+            html.Div(label, className="kpi-label"),
+            html.Div(sub,   className="kpi-sub"),
+        ], className=f"kpi-modern {variant}")
 
     top_score = top["evaluation"].get("score_10", "?")
 
@@ -1053,46 +1049,42 @@ def layout(**_params):
         html.Div([
             html.Div([
                 html.Div([html.I(className="ti ti-chalkboard",
-                           style={"fontSize":"28px","color":"#fff"})],
-                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
-                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                           style={"fontSize":"26px","color":"#fff"})],
+                    style={"background":"rgba(227,6,19,.20)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0",
+                           "border":"1px solid rgba(227,6,19,.30)"}),
                 html.Div([
                     html.Div("PLANIFICACIÓN DEPORTIVA", style={"fontSize":"9px","fontWeight":"700",
-                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                        "color":"rgba(255,255,255,.45)","letterSpacing":".14em","marginBottom":"3px"}),
                     html.H1("Casting de Entrenadores", style={"fontSize":"22px","fontWeight":"900",
-                        "color":"#fff","margin":"0 0 2px"}),
+                        "color":"#fff","margin":"0 0 2px","letterSpacing":"-.02em"}),
                     html.Div("Estilo y encaje calculados automáticamente · Rayo Vallecano 2026/27",
-                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                        style={"fontSize":"10.5px","color":"rgba(255,255,255,.45)"}),
                 ]),
             ], style={"display":"flex","alignItems":"center","flex":"1"}),
             html.Div([
                 *[html.Div([
                     html.Div(v, style={"fontSize":"22px","fontWeight":"900","color":"#fff","lineHeight":"1"}),
-                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.55)","fontWeight":"600","marginTop":"2px"}),
+                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.45)","fontWeight":"600","marginTop":"2px"}),
                 ], style={"textAlign":"center","padding":"0 16px","borderRight":s})
                   for v,l,s in [
-                    (str(len(profiles)), "técnicos", "1px solid rgba(255,255,255,.15)"),
-                    (str(available_cnt), "libres", "1px solid rgba(255,255,255,.15)"),
+                    (str(len(profiles)), "técnicos", "1px solid rgba(255,255,255,.12)"),
+                    (str(available_cnt), "libres", "1px solid rgba(255,255,255,.12)"),
                     (f"{top_score}/10", "mejor encaje", "none"),
                 ]],
             ], style={"display":"flex","alignItems":"center","flexShrink":"0"}),
-        ], style={"background":"linear-gradient(135deg,#9A3412 0%,#C2410C 60%,#EA580C 100%)",
+        ], style={"background":"linear-gradient(135deg,#0A0B0E 0%,#1E2028 60%,#141519 100%)",
                   "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
                   "display":"flex","justifyContent":"space-between","alignItems":"center",
-                  "boxShadow":"0 8px 24px rgba(154,52,18,.25)"}),
+                  "boxShadow":"0 8px 32px rgba(0,0,0,.28)","borderLeft":"4px solid #E30613"}),
 
         # ── KPIs ──────────────────────────────────────────────────────────────
-        html.P("RESUMEN DEL CASTING", style={"fontSize":"9px","fontWeight":"700","color":"#6B7280",
-               "letterSpacing":".08em","marginBottom":"10px"}),
+        html.Div("RESUMEN DEL CASTING", className="section-label"),
         dbc.Row([
-            dbc.Col(_kpi("ti-chalkboard","Técnicos analizados",str(len(profiles)),"con estilo calculado",
-                "linear-gradient(135deg,#9A3412,#F97316)","#FFF7ED"), md=3),
-            dbc.Col(_kpi("ti-user-check","Sin equipo actual",str(available_cnt),"disponibles ahora",
-                "linear-gradient(135deg,#065F46,#10B981)","#ECFDF5"), md=3),
-            dbc.Col(_kpi("ti-trophy","Mejor encaje",top["name"].split()[-1],f"Score: {top_score}/10",
-                "linear-gradient(135deg,#78350F,#F59E0B)","#FFFBEB"), md=3),
-            dbc.Col(_kpi("ti-target","Necesidad clave","Banquillo","sucesor de I. Pérez",
-                "linear-gradient(135deg,#DC2626,#EF4444)","#FFF1F2"), md=3),
+            dbc.Col(_kpi("ti-chalkboard","Técnicos analizados",str(len(profiles)),"con estilo calculado"), md=3),
+            dbc.Col(_kpi("ti-user-check","Sin equipo actual",str(available_cnt),"disponibles ahora","","","success"), md=3),
+            dbc.Col(_kpi("ti-trophy","Mejor encaje",top["name"].split()[-1],f"Score: {top_score}/10","","","warning"), md=3),
+            dbc.Col(_kpi("ti-target","Necesidad clave","Banquillo","sucesor de I. Pérez","","","danger"), md=3),
         ], className="g-3 mb-4"),
 
         # Panel de necesidades de la plantilla (siempre visible)
@@ -1420,3 +1412,5 @@ def _suggest_adn_from_data(n):
             "Columnas ↓inv. se invierten: menor valor bruto → mayor percentil. "
             "Diferencia = percentil calculado − valor del slider.",
             style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic", "margin": "0"}),
+    ])
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     

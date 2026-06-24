@@ -236,9 +236,7 @@ def group_table(group_key, players, resolved_styles=None):
                 html.Tbody([player_row(p, i, resolved_styles) for i, p in enumerate(players)]),
             ], style={"width": "100%", "borderCollapse": "collapse"}),
         ], style={"overflowX": "auto"}),
-    ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
-              "padding": "16px 18px", "marginBottom": "12px",
-              "boxShadow": "0 1px 3px rgba(0,0,0,.06)"})
+    ], className="card-modern")
 
 
 # ---------------------------------------------------------------------------
@@ -508,8 +506,7 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
                 style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic"},
             ),
         ]),
-    ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
-              "padding": "14px 16px", "boxShadow": "0 1px 3px rgba(0,0,0,.06)"})
+    ], className="card-flat")
 
 
 # ---------------------------------------------------------------------------
@@ -561,17 +558,13 @@ def layout(**_params):
         for p in players_all
     ]
 
-    def _kpi(icon, label, value, sub, grad, light):
+    def _kpi(icon, label, value, sub, _grad=None, _light=None, variant=""):
         return html.Div([
-            html.Div([html.I(className=f"ti {icon}", style={"fontSize":"18px","color":"#fff"})],
-                style={"background":grad,"borderRadius":"10px","width":"38px","height":"38px",
-                       "display":"flex","alignItems":"center","justifyContent":"center",
-                       "marginBottom":"10px","boxShadow":"0 3px 8px rgba(0,0,0,.14)"}),
-            html.Div(value, style={"fontSize":"24px","fontWeight":"900","color":"#1A1A2E","lineHeight":"1","marginBottom":"2px"}),
-            html.Div(label, style={"fontSize":"11px","fontWeight":"700","color":"#1A1A2E","marginBottom":"1px"}),
-            html.Div(sub,   style={"fontSize":"10px","color":"#6B7280"}),
-        ], style={"background":light,"border":"1px solid rgba(0,0,0,.06)","borderRadius":"14px",
-                  "padding":"14px 16px","height":"100%","boxShadow":"0 2px 6px rgba(0,0,0,.05)"})
+            html.Div([html.I(className=f"ti {icon}")], className=f"kpi-icon {variant}"),
+            html.Div(value, className="kpi-value"),
+            html.Div(label, className="kpi-label"),
+            html.Div(sub,   className="kpi-sub"),
+        ], className=f"kpi-modern {variant}")
 
     mv_fmt = f"{total_mv/1e6:.0f}M€" if total_mv >= 1e6 else f"{total_mv:,}€"
 
@@ -582,71 +575,60 @@ def layout(**_params):
         html.Div([
             html.Div([
                 html.Div([html.I(className="ti ti-users-group",
-                           style={"fontSize":"28px","color":"#fff"})],
-                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
-                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                           style={"fontSize":"26px","color":"#fff"})],
+                    style={"background":"rgba(227,6,19,.20)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0",
+                           "border":"1px solid rgba(227,6,19,.30)"}),
                 html.Div([
                     html.Div("PLANTILLA 2026/27", style={"fontSize":"9px","fontWeight":"700",
-                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                        "color":"rgba(255,255,255,.45)","letterSpacing":".14em","marginBottom":"3px"}),
                     html.H1("Rayo Vallecano", style={"fontSize":"22px","fontWeight":"900",
-                        "color":"#fff","margin":"0 0 2px"}),
+                        "color":"#fff","margin":"0 0 2px","letterSpacing":"-.02em"}),
                     html.Div("Clic en cualquier jugador para ver su perfil completo",
-                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                        style={"fontSize":"10.5px","color":"rgba(255,255,255,.45)"}),
                 ]),
             ], style={"display":"flex","alignItems":"center","flex":"1"}),
             html.Div([
                 *[html.Div([
                     html.Div(v, style={"fontSize":"22px","fontWeight":"900","color":"#fff","lineHeight":"1"}),
-                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.55)","fontWeight":"600","marginTop":"2px"}),
+                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.45)","fontWeight":"600","marginTop":"2px"}),
                 ], style={"textAlign":"center","padding":"0 16px","borderRight":s})
                   for v,l,s in [
-                    (str(total_players), "jugadores", "1px solid rgba(255,255,255,.15)"),
-                    (mv_fmt, "valor mercado", "1px solid rgba(255,255,255,.15)"),
+                    (str(total_players), "jugadores", "1px solid rgba(255,255,255,.12)"),
+                    (mv_fmt, "valor mercado", "1px solid rgba(255,255,255,.12)"),
                     (str(expiring), "contratos urgentes", "none"),
                 ]],
             ], style={"display":"flex","alignItems":"center","flexShrink":"0"}),
-        ], style={"background":"linear-gradient(135deg,#1E40AF 0%,#1D4ED8 60%,#2563EB 100%)",
+        ], style={"background":"linear-gradient(135deg,#0A0B0E 0%,#1E2028 60%,#141519 100%)",
                   "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
                   "display":"flex","justifyContent":"space-between","alignItems":"center",
-                  "boxShadow":"0 8px 24px rgba(30,64,175,.25)"}),
+                  "boxShadow":"0 8px 32px rgba(0,0,0,.28)","borderLeft":"4px solid #E30613"}),
 
         # ── KPIs ──────────────────────────────────────────────────────────────
-        html.P("RESUMEN DE PLANTILLA", style={"fontSize":"9px","fontWeight":"700","color":"#6B7280",
-               "letterSpacing":".08em","marginBottom":"10px"}),
+        html.Div("RESUMEN DE PLANTILLA", className="section-label"),
         dbc.Row([
-            dbc.Col(_kpi("ti-users","Jugadores",str(total_players),"en plantilla",
-                "linear-gradient(135deg,#1E40AF,#3B82F6)","#EFF6FF"), md=2),
-            dbc.Col(_kpi("ti-coin-euro","Valor de mercado",mv_fmt,"Transfermarkt may-26",
-                "linear-gradient(135deg,#5B21B6,#8B5CF6)","#F5F3FF"), md=2),
-            dbc.Col(_kpi("ti-wallet","Presupuesto",f"{budget/1e6:.0f}M€","neto estimado 2026/27",
-                "linear-gradient(135deg,#065F46,#10B981)","#ECFDF5"), md=2),
-            dbc.Col(_kpi("ti-alert-triangle","Contratos urgentes",str(expiring),f"vencen ≤{today.year+1}",
-                "linear-gradient(135deg,#DC2626,#EF4444)","#FFF1F2"), md=2),
-            dbc.Col(_kpi("ti-transfer-in","Cedidos",str(n_cedidos),"cesiones de otros clubes",
-                "linear-gradient(135deg,#78350F,#F59E0B)","#FFFBEB"), md=2),
-            dbc.Col(_kpi("ti-layout-grid","Líneas","4","GK · DEF · MED · DEL",
-                "linear-gradient(135deg,#374151,#6B7280)","#F9FAFB"), md=2),
+            dbc.Col(_kpi("ti-users","Jugadores",str(total_players),"en plantilla"), md=2),
+            dbc.Col(_kpi("ti-coin-euro","Valor de mercado",mv_fmt,"Transfermarkt may-26"), md=2),
+            dbc.Col(_kpi("ti-wallet","Presupuesto",f"{budget/1e6:.0f}M€","neto estimado 2026/27","","","success"), md=2),
+            dbc.Col(_kpi("ti-alert-triangle","Contratos urgentes",str(expiring),f"vencen ≤{today.year+1}","","","danger"), md=2),
+            dbc.Col(_kpi("ti-transfer-in","Cedidos",str(n_cedidos),"cesiones de otros clubes","","","warning"), md=2),
+            dbc.Col(_kpi("ti-layout-grid","Líneas","4","GK · DEF · MED · DEL"), md=2),
         ], className="g-3 mb-4"),
 
-        html.P("ANÁLISIS VISUAL", style={"fontSize":"9px","fontWeight":"700",
-               "color":"#6B7280","letterSpacing":".08em","marginBottom":"10px"}),
+        html.Div("ANÁLISIS VISUAL", className="section-label"),
         dbc.Row([
             dbc.Col(html.Div(dcc.Graph(figure=_chart_age_scatter(players_all),
                 config={"displayModeBar":False}, style={"height":"220px"}),
-                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
-                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
+                className="card-flat", style={"overflow":"hidden","padding":"0"}), md=3),
             dbc.Col(html.Div(dcc.Graph(figure=_chart_position_donut(players_all),
                 config={"displayModeBar":False}, style={"height":"220px"}),
-                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
-                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
+                className="card-flat", style={"overflow":"hidden","padding":"0"}), md=3),
             dbc.Col(html.Div(dcc.Graph(figure=_chart_contract_status(players_all),
                 config={"displayModeBar":False}, style={"height":"220px"}),
-                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
-                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
+                className="card-flat", style={"overflow":"hidden","padding":"0"}), md=3),
             dbc.Col(html.Div(dcc.Graph(figure=_chart_mv_bars(players_all),
                 config={"displayModeBar":False}, style={"height":"220px"}),
-                style={"background":"#fff","borderRadius":"12px","border":"1px solid #E5E7EB",
-                       "overflow":"hidden","boxShadow":"0 1px 5px rgba(0,0,0,.05)"}), md=3),
+                className="card-flat", style={"overflow":"hidden","padding":"0"}), md=3),
         ], className="g-3 mb-4"),
 
         dbc.Row([
@@ -659,26 +641,22 @@ def layout(**_params):
 
             dbc.Col([
                 html.Div([
-                    html.P("Leyenda contratos", style={"fontSize": "10px", "fontWeight": "600",
-                        "color": "#9CA3AF", "textTransform": "uppercase",
-                        "letterSpacing": ".06em", "marginBottom": "10px"}),
+                    html.Div("Leyenda contratos", className="section-label"),
                     *[html.Div([
                         html.Div(style={"width": "8px", "height": "8px", "borderRadius": "50%",
                                         "background": c, "flexShrink": "0"}),
-                        html.Span(t, style={"fontSize": "12px", "color": "#374151"}),
+                        html.Span(t, style={"fontSize": "12px", "color": "var(--t2)"}),
                     ], style={"display": "flex", "alignItems": "center",
                               "gap": "8px", "marginBottom": "6px"})
                     for c, t in [
-                        ("#DC2626", f"Finaliza ≤{today.year + 1} — acción urgente"),
-                        ("#F59E0B", f"Finaliza en {today.year + 2} — vigilar"),
-                        ("#10B981", "Contrato largo — seguro"),
+                        ("var(--danger)", f"Finaliza ≤{today.year + 1} — acción urgente"),
+                        ("var(--warning)", f"Finaliza en {today.year + 2} — vigilar"),
+                        ("var(--success)", "Contrato largo — seguro"),
                     ]],
                     html.P("Pasa el ratón sobre el año del contrato para ver la fecha exacta.",
-                           style={"fontSize": "10px", "color": "#9CA3AF",
+                           style={"fontSize": "10px", "color": "var(--t4)",
                                   "marginTop": "8px", "fontStyle": "italic"}),
-                ], style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
-                          "padding": "14px 16px", "marginBottom": "12px",
-                          "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
+                ], className="card-flat", style={"marginBottom": "12px"}),
 
                 _needs_panel(cp, players_all),
             ], md=4),
@@ -686,19 +664,18 @@ def layout(**_params):
 
         # ── Edición de contratos ──
         html.Div([
-            dbc.Button([
+            html.Button([
                 html.I(className="ti ti-edit", style={"marginRight": "6px"}),
                 "Editar datos de contrato y valor",
-            ], id="btn-edit-contracts", color="light", size="sm",
-               style={"fontSize": "12px", "border": "1px solid #D1D5DB"}),
+            ], id="btn-edit-contracts", className="btn-outline",
+               style={"fontSize": "12px"}),
             html.Span("Los cambios se guardan en club_profile.yaml",
-                      style={"fontSize": "10px", "color": "#9CA3AF", "marginLeft": "10px"}),
+                      style={"fontSize": "10px", "color": "var(--t4)", "marginLeft": "10px"}),
         ], style={"marginBottom": "8px"}),
         dbc.Collapse([
             html.Div([
-                html.P("Editar contratos y valores de mercado",
-                       style={"fontSize": "12px", "fontWeight": "600",
-                              "color": "#374151", "marginBottom": "8px"}),
+                html.Div("Editar contratos y valores de mercado",
+                       className="section-label"),
                 html.P(
                     "Modifica directamente las celdas. Fin contrato en formato AAAA-MM-DD. "
                     "Valor TM en euros (eAAA-MM-DD. "
@@ -727,15 +704,13 @@ def layout(**_params):
                     style_table={"overflowX": "auto"},
                 ),
                 html.Div([
-                    dbc.Button("Guardar cambios", id="btn-save-contracts",
-                               color="danger", size="sm",
+                    html.Button("Guardar cambios", id="btn-save-contracts",
+                               className="btn-primary",
                                style={"marginTop": "10px", "marginRight": "8px"}),
                     html.Span(id="save-contracts-feedback",
-                              style={"fontSize": "11px", "color": "#166534"}),
+                              style={"fontSize": "11px", "color": "var(--success)"}),
                 ]),
-            ], style={"background": "#fff", "border": "1px solid #E5E7EB",
-                      "borderRadius": "10px", "padding": "16px 18px",
-                      "boxShadow": "0 1px 3px rgba(0,0,0,.06)"}),
+            ], className="card-flat"),
         ], id="collapse-edit-contracts", is_open=False),
 
         criteria_accordion("plantilla"),
@@ -814,3 +789,4 @@ def _nav_to_player(clicks):
     except Exception:
         pass
     return no_update
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   

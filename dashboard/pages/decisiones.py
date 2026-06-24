@@ -442,33 +442,34 @@ def layout(**_params):
         html.Div([
             html.Div([
                 html.Div([html.I(className="ti ti-clipboard-check",
-                           style={"fontSize":"28px","color":"#fff"})],
-                    style={"background":"rgba(255,255,255,.15)","borderRadius":"12px",
-                           "padding":"10px","marginRight":"18px","flexShrink":"0"}),
+                           style={"fontSize":"26px","color":"#fff"})],
+                    style={"background":"rgba(227,6,19,.20)","borderRadius":"12px",
+                           "padding":"10px","marginRight":"18px","flexShrink":"0",
+                           "border":"1px solid rgba(227,6,19,.30)"}),
                 html.Div([
                     html.Div("PLANIFICACIÓN DEPORTIVA", style={"fontSize":"9px","fontWeight":"700",
-                        "color":"rgba(255,255,255,.55)","letterSpacing":".14em","marginBottom":"3px"}),
+                        "color":"rgba(255,255,255,.45)","letterSpacing":".14em","marginBottom":"3px"}),
                     html.H1("Decisiones Deportivas", style={"fontSize":"22px","fontWeight":"900",
-                        "color":"#fff","margin":"0 0 2px"}),
+                        "color":"#fff","margin":"0 0 2px","letterSpacing":"-.02em"}),
                     html.Div("Rankings automáticos 2026/27 derivados de datos reales",
-                        style={"fontSize":"10px","color":"rgba(255,255,255,.5)"}),
+                        style={"fontSize":"10.5px","color":"rgba(255,255,255,.45)"}),
                 ]),
             ], style={"display":"flex","alignItems":"center","flex":"1"}),
             html.Div([
                 *[html.Div([
                     html.Div(v, style={"fontSize":"22px","fontWeight":"900","color":"#fff","lineHeight":"1"}),
-                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.55)","fontWeight":"600","marginTop":"2px"}),
+                    html.Div(l, style={"fontSize":"9px","color":"rgba(255,255,255,.45)","fontWeight":"600","marginTop":"2px"}),
                 ], style={"textAlign":"center","padding":"0 16px","borderRight":s})
                   for v,l,s in [
-                    (str(n_fichar), "fichas urgentes", "1px solid rgba(255,255,255,.15)"),
-                    (str(n_renovar), "renovaciones críticas", "1px solid rgba(255,255,255,.15)"),
+                    (str(n_fichar), "fichas urgentes", "1px solid rgba(255,255,255,.12)"),
+                    (str(n_renovar), "renovaciones críticas", "1px solid rgba(255,255,255,.12)"),
                     (str(n_vender), "candidatos salida", "none"),
                 ]],
             ], style={"display":"flex","alignItems":"center","flexShrink":"0"}),
-        ], style={"background":"linear-gradient(135deg,#78350F 0%,#92400E 50%,#B45309 100%)",
+        ], style={"background":"linear-gradient(135deg,#0A0B0E 0%,#1E2028 60%,#141519 100%)",
                   "borderRadius":"18px","padding":"20px 26px","marginBottom":"18px",
                   "display":"flex","justifyContent":"space-between","alignItems":"center",
-                  "boxShadow":"0 8px 24px rgba(120,53,15,.25)"}),
+                  "boxShadow":"0 8px 32px rgba(0,0,0,.28)","borderLeft":"4px solid #E30613"}),
 
         dbc.Tabs([
             dbc.Tab(tab_fichajes,     label="🎯  Fichajes",     tab_id="tab-fichajes",
@@ -889,4 +890,25 @@ def _renewal_analysis(horizon):
             html.P(title, style={
                 "fontSize": "10px", "fontWeight": "700", "color": bc,
                 "textTransform": "uppercase", "letterSpacing": ".08em",
-                "borderLeft": f"3px solid {bc}", "pa
+                "borderLeft": f"3px solid {bc}", "paddingLeft": "8px",
+                "marginBottom": "10px",
+            }),
+            dbc.Row([
+                dbc.Col(_renewal_card(r), md=4, style={"marginBottom": "12px"})
+                for r in players
+            ], className="g-2"),
+        ], style={"marginBottom": "16px"})
+
+    secs = [
+        _sec("Vencen en <= 6 meses — DECISION URGENTE", g0, "#991B1B"),
+        _sec("Vencen en 7-12 meses", g1, "#92400E"),
+           _sec("Vencen en 13-18 meses", g2, "#166534"),
+    ]
+    secs = [s for s in secs if s is not None]
+    if not secs:
+        return (html.Div("Ningun contrato en el horizonte seleccionado.",
+                         style={"fontSize": "12px", "color": "#9CA3AF"}), "")
+    return (
+        html.Div([summary, *secs]),
+        f"{len(results)} jugadores analizados",
+    )
