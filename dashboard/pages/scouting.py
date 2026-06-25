@@ -251,13 +251,13 @@ def layout(**_params):
                 dbc.Col(_filter_chip("f-player",   "Jugador",          "Todos",  player_opt, multi=False), md=2),
                 dbc.Col(_filter_chip("f-lateral",  "Posición",         "Todas",  lat_opt,    multi=True),  md=2),
                 dbc.Col(_filter_chip("f-role-type","Tipo de jugador",  "Todos",  role_opt,   multi=True),  md=2),
-                dbc.Col(_filter_chip("f-league",   "Liga",             "Todas",  leagues, value=["Spain_Primera_Division"]),  md=2),
+                dbc.Col(_filter_chip("f-league",   "Liga",             "Todas",  leagues, value=None),  md=2),
                 dbc.Col(_filter_chip("f-team",     "Equipo",           "Todos",  []),                      md=2),
                 dbc.Col(_filter_chip("f-foot",     "Pie dominante",    "Todos",  foot_opt, multi=False),   md=2),
                 dbc.Col(html.Div([
                     html.Span("Edad máx.", className="filter-label"),
-                    dcc.Slider(16, 40, 1, value=30, id="f-age",
-                               marks={16:"16", 23:"23", 30:"30", 37:"37", 40:"40"},
+                    dcc.Slider(16, 45, 1, value=45, id="f-age",
+                               marks={16:"16", 23:"23", 30:"30", 37:"37", 45:"45"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
                 ]), md=2),
@@ -265,8 +265,8 @@ def layout(**_params):
             dbc.Row([
                 dbc.Col(html.Div([
                     html.Span("Valor máx. (M€)", className="filter-label"),
-                    dcc.Slider(0, 100, 5, value=100, id="f-mv",
-                               marks={0:"0", 25:"25M", 50:"50M", 100:"100M"},
+                    dcc.Slider(0, 250, 10, value=250, id="f-mv",
+                               marks={0:"0", 50:"50M", 100:"100M", 150:"150M", 200:"200M", 250:"250M+"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
                 ]), md=3),
@@ -419,14 +419,18 @@ def filter_table(player, lat_pos, role_types, leagues, teams, foot, age_max, mv_
         if foot and "foot" in df.columns:
             df = df[df["foot"].astype(str).str.lower() == str(foot).lower()]
 
-        if age_max  is not None: df = df[df["_age_n"] <= age_max]
-        if mv_max_m is not None: df = df[df["_mv_n"]  <= mv_max_m * 1_000_000]
+        if age_max  is not None and age_max < 45:
+            df = df[df["_age_n"] <= age_max]
+        # MV: solo filtrar si el slider NO está en el máximo (250)
+        # Jugadores sin MV conocido (_mv_n == 0) siempre pasan
+        if mv_max_m is not None and mv_max_m < 250:
+            df = df[(df["_mv_n"] == 0) | (df["_mv_n"] <= mv_max_m * 1_000_000)]
         if min_min  is not None: df = df[df["_min_n"] >= min_min]
 
     cols_show = [c for c in DISPLAY_COLS if c in df.columns]
     extra_cols = [c for c in ("player_id", "player_id_src")
                   if c in df.columns and c not in cols_show]
-    df_show = df[cols_show + extra_cols].copy().head(500)
+    df_show = df[cols_show + extra_cols].copy().head(1000)
 
     # Traducir role_type (clave interna → etiqueta legible)
     if "role_type" in df_show.columns:
@@ -485,13 +489,3 @@ clientside_callback(
     """
     function(url) {
         if (url) {
-            window.location.href = url;
-        }
-        return null;
-    }
-    """,
-    Output("scouting-nav-url", "data", allow_duplicate=True),
-    Input("scouting-nav-url", "data"),
-    prevent_initial_call=True,
-)
-                                                                                                                                                                                                                                                                                                                                                                                    
