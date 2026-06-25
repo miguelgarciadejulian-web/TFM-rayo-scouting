@@ -498,4 +498,3 @@ clientside_callback(
     Input("scouting-nav-url", "data"),
     prevent_initial_call=True,
 )
-            

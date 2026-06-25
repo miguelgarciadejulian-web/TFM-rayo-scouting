@@ -1,12 +1,34 @@
 {
-  "carlos martin": {
-    "age": 24,
-    "dob": "2002-04-22",
-    "foot": "right",
-    "height": "1.84",
-    "position": "Extremo izquierdo",
-    "photo_url": "https://img.a.transfermarkt.technology/portrait/big/618813-1707924109.jpg",
-    "value_eur": 1500000,
-    "contract_until": "2026-06-30"
-  }
+ "carlos martin": {
+  "age": 24,
+  "dob": "2002-04-22",
+  "foot": "right",
+  "height": "1.84",
+  "position": "Extremo izquierdo",
+  "photo_url": "https://img.a.transfermarkt.technology/portrait/big/618813-1707924109.jpg",
+  "value_eur": 1500000,
+  "contract_until": "2026-06-30"
+ },
+ "d. mller wolfe": {
+  "value_eur": 8000000.0,
+  "contract_until": "2030-06-30",
+  "foot": "left",
+  "height": 1.85,
+  "photo_url": "https://img.a.transfermarkt.technology/portrait/big/661427-1753350331.jpg"
+ },
+ "l. chambers": {
+  "value_eur": 1000000.0,
+  "contract_until": "None",
+  "foot": "left",
+  "height": 1.81,
+  "photo_url": "https://img.a.transfermarkt.technology/portrait/big/670861-1698353801.jpg"
+ },
+ "s. ojeda": {
+  "value_eur": 50000.0,
+  "contract_until": "2026-12-31",
+  "foot": "right",
+  "height": 1.83,
+  "photo_url": "https://img.a.transfermarkt.technology/portrait/big/261240-1710427310.jpg",
+  "position": "Centre-Back"
+ }
 }

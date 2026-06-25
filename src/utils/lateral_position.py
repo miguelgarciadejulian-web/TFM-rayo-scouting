@@ -230,4 +230,5 @@ def role_type_label(code: str | None) -> str:
 def roles_for_lateral(lat_code: str | None) -> list[str]:
     """Devuelve lista de role_type keys válidos para un lateral_pos dado."""
     if not lat_code:
-        return list(ROLE_TYPE_LABELS.
+        return list(ROLE_TYPE_LABELS.keys())
+    return LATERAL_TO_ROLES.get(lat_code, list(ROLE_TYPE_LABELS.keys()))

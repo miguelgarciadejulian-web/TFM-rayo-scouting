@@ -918,4 +918,12 @@ def build_player_dossier(name, team=None):
     body += _footer(prof)
 
     full_html = (
-       
+        f'<!DOCTYPE html><html lang="es"><head>'
+        f'<meta charset="utf-8"><title>Informe {cname}</title>'
+        f'<style>{_CSS}</style>'
+        f'</head><body>{body}</body></html>'
+    )
+
+    pdf_bytes = html_to_pdf(full_html)
+    fname = f"informe_{_n(cname).replace(' ', '_')}.pdf"
+    return fname, pdf_bytes

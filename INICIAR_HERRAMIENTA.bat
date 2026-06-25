@@ -6,10 +6,10 @@ echo   Rayo Vallecano - Herramienta de Scouting 2026/27
 echo ============================================================
 echo.
 
-REM ── Buscar un Python valido (evitando el alias de Microsoft Store) ─────────
+REM === 1. Buscar un Python valido (evitando el alias de Microsoft Store) ======
 set "PYEXE="
 
-REM 1) Rutas tipicas de Anaconda / Miniconda
+REM 1a) Rutas tipicas de Anaconda / Miniconda
 for %%P in (
   "%USERPROFILE%\anaconda3\python.exe"
   "%USERPROFILE%\Anaconda3\python.exe"
@@ -24,15 +24,23 @@ for %%P in (
   if not defined PYEXE if exist "%%~P" set "PYEXE=%%~P"
 )
 
-REM 2) Lanzador 'py' del instalador oficial de Python
+REM 1b) Lanzador 'py' del instalador oficial de Python
 if not defined PYEXE (
   where py >nul 2>&1 && set "PYEXE=py"
 )
 
+REM 1c) 'python' en el PATH (ultimo recurso)
 if not defined PYEXE (
-  echo No se ha encontrado Python.
-  echo Abre "Anaconda Prompt" desde el menu Inicio y ejecuta dentro de esta carpeta:
-  echo     python -m dashboard.app
+  where python >nul 2>&1 && set "PYEXE=python"
+)
+
+if not defined PYEXE (
+  echo [ERROR] No se ha encontrado Python en el sistema.
+  echo.
+  echo   Opcion A: instala Python 3.10+ desde https://www.python.org/downloads/
+  echo             marcando la casilla "Add Python to PATH".
+  echo   Opcion B: si usas Anaconda, abre "Anaconda Prompt", entra en esta carpeta
+  echo             y ejecuta:  python -m dashboard.app
   echo.
   pause
   exit /b 1
@@ -40,13 +48,34 @@ if not defined PYEXE (
 
 echo Usando Python: !PYEXE!
 echo.
-echo Comprobando dependencias (la primera vez tarda un poco)...
-"!PYEXE!" -m pip install -r requirements.txt
+
+REM === 2. Instalar dependencias (solo la primera vez) =========================
+if exist ".deps_ok" (
+  echo Dependencias ya instaladas. ^(Borra el archivo .deps_ok para reinstalar^)
+) else (
+  echo Instalando dependencias por primera vez ^(puede tardar unos minutos^)...
+  "!PYEXE!" -m pip install --upgrade pip
+  "!PYEXE!" -m pip install -r requirements.txt
+  if errorlevel 1 (
+    echo.
+    echo [ERROR] Fallo la instalacion de dependencias. Revisa tu conexion e intentalo de nuevo.
+    pause
+    exit /b 1
+  )
+  echo ok> ".deps_ok"
+)
 echo.
+
+REM === 3. Arrancar el dashboard ===============================================
 echo ============================================================
-echo   Abre en el navegador:  http://127.0.0.1:8050
-echo   (Para parar: cierra esta ventana o pulsa Ctrl+C)
+echo   Abre esta direccion en tu navegador:
+echo        http://127.0.0.1:8050
+echo   ^(espera unos segundos a que arranque; para detenerla
+echo    cierra esta ventana o pulsa Ctrl+C^)
 echo ============================================================
 echo.
 "!PYEXE!" -m dashboard.app
+
+echo.
+echo La herramienta se ha detenido.
 pause

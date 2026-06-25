@@ -1,86 +1,78 @@
-# ── Python ────────────────────────────────────────────────────────────────────
+# =============================================================================
+#  .gitignore — Rayo Vallecano Scouting Tool (TFM)
+# =============================================================================
+
+# ── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.pyc
+*.py[cod]
+*$py.class
 .Python
 *.egg
 *.egg-info/
-dist/
+.eggs/
 build/
-eggs/
-parts/
-var/
-sdist/
+dist/
 develop-eggs/
-.installed.cfg
-lib/
-lib64/
+sdist/
 *.so
 
 # ── Entornos virtuales ────────────────────────────────────────────────────────
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
 
-# ── Variables de entorno / secrets ───────────────────────────────────────────
-.env
+# ── Variables de entorno / secretos ────────────────────────────────────────────
 *.env
 secrets.yaml
 secrets.json
 
-# ── Datos binarios y caches de datos grandes ─────────────────────────────────
-# Los parquets se regeneran con los scripts/build_*.py
-data/processed/*.parquet
-# Datos crudos de API (grandes, se regeneran con fetch_tm_data.py)
-data/processed/tm_api_raw.json
-data/processed/tm_economic_raw.json
-# Datos raw / interim (carpetas vacías excepto .gitkeep)
-data/raw/
-data/interim/
-data/opta_json/
-data/external/cache/
-
-# ── Reportes generados automáticamente ───────────────────────────────────────
-data/reports_out/
-
-# ── Archivos de test/cache de pytest ─────────────────────────────────────────
-pytest-cache-files*/
-.pytest_cache/
+# ── Caché de la app (background callbacks Dash / diskcache) ─────────────────────
 .cache/
+rayo_dash_cache/
 
-# ── Documentos de trabajo internos (no código) ───────────────────────────────
-informe_auditoria_fase3.docx
-DOCUMENTACION_HERRAMIENTA.docx
-docs_MODULOS_NUEVOS.md
-~$*.docx
-~$*.xlsx
-~$*.pptx
+# ── Marcador de instalación creado por INICIAR_HERRAMIENTA.bat ──────────────────
+.deps_ok
 
-# ── Módulos legacy / no usados por la app ────────────────────────────────────
-# Reemplazado por player_dossier.py
-src/reports/player_report.py
-# Solo usado por player_report.py (legacy)
-src/viz/radar.py
-# Sin imports en ningún módulo del proyecto
-src/scouting/scoring.py
-src/economics/budget.py
-src/etl/normalize.py
-src/ingestion/zip_reader.py
-# Duplicado exacto de renewal_engine.py (el app importa renewal_engine)
-src/fit/renewal_decision.py
+# ── Reportes PDF generados por la herramienta (se regeneran en la app) ──────────
+data/reports_out/
+*.pdf
 
-# ── Notebooks exploratorioos (no forman parte de la app) ─────────────────────
-notebooks/
+# =============================================================================
+#  DATOS
+# =============================================================================
+# Los .parquet de runtime SÍ se versionan (necesarios para que la app arranque
+# tras un git clone). Sólo se ignoran los volcados crudos de API, que son
+# grandes y se regeneran con los scripts de scripts/.
+# Volcado crudo Transfermarkt (~33 MB)
+data/processed/tm_api_raw.json
+# Volcado crudo económico TM
+data/processed/tm_economic_raw.json
+# Logs intermedios del proceso de enriquecido
+data/processed/tm_enrichment_*.csv
 
-# ── Checkpoints de Jupyter ────────────────────────────────────────────────────
+# Carpetas de entrada (vacías salvo .gitkeep; los ZIPs OPTA son externos)
+data/raw/*
+data/interim/*
+data/opta_json/*
+data/external/cache/*
+!**/.gitkeep
+
+# ── Backups y temporales de oficina ─────────────────────────────────────────────
+*.bak
+~$*
+*.tmp
+
+# ── Notebooks exploratorios y checkpoints ───────────────────────────────────────
+*.ipynb
 .ipynb_checkpoints/
-scripts/.ipynb_checkpoints/
 
-# ── IDEs y editores ───────────────────────────────────────────────────────────
+# ── Tests / cachés de pytest ────────────────────────────────────────────────────
+.pytest_cache/
+pytest-cache-files*/
+
+# ── IDEs y SO ───────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
@@ -89,10 +81,6 @@ scripts/.ipynb_checkpoints/
 .DS_Store
 Thumbs.db
 
-# ── Jupyter ───────────────────────────────────────────────────────────────────
-.ipynb_checkpoints/
-*.ipynb
-
-# ── Logs ─────────────────────────────────────────────────────────────────────
+# ── Logs ────────────────────────────────────────────────────────────────────────
 *.log
 logs/

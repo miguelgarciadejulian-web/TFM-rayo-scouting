@@ -701,4 +701,3 @@ def build_detail(name, team=None, league=None, age=None,
                  style={"background": "#fff", "border": "1px solid #E5E7EB", "borderRadius": "10px",
                         "padding": "10px 14px", "overflowX": "auto"}),
     ])
-                                                                                                  

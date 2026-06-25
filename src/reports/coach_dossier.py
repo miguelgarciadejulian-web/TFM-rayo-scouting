@@ -532,4 +532,5 @@ def build_coach_dossier(name):
         f'<style>{_CSS}</style></head><body>{body}</body></html>'
     )
     pdf_bytes = html_to_pdf(full_html)
-    fname = f"informe_entrenador_{_n(c['name']).replace
+    fname = f"informe_entrenador_{_n(c['name']).replace(' ','_')}.pdf"
+    return fname, pdf_bytes
