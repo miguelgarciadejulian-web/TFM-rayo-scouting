@@ -265,8 +265,8 @@ def layout(**_params):
             dbc.Row([
                 dbc.Col(html.Div([
                     html.Span("Valor máx. (M€)", className="filter-label"),
-                    dcc.Slider(0, 250, 10, value=250, id="f-mv",
-                               marks={0:"0", 50:"50M", 100:"100M", 150:"150M", 200:"200M", 250:"250M+"},
+                    dcc.Slider(0, 200, 10, value=200, id="f-mv",
+                               marks={0:"0", 50:"50M", 100:"100M", 150:"150M", 200:"200M+"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
                 ]), md=3),
@@ -423,7 +423,7 @@ def filter_table(player, lat_pos, role_types, leagues, teams, foot, age_max, mv_
             df = df[df["_age_n"] <= age_max]
         # MV: solo filtrar si el slider NO está en el máximo (250)
         # Jugadores sin MV conocido (_mv_n == 0) siempre pasan
-        if mv_max_m is not None and mv_max_m < 250:
+        if mv_max_m is not None and mv_max_m < 200:
             df = df[(df["_mv_n"] == 0) | (df["_mv_n"] <= mv_max_m * 1_000_000)]
         if min_min  is not None: df = df[df["_min_n"] >= min_min]
 
@@ -488,4 +488,14 @@ def go_to_player(active_cell, view_data):
 clientside_callback(
     """
     function(url) {
-        if (url) {
+        if (url) {        if (url) {
+            window.location.href = url;
+        }
+        return null;
+    }
+    """,
+    Output("scouting-nav-url", "data", allow_duplicate=True),
+    Input("scouting-nav-url", "data"),
+    prevent_initial_call=True,
+)
+            
