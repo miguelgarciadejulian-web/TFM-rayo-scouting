@@ -34,6 +34,13 @@ squad_2025_26:
     nationality: España
     contract_end: '2027-06-30'
     market_value: 1800000
+  - name: Miguel Morro
+    position: GK
+    age: 25
+    nationality: España
+    contract_end: '2026-06-30'
+    market_value: 300000
+    loan_to: Leixões SC
   defenders:
   - name: Andrei Rațiu
     position: RB
@@ -89,6 +96,13 @@ squad_2025_26:
     nationality: Francia
     contract_end: '2028-06-30'
     market_value: 2000000
+  - name: Pelayo Fernández
+    position: CB
+    age: 23
+    nationality: España
+    contract_end: '2028-06-30'
+    market_value: 500000
+    loan_to: Cádiz CF
   midfielders:
   - name: Gerard Gumbau
     position: DM
@@ -191,10 +205,17 @@ squad_2025_26:
     nationality: Brasil/Polonia
     contract_end: '2030-06-30'
     market_value: 3000000
+  - name: Raúl de Tomás
+    position: ST
+    age: 31
+    nationality: España
+    contract_end: '2027-06-30'
+    market_value: 400000
+    loan_to: Al-Wakrah SC
 squad_summary:
-  total_players: 27
-  total_market_value_eur: 109300000
-  average_age: 28.8
+  total_players: 30
+  total_market_value_eur: 110500000
+  average_age: 28.4
 transfer_window_summer_2026:
   in: []
   out: []

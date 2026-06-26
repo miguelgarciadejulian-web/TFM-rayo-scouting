@@ -167,6 +167,7 @@ def player_row(p, i, role_map=None, role_labels=None):
     end  = p.get("contract_end", "")
     mv   = p.get("market_value", 0)
     loan = p.get("loan_from", "")
+    loan_to = p.get("loan_to", "")
     initials = "".join(w[0].upper() for w in name.split()[:2] if w)
     year = int(str(end)[:4]) if end else 9999
     row_bg = "#FFF5F5" if year <= 2026 else ("#FFFFFF" if i % 2 == 0 else "#FAFAFA")
@@ -191,7 +192,11 @@ def player_row(p, i, role_map=None, role_labels=None):
                     html.Span(f"↗ {loan}", style={
                         "fontSize": "9px", "color": "#1D4ED8",
                         "background": "#EFF6FF", "borderRadius": "4px", "padding": "1px 5px",
-                    }) if loan else None,
+                    }) if loan else (
+                    html.Span(f"↙ Cedido en {loan_to}", style={
+                        "fontSize": "9px", "color": "#B45309",
+                        "background": "#FFFBEB", "borderRadius": "4px", "padding": "1px 5px",
+                    }) if loan_to else None),
                     style={"height": "16px", "display": "flex", "alignItems": "center"},
                 ),
             ], style={"display": "flex", "flexDirection": "column", "gap": "1px"}),
@@ -581,6 +586,7 @@ def layout(**_params):
                      if int(str(p.get("contract_end", "9999"))[:4]) <= today.year + 1)
     total_players = len(players_all)
     n_cedidos  = sum(1 for p in players_all if p.get("loan_from"))
+    n_cedidos_out = sum(1 for p in players_all if p.get("loan_to"))
 
     # Tabla editable de contratos
     edit_data = [
@@ -644,8 +650,8 @@ def layout(**_params):
             dbc.Col(_kpi("ti-coin-euro","Valor de mercado",mv_fmt,"Transfermarkt may-26"), md=2),
             dbc.Col(_kpi("ti-wallet","Presupuesto",f"{budget/1e6:.0f}M€","neto estimado 2026/27","","","success"), md=2),
             dbc.Col(_kpi("ti-alert-triangle","Contratos urgentes",str(expiring),f"vencen ≤{today.year+1}","","","danger"), md=2),
-            dbc.Col(_kpi("ti-transfer-in","Cedidos",str(n_cedidos),"cesiones de otros clubes","","","warning"), md=2),
-            dbc.Col(_kpi("ti-layout-grid","Líneas","4","GK · DEF · MED · DEL"), md=2),
+            dbc.Col(_kpi("ti-transfer-in","Cedidos IN",str(n_cedidos),"cesiones de otros clubes","","","warning"), md=2),
+            dbc.Col(_kpi("ti-transfer-out","Cedidos OUT",str(n_cedidos_out),"vuelven de cesión","","",""), md=2),
         ], className="g-3 mb-4"),
 
         html.Div("ANÁLISIS VISUAL", className="section-label"),
