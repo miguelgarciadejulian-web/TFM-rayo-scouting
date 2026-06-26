@@ -829,6 +829,64 @@ class FitRayoScorer:
 
         return base
 
+    def score_adn_tactico_breakdown(self, row: pd.Series, name: str) -> dict:
+        """Desglosa el score de ADN táctico para la UI."""
+        try:
+            _enr = self._get_enriched_row(name)
+            enr_row = _enr if _enr is not None else row
+
+            pool = self.enriched
+            pos_grp = str(enr_row.get("position_group",
+                          row.get("position_primary", "MID"))).upper()
+            pool_pos = pool[pool["position_group"].str.upper() == pos_grp].copy()
+            pool_pos = pool_pos[
+                pd.to_numeric(pool_pos["minutes"], errors="coerce").fillna(0) >= 450
+            ]
+
+            adn_metrics = [
+                ("recoveries_p90", 0.30, "Recuperaciones (pressing alto)"),
+                ("tackles_won_p90", 0.25, "Entradas ganadas (intensidad)"),
+                ("forward_passes_p90", 0.20, "Pases verticales (verticalidad)"),
+                ("successful_dribbles_p90", 0.15, "Regates completados (juego directo)"),
+                ("total_touches_in_opposition_box_p90", 0.10, "Toques en área rival (vocación ofensiva)"),
+            ]
+
+            dims = []
+            total_w, total_ws = 0.0, 0.0
+            for metric, weight, label in adn_metrics:
+                val = float(enr_row.get(metric) or 0)
+                if metric not in pool_pos.columns:
+                    continue
+                series = pd.to_numeric(pool_pos[metric], errors="coerce").dropna()
+                if len(series) < 5:
+                    continue
+                pct = float((series < val).sum() / len(series) * 100)
+                dims.append({
+                    "label": label,
+                    "metric": metric,
+                    "value_p90": round(val, 2),
+                    "percentile": round(pct, 1),
+                    "weight": weight,
+                })
+                total_ws += weight * pct
+                total_w += weight
+
+            score = round(total_ws / total_w, 1) if total_w > 0 else 50.0
+            return {
+                "score": score,
+                "pool_size": len(pool_pos),
+                "position_group": pos_grp,
+                "dims": dims,
+                "explanation": (
+                    "Mide cuánto encaja el jugador con el estilo táctico del Rayo: "
+                    "pressing alto, verticalidad, intensidad sin balón y juego directo. "
+                    "Cada métrica se compara con los jugadores de la misma posición (≥450 min)."
+                ),
+            }
+        except Exception as exc:
+            return {"score": 50.0, "dims": [], "pool_size": 0,
+                    "position_group": "?", "explanation": "", "error": str(exc)}
+
     # ------------------------------------------------------------------ #
     # Radar normalizado                                                    #
     # ------------------------------------------------------------------ #

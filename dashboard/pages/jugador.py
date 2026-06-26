@@ -471,6 +471,28 @@ def _fit_rayo_card(name: str) -> html.Div:
                                 "paddingLeft": "16px"}),
         ]))
 
+    # Añadir explicación de ADN Táctico automáticamente
+    _adn_val = r.score_adn_tactico
+    if _adn_val >= 70:
+        _adn_text = "Perfil táctico muy alineado con el estilo Rayo: pressing alto, verticalidad e intensidad sin balón por encima de la media."
+    elif _adn_val >= 50:
+        _adn_text = "Encaje táctico moderado. Aporta en algunos ejes del estilo Rayo (pressing, verticalidad o intensidad) pero no destaca en todos."
+    elif _adn_val >= 30:
+        _adn_text = "Perfil táctico con margen de mejora para el estilo Rayo. Baja intensidad en pressing o poca verticalidad comparado con su posición."
+    else:
+        _adn_text = "Perfil táctico poco compatible con el estilo Rayo. Métricas de pressing, verticalidad e intensidad por debajo de la media posicional."
+    narrative_items.append(html.Div([
+        html.Div([
+            html.I(className="ti ti-flame",
+                   style={"color": "#B8960C", "marginRight": "5px", "fontSize": "11px"}),
+            html.Span("ADN Táctico", style={
+                "fontWeight": "700", "fontSize": "11px", "color": "#1A1A2E",
+            }),
+        ], style={"marginBottom": "2px"}),
+        html.P(_adn_text, style={"fontSize": "11px", "color": "#555",
+                                  "margin": "0 0 8px", "lineHeight": "1.45",
+                                  "paddingLeft": "16px"}),
+    ]))
     score_color = _color(r.fit_score)
 
     loan_badge = (
@@ -501,13 +523,14 @@ def _fit_rayo_card(name: str) -> html.Div:
 
     # --- Rendimiento ---
     scorer = _get_fit_scorer()
-    rend_bd = disp_bd = eco_bd = edad_bd = {}
+    rend_bd = disp_bd = eco_bd = edad_bd = adn_bd = {}
     if scorer:
         try:
             row_data = scorer._best_row(r.name)
             if row_data is not None:
                 rend_bd = scorer.score_rendimiento_breakdown(row_data)
                 eco_bd  = scorer.score_economico_breakdown(r.market_value_eur or 0)
+                adn_bd  = scorer.score_adn_tactico_breakdown(row_data, r.name)
                 # Edad: fallback a TM/overrides si OPTA no tiene el dato
                 _age_for_fit = r.age or 0
                 if not _age_for_fit:
@@ -620,31 +643,67 @@ def _fit_rayo_card(name: str) -> html.Div:
          if disp_bd.get("bonus_rayo") else html.Span()),
     ] if disp_bd else [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})])
 
+    # ADN Táctico breakdown
+    if adn_bd and adn_bd.get("dims"):
+        _adn_pool = adn_bd.get("pool_size", 0)
+        _adn_pg = adn_bd.get("position_group", "?")
+        adn_items = [
+            html.Div(
+                f"{_adn_pg} · {_adn_pool} jugadores ≥450 min · Estilo Rayo: pressing + verticalidad",
+                style={"fontSize": "9px", "fontFamily": "monospace", "color": "#6B7280",
+                       "marginBottom": "8px", "padding": "4px 8px",
+                       "background": "#F0FDF4", "borderRadius": "4px"},
+            ),
+            *[
+                _mini_row(
+                    d["label"],
+                    f"×{d['weight']:.0%}",
+                    d["percentile"],
+                    f"{d['value_p90']:.2f} p90 → Percentil {d['percentile']:.0f}/100",
+                )
+                for d in adn_bd["dims"]
+            ],
+            html.Div(
+                adn_bd.get("explanation", ""),
+                style={"fontSize": "8px", "color": "#9CA3AF", "fontStyle": "italic",
+                       "marginTop": "6px", "paddingTop": "6px",
+                       "borderTop": "1px dashed #E5E7EB"},
+            ),
+        ]
+    else:
+        adn_items = [html.Div("Sin datos disponibles", style={"fontSize": "10px", "color": "#9CA3AF"})]
+
     breakdown_panel = html.Div([
         html.Div([
             html.Div("Desglose de sub-scores", className="section-label"),
-            html.Div("Fit Rayo = 0.40 × Rendimiento + 0.30 × Económico + 0.15 × Edad + 0.15 × Disponibilidad",
+            html.Div("Fit Rayo = 0.40×Rendimiento + 0.25×ADN Táctico + 0.20×Económico + 0.05×Edad + 0.10×Disponibilidad",
                      style={"fontSize": "9px", "color": "#6B7280", "fontStyle": "italic",
                             "marginBottom": "10px", "fontFamily": "monospace"}),
 
             dbc.Row([
                 dbc.Col(_sub_panel(
                     "Rendimiento (40%)", "ti-run", rend_items,
-                    "Percentiles por dimensión vs misma posición · ≥50 min",
+                    "Percentiles por dimensión vs misma posición · ≥450 min",
                 ), md=6),
                 dbc.Col(_sub_panel(
-                    "Encaje económico (30%)", "ti-coin-euro", eco_items,
-                    "Curva progresiva: ≤7M→90 · 10M→70 · 20M→20 · >70M→0",
+                    "ADN Táctico (25%)", "ti-flame", adn_items,
+                    "Pressing · Verticalidad · Intensidad · Juego directo",
                 ), md=6),
             ], className="g-2"),
             dbc.Row([
                 dbc.Col(_sub_panel(
-                    "Perfil de edad (15%)", "ti-calendar", edad_items,
-                    "Joven ≤21→95 · 22-25→90 · 26-28→90→78 · 29-30→60 · >33→10",
+                    "Encaje económico (20%)", "ti-coin-euro", eco_items,
+                    "Curva progresiva: ≤7M→90 · 10M→70 · 20M→20 · >70M→0",
                 ), md=6),
                 dbc.Col(_sub_panel(
-                    "Disponibilidad (15%)", "ti-door-enter", disp_items,
+                    "Disponibilidad (10%)", "ti-door-enter", disp_items,
                     "Meses contrato restantes: ≤6→95 / ≤12→75 / ≤24→50 / >24→25",
+                ), md=6),
+            ], className="g-2 mt-1"),
+            dbc.Row([
+                dbc.Col(_sub_panel(
+                    "Perfil de edad (5%)", "ti-calendar", edad_items,
+                    "Joven ≤21→95 · 22-25→90 · 26-28→90→78 · 29-30→60 · >33→10",
                 ), md=6),
             ], className="g-2 mt-1"),
         ]),
@@ -965,43 +1024,69 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
     except Exception as e:
         return f"Error actualizando entity_map: {e}", no_update
 
-    # 2. Llamar API TM alpha
+    # 2. Obtener datos: primero buscar en market_values.csv local, sino intentar TM web
+    mv = con = foot = h = photo = rc = age = pos = None
+    data_source = None
+
     try:
-        import requests
-        api_url = "https://tmapi-alpha.transfermarkt.technology/player/{}".format(tm_id)
-        r = requests.get(api_url, headers={"Accept": "application/json",
-                         "User-Agent": "RayoScoutingTool/1.0"}, timeout=12)
-        if r.status_code == 404:
-            return "tm_id guardado, pero no encontrado en la API de TM (ID incorrecto?)", no_update
-        if r.status_code != 200:
-            return "tm_id guardado. API respondio {}, reintenta mas tarde".format(r.status_code), no_update
-        data = r.json()
-        d = data.get("data", data)
-    except Exception as e:
-        return "tm_id guardado. Error conectando con TM API: {}".format(str(e)[:60]), no_update
+        import pandas as pd
+        mv_path = PROC.parent / "config" / "market_values.csv"
+        if mv_path.exists():
+            _mv_df = pd.read_csv(mv_path)
+            _tm_match = _mv_df[_mv_df["tm_id"].astype(str).str.replace(".0","",regex=False) == tm_id]
+            if _tm_match.empty:
+                _tm_match = _mv_df[_mv_df["name"].apply(_norm) == _norm(name)]
+            if not _tm_match.empty:
+                _row = _tm_match.iloc[0]
+                mv = float(_row["market_value_eur"]) if pd.notna(_row.get("market_value_eur")) else None
+                con = str(_row["contract_until"])[:10] if pd.notna(_row.get("contract_until")) else None
+                foot = str(_row["foot"]) if pd.notna(_row.get("foot")) else None
+                h = float(_row["height"]) if pd.notna(_row.get("height")) else None
+                photo = str(_row["tm_photo_url"]) if pd.notna(_row.get("tm_photo_url")) else None
+                age = int(float(_row["age"])) if pd.notna(_row.get("age")) else None
+                pos = str(_row["position"]) if pd.notna(_row.get("position")) else None
+                data_source = "local"
+    except Exception:
+        pass
 
-    # 3. Parsear respuesta
-    def _safe(fn):
-        try: return fn()
-        except Exception: return None
+    # Si no hay datos locales, intentar scraping (puede fallar por proxy corporativo)
+    if not data_source:
+        try:
+            import requests, re
+            profile_url = "https://www.transfermarkt.es/x/profil/spieler/{}".format(tm_id)
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Accept": "text/html",
+            }
+            r = requests.get(profile_url, headers=headers, timeout=10, allow_redirects=True)
+            if r.status_code == 200:
+                html_text = r.text
+                import re
+                # Valor de mercado
+                m_full = re.search(r'€([\d.,]+)\s*(k|mil\.|M|mill\.)', html_text)
+                if m_full:
+                    num = float(m_full.group(1).replace(",", "."))
+                    unit = m_full.group(2)
+                    mv = int(num * 1_000_000) if unit in ("M", "mill.") else int(num * 1000)
+                # Contrato
+                con_m = re.search(r'(\d{2}/\d{2}/\d{4})', html_text)
+                if con_m:
+                    parts = con_m.group(1).split("/")
+                    con = f"{parts[2]}-{parts[1]}-{parts[0]}"
+                # Edad
+                age_m = re.search(r'\((\d+)\)', html_text)
+                if age_m:
+                    age = int(age_m.group(1))
+                # Foto
+                photo_m = re.search(r'"(https://img\.a\.transfermarkt\.technology/portrait/big/[^"]+)"', html_text)
+                if photo_m:
+                    photo = photo_m.group(1)
+                data_source = "web"
+        except Exception:
+            pass  # Red corporativa bloquea — usar solo datos locales
 
-    mv    = _safe(lambda: float(d["marketValueDetails"]["current"]["value"]))
-    con   = _safe(lambda: str(d["attributes"]["contractUntil"])[:10])
-    foot  = _safe(lambda: d["attributes"]["preferredFoot"]["name"])
-    h     = _safe(lambda: str(d["attributes"]["height"]))
-    photo = _safe(lambda: d["portraitUrl"] if str(d.get("portraitUrl","")).startswith("http") else None)
-    rc    = _safe(lambda: float(d["attributes"]["releaseClause"]))
-    # Edad y posición (estructura real de la API TM)
-    age   = _safe(lambda: int(d["lifeDates"]["age"]))
-    if age is None:
-        def _calc_age():
-            from datetime import date
-            dob_str = str(d["lifeDates"]["dateOfBirth"])[:10]
-            dob = date.fromisoformat(dob_str)
-            today = date.today()
-            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-        age = _safe(_calc_age)
-    pos   = _safe(lambda: d["attributes"]["position"]["name"])
+    if not data_source and not mv and not con:
+        return "tm_id guardado. No se pudo obtener datos (red bloqueada y sin datos locales para este ID).", no_update
 
     # 4. Actualizar overrides
     ov = _load_overrides()
@@ -1009,7 +1094,7 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
     if mv:    entry["value_eur"] = mv
     if con:   entry["contract_until"] = con
     if foot:  entry["foot"] = foot
-    if h:     entry["height"] = float(h)
+    if h:     entry["height"] = h
     if photo: entry["photo_url"] = photo
     if rc:    entry["release_clause_eur"] = rc
     if age:   entry["age"] = age
@@ -1050,11 +1135,12 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
         pass
 
     parts = []
-    if mv:    parts.append("Valor: {:.1f}M EUR".format(mv / 1e6))
+    if mv:    parts.append("Valor: {:.1f}M€".format(mv / 1e6))
     if con:   parts.append("Contrato: {}".format(con))
     if photo: parts.append("Foto OK")
-    msg = " · ".join(parts) if parts else "Datos guardados"
-    return "Actualizando... {}".format(msg), 1
+    src = "(datos locales)" if data_source == "local" else "(datos web)"
+    msg = " · ".join(parts) if parts else "tm_id guardado"
+    return "✓ {} {}".format(msg, src), 1
 
 
 # ---------------------------------------------------------------------------
