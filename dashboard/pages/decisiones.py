@@ -58,13 +58,13 @@ def _get_fit_scorer():
     return _FIT_SCORER_CACHE.get("scorer")
 
 
-def _fit_scores_for(names: list[str]) -> dict[str, dict]:
+def _fit_scores_for(names: list[str], teams: list[str] | None = None) -> dict[str, dict]:
     """Fit Rayo completo — devuelve {name: {fit, rend, adn}} para cada jugador."""
     scorer = _get_fit_scorer()
     if not scorer or not names:
         return {}
     try:
-        results = scorer.compare(names)
+        results = scorer.compare(names, player_teams=teams)
         return {r.name: {"fit": r.fit_score,
                          "rend": r.score_rendimiento,
                          "adn": r.score_adn_tactico} for r in results}
@@ -817,7 +817,8 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
 
     # Calcular Fit Rayo real (mismo scorer que el perfil del jugador)
     names_list = list(rk["name"].dropna())
-    fit_map = _fit_scores_for(names_list)
+    teams_list = list(rk.loc[rk["name"].notna(), "team"]) if "team" in rk.columns else None
+    fit_map = _fit_scores_for(names_list, teams=teams_list)
 
     # Reordenar según criterio seleccionado, mostrar top 20
     sort_by = sort_by or "fit"

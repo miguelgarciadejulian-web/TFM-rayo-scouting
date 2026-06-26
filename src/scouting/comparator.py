@@ -201,11 +201,14 @@ class FitRayoScorer:
     # API pública                                                          #
     # ------------------------------------------------------------------ #
 
-    def compare(self, player_names: list[str]) -> list[PlayerComparison]:
-        """Devuelve la comparación para cada nombre, mejor temporada disponible."""
+    def compare(self, player_names: list[str],
+                player_teams: list[str] | None = None) -> list[PlayerComparison]:
+        """Devuelve la comparación para cada nombre, mejor temporada disponible.
+        Si se pasa player_teams, se usa para desambiguar nombres duplicados."""
         results = []
-        for name in player_names:
-            row = self._best_row(name)
+        teams = player_teams or [None] * len(player_names)
+        for name, team in zip(player_names, teams):
+            row = self._best_row(name, team=team)
             if row is None:
                 continue
             results.append(self._build(row))
@@ -284,6 +287,7 @@ class FitRayoScorer:
 
     def _build(self, row: pd.Series) -> PlayerComparison:
         name = str(row.get("name", ""))
+        _row_team = str(row.get("team", "") or "")
 
         # squad_entry primero — fuente más fiable para pos/age de jugadores Rayo
         squad_entry = self._lookup_squad(name)
@@ -303,7 +307,7 @@ class FitRayoScorer:
             age = float(squad_entry.get("age", 0) or 0)
         # Fallback edad desde enriched (más rápido que TM API)
         if age == 0.0:
-            _enr = self._get_enriched_row(name)
+            _enr = self._get_enriched_row(name, team=_row_team)
             if _enr is not None:
                 try:
                     _ea = float(_enr.get("age") or 0)
@@ -480,15 +484,16 @@ class FitRayoScorer:
 
         return texts
 
-    def _get_enriched_row(self, name: str):
+    def _get_enriched_row(self, name: str, team: str | None = None):
         """Fila más reciente del jugador en enriched (columnas OPTA). Cacheada."""
         if self.enriched.empty:
             return None
-        # Cache de resultados por nombre
+        # Cache de resultados por (nombre, team)
         if not hasattr(self, "_enr_row_cache"):
             self._enr_row_cache = {}
-        if name in self._enr_row_cache:
-            return self._enr_row_cache[name]
+        cache_key = (name, team)
+        if cache_key in self._enr_row_cache:
+            return self._enr_row_cache[cache_key]
 
         nl = str(name).strip().lower()
         # Índice por nombre (construido una sola vez)
@@ -502,13 +507,21 @@ class FitRayoScorer:
                 abbrev = f"{parts[0][0]}. {' '.join(parts[1:])}"
                 rows = self.enriched[self._enr_name_lower == abbrev]
         if rows.empty:
-            self._enr_row_cache[name] = None
+            self._enr_row_cache[cache_key] = None
             return None
+        # Filtrar por team si se especifica (desambiguar homónimos)
+        if team and "team" in rows.columns:
+            team_rows = rows[rows["team"].str.lower() == team.strip().lower()]
+            if not team_rows.empty:
+                rows = team_rows
         ORDER = {"2025-2026":6,"2025":5,"2024-2025":4,"2023-2024":3,"2022-2023":2,"2021-2022":1}
         rows = rows.copy()
         rows["_o"] = rows["season"].map(ORDER).fillna(0)
-        result = rows.loc[rows["_o"].idxmax()].drop("_o")
-        self._enr_row_cache[name] = result
+        # Tiebreaker: prefer rows with minutes
+        rows["_m"] = pd.to_numeric(rows.get("minutes"), errors="coerce").fillna(0)
+        rows["_sort"] = rows["_o"] * 100000 + rows["_m"]
+        result = rows.loc[rows["_sort"].idxmax()].drop(["_o", "_m", "_sort"])
+        self._enr_row_cache[cache_key] = result
         return result
 
     def _score_rendimiento(self, row: pd.Series) -> float:
@@ -517,7 +530,8 @@ class FitRayoScorer:
             from src.utils.rendimiento import compute_rendimiento, get_subposition, \
                 precompute_pool_stats, SUBPOS_TO_POOL
             name = str(row.get("name", ""))
-            _enr = self._get_enriched_row(name)
+            _team = str(row.get("team", "") or "")
+            _enr = self._get_enriched_row(name, team=_team)
             enr_row = _enr if _enr is not None else row
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
@@ -558,7 +572,8 @@ class FitRayoScorer:
         try:
             from src.utils.rendimiento import compute_rendimiento, get_subposition
             name = str(row.get("name", ""))
-            _enr = self._get_enriched_row(name)
+            _team = str(row.get("team", "") or "")
+            _enr = self._get_enriched_row(name, team=_team)
             enr_row = _enr if _enr is not None else row
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
@@ -776,7 +791,8 @@ class FitRayoScorer:
           - total_touches_in_opposition_box_p90 (vocación ofensiva)
         """
         try:
-            _enr = self._get_enriched_row(name)
+            _team = str(row.get("team", "") or "")
+            _enr = self._get_enriched_row(name, team=_team)
             enr_row = _enr if _enr is not None else row
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "MID"))).upper()
 
@@ -870,7 +886,8 @@ class FitRayoScorer:
     def score_adn_tactico_breakdown(self, row: pd.Series, name: str) -> dict:
         """Desglosa el score de ADN táctico para la UI."""
         try:
-            _enr = self._get_enriched_row(name)
+            _team = str(row.get("team", "") or "")
+            _enr = self._get_enriched_row(name, team=_team)
             enr_row = _enr if _enr is not None else row
 
             pool = self.enriched
@@ -1010,12 +1027,14 @@ class FitRayoScorer:
     # Helpers datos                                                        #
     # ------------------------------------------------------------------ #
 
-    def _best_row(self, name: str) -> pd.Series | None:
-        """Busca la mejor fila para un jugador. Cacheada por nombre."""
+    def _best_row(self, name: str, team: str | None = None) -> pd.Series | None:
+        """Busca la mejor fila para un jugador. Cacheada por (nombre, team).
+        Busca primero en master, fallback a enriched si no encuentra con team."""
         if not hasattr(self, "_best_row_cache"):
             self._best_row_cache = {}
-        if name in self._best_row_cache:
-            return self._best_row_cache[name]
+        cache_key = (name, team)
+        if cache_key in self._best_row_cache:
+            return self._best_row_cache[cache_key]
 
         if not hasattr(self, "_master_name_lower"):
             self._master_name_lower = self.master["name"].str.lower()
@@ -1023,32 +1042,88 @@ class FitRayoScorer:
         nl = name.strip().lower()
         mask = self._master_name_lower == nl
         rows = self.master[mask]
+
+        # Si hay team, filtrar para desambiguar jugadores homónimos
+        if not rows.empty and team:
+            team_rows = rows[rows["team"].str.lower() == team.strip().lower()]
+            if not team_rows.empty:
+                rows = team_rows
+
         if not rows.empty:
             result = self._dedup_latest(rows).iloc[0]
-            self._best_row_cache[name] = result
+            # Verificar que la fila tenga minutos reales; si no, intentar enriched
+            _mins = pd.to_numeric(result.get("minutes"), errors="coerce")
+            if pd.notna(_mins) and _mins > 0:
+                self._best_row_cache[cache_key] = result
+                return result
+            # Fila sin minutos — buscar en enriched como fallback
+            enr_result = self._best_row_from_enriched(nl, team)
+            if enr_result is not None:
+                self._best_row_cache[cache_key] = enr_result
+                return enr_result
+            # Si no hay alternativa en enriched, devolver la de master
+            self._best_row_cache[cache_key] = result
             return result
 
+        # Búsqueda por abreviatura en master
         parts = nl.split()
         if len(parts) >= 2:
             initial = parts[0][0] + "."
             abbrev  = (initial + " " + " ".join(parts[1:])).lower()
             mask2   = self._master_name_lower == abbrev
             rows    = self.master[mask2]
+            if not rows.empty and team:
+                team_rows = rows[rows["team"].str.lower() == team.strip().lower()]
+                if not team_rows.empty:
+                    rows = team_rows
             if not rows.empty:
                 result = self._dedup_latest(rows).iloc[0]
-                self._best_row_cache[name] = result
+                self._best_row_cache[cache_key] = result
                 return result
 
             surname = " ".join(parts[1:])
             mask3   = self._master_name_lower.str.contains(surname, regex=False)
             rows    = self.master[mask3]
+            if not rows.empty and team:
+                team_rows = rows[rows["team"].str.lower() == team.strip().lower()]
+                if not team_rows.empty:
+                    rows = team_rows
             if not rows.empty:
                 result = self._dedup_latest(rows).iloc[0]
-                self._best_row_cache[name] = result
+                self._best_row_cache[cache_key] = result
                 return result
 
-        self._best_row_cache[name] = None
+        # Último fallback: enriched directamente
+        enr_result = self._best_row_from_enriched(nl, team)
+        if enr_result is not None:
+            self._best_row_cache[cache_key] = enr_result
+            return enr_result
+
+        self._best_row_cache[cache_key] = None
         return None
+
+    def _best_row_from_enriched(self, name_lower: str, team: str | None) -> pd.Series | None:
+        """Busca en enriched como fallback (tiene más filas que master)."""
+        if self.enriched.empty:
+            return None
+        if not hasattr(self, "_enr_name_lower"):
+            self._enr_name_lower = self.enriched["name"].fillna("").str.lower()
+        mask = self._enr_name_lower == name_lower
+        rows = self.enriched[mask]
+        if rows.empty:
+            return None
+        if team:
+            team_rows = rows[rows["team"].str.lower() == team.strip().lower()]
+            if not team_rows.empty:
+                rows = team_rows
+        # Prefer row with most minutes in latest season
+        rows = rows.copy()
+        ORDER = {"2025-2026":6,"2025":5,"2024-2025":4,"2023-2024":3,"2022-2023":2,"2021-2022":1}
+        rows["_o"] = rows["season"].map(ORDER).fillna(0)
+        rows["_m"] = pd.to_numeric(rows.get("minutes"), errors="coerce").fillna(0)
+        rows["_sort"] = rows["_o"] * 100000 + rows["_m"]
+        best = rows.loc[rows["_sort"].idxmax()]
+        return best.drop(["_o", "_m", "_sort"])
 
     def _dedup_latest(self, df: pd.DataFrame) -> pd.DataFrame:
         ORDER = {"2026":7,"2025-2026":6,"2025/2026":6,"2025":5,
@@ -1057,7 +1132,11 @@ class FitRayoScorer:
             return df.drop_duplicates("name") if "name" in df.columns else df
         df = df.copy()
         df["_o"] = df["season"].map(ORDER).fillna(0)
-        best = df.loc[df.groupby("name")["_o"].idxmax()]
+        # Tiebreaker: prefer rows with actual minutes played
+        df["_m"] = pd.to_numeric(df.get("minutes"), errors="coerce").fillna(0)
+        df["_sort"] = df["_o"] * 100000 + df["_m"]
+        best = df.loc[df.groupby("name")["_sort"].idxmax()]
+        return best.drop(columns=["_o", "_m", "_sort"]).reset_index(drop=True)
         return best.drop(columns=["_o"]).reset_index(drop=True)
 
     def _get_mv(self, name: str) -> float:
