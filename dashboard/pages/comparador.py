@@ -479,6 +479,7 @@ def _cards_section(results, lat_dict: dict | None = None) -> html.Div:
         sub_scores = html.Div(
             [
                 _mini_stat("Rendimiento", r.score_rendimiento),
+                _mini_stat("ADN táct.",   r.score_adn_tactico),
                 _mini_stat("Económico",   r.score_economico),
                 _mini_stat("Edad",        r.score_edad),
                 _mini_stat("Disponib.",   r.score_disponibilidad),

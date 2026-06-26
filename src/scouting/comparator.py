@@ -143,6 +143,7 @@ class PlayerComparison:
     score_economico:  float
     score_edad:       float
     score_disponibilidad: float | None  # None = jugador Rayo en propiedad (no aplica)
+    score_adn_tactico: float = 50.0    # ADN táctico (encaje estilo Rayo)
 
     # Métricas p90 para radar (combinadas o normalizadas)
     goal_contrib_p90:    float = 0.0   # goals_p90 + assists_p90
@@ -325,16 +326,17 @@ class FitRayoScorer:
         s_e  = self._score_economico(mv)
         s_a  = self._score_edad(age, pos)
         s_d  = self._score_disponibilidad(cu, name, squad_entry=squad_entry)
+        s_t  = self._score_adn_tactico(row, name)
 
         # Jugadores del Rayo en PROPIEDAD: disponibilidad no aplica (ya están en plantilla).
-        # Se excluye s_d y se normalizan los pesos restantes (/0.85).
+        # Se excluye s_d y se normalizan los pesos restantes (/0.90).
         # Cedidos: sí incluyen disponibilidad (propietario externo, coste desconocido).
         is_own_rayo = (squad_entry is not None) and not squad_entry.get("loan_from")
         if is_own_rayo:
-            fit = round((0.40*s_r + 0.30*s_e + 0.15*s_a) / 0.85, 1)
+            fit = round((0.40*s_r + 0.25*s_t + 0.20*s_e + 0.05*s_a) / 0.90, 1)
             s_d = None  # señal para UI: "no aplica"
         else:
-            fit = round(0.40*s_r + 0.30*s_e + 0.15*s_a + 0.15*s_d, 1)
+            fit = round(0.40*s_r + 0.25*s_t + 0.20*s_e + 0.05*s_a + 0.10*s_d, 1)
 
         def _sf(v) -> float:
             """Convierte a float de forma segura (NaN → 0)."""
@@ -369,6 +371,7 @@ class FitRayoScorer:
             score_economico=s_e,
             score_edad=s_a,
             score_disponibilidad=s_d,
+            score_adn_tactico=s_t,
             at_rayo=squad_entry is not None,
             loan_from=squad_entry.get("loan_from", "") if squad_entry else "",
             homegrown=squad_entry.get("homegrown", False) if squad_entry else False,
@@ -498,14 +501,40 @@ class FitRayoScorer:
         """Rendimiento via módulo compartido. Usa fila enriched (métricas OPTA)."""
         try:
             from src.utils.rendimiento import compute_rendimiento, get_subposition
+            from src.utils.lateral_position import build_lateral_map
             name = str(row.get("name", ""))
             _enr = self._get_enriched_row(name)
             enr_row = _enr if _enr is not None else row
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "")))
-            subpos = get_subposition(name, overrides=_ov, mv_df=_mv, position_group=pos_grp)
-            return compute_rendimiento(enr_row, self.enriched, subpos=subpos)["score"]
+
+            # Obtener lateral_pos y role_type para pesos adaptativos
+            _lat_code, _role_type = None, None
+            try:
+                from pathlib import Path as _P
+                from src.utils.config import settings as _stg
+                _proc = _P(_stg()["paths"]["data_processed"])
+                _lat_map = build_lateral_map(
+                    _proc / "player_seasons_enriched.parquet",
+                    _proc / "master_players.parquet",
+                )
+                _player_row = _lat_map[_lat_map["name"] == name]
+                if not _player_row.empty:
+                    _lat_code = _player_row.iloc[0].get("lateral_pos")
+                    _role_type = _player_row.iloc[0].get("role_type")
+            except Exception:
+                pass
+
+            subpos = get_subposition(name, overrides=_ov, mv_df=_mv,
+                                     position_group=pos_grp,
+                                     lateral_pos=_lat_code, role_type=_role_type)
+            rd = compute_rendimiento(enr_row, self.enriched, subpos=subpos,
+                                     role_type=_role_type)
+            # Aplicar coeficiente de dificultad de liga
+            raw = rd["score"]
+            diff = rd.get("league_diff", 1.0)
+            return round(raw * diff, 1)
         except Exception:
             mins = self._sf(row.get("minutes"))
             if mins <= 0:
@@ -698,6 +727,57 @@ class FitRayoScorer:
             "is_loan": is_loan, "is_rayo": is_rayo,
             "situacion": situacion, "bonus_rayo": bonus_rayo, "score": score,
         }
+
+    def _score_adn_tactico(self, row: pd.Series, name: str) -> float:
+        """
+        Encaje del jugador con el ADN táctico del Rayo (0-100).
+        Basado en: pressing alto, verticalidad, intensidad sin balón.
+        Métricas que reflejan el estilo Rayo:
+          - recoveries_p90 (pressing alto, recuperar rápido)
+          - tackles_won_p90 (intensidad defensiva)
+          - forward_passes_p90 (verticalidad)
+          - successful_dribbles_p90 (juego directo)
+          - total_touches_in_opposition_box_p90 (vocación ofensiva)
+        """
+        try:
+            # Usar fila enriched que contiene métricas OPTA p90
+            _enr = self._get_enriched_row(name)
+            enr_row = _enr if _enr is not None else row
+
+            pool = self.enriched
+            pos_grp = str(enr_row.get("position_group", row.get("position_primary", "MID"))).upper()
+            pool_pos = pool[pool["position_group"].str.upper() == pos_grp].copy()
+            pool_pos = pool_pos[pd.to_numeric(pool_pos["minutes"], errors="coerce").fillna(0) >= 450]
+
+            if len(pool_pos) < 10:
+                return 50.0  # neutro si no hay suficiente pool
+
+            # Métricas ADN ponderadas
+            adn_metrics = [
+                ("recoveries_p90", 0.30),
+                ("tackles_won_p90", 0.25),
+                ("forward_passes_p90", 0.20),
+                ("successful_dribbles_p90", 0.15),
+                ("total_touches_in_opposition_box_p90", 0.10),
+            ]
+
+            total_w, total_ws = 0.0, 0.0
+            for metric, weight in adn_metrics:
+                val = float(enr_row.get(metric) or 0)
+                if metric not in pool_pos.columns:
+                    continue
+                series = pd.to_numeric(pool_pos[metric], errors="coerce").dropna()
+                if len(series) < 5:
+                    continue
+                pct = float((series < val).sum() / len(series) * 100)
+                total_ws += weight * pct
+                total_w += weight
+
+            if total_w > 0:
+                return round(total_ws / total_w, 1)
+            return 50.0
+        except Exception:
+            return 50.0
 
     def _score_disponibilidad(self, contract_until: str | None, name: str,
                                   squad_entry: dict | None = None) -> float:

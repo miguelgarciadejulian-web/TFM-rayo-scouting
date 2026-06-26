@@ -83,14 +83,17 @@ def _block_scouting():
             _simple_table(
                 ["Componente", "Peso", "Qué mide"],
                 [
-                    ("Rendimiento",         "35%", "Percentil del jugador en su posición y liga"),
-                    ("Encaje económico",    "25%", "Valor de mercado vs presupuesto del club"),
-                    ("ADN táctico",         "20%", "Similitud con el estilo objetivo del Rayo"),
-                    ("Disponibilidad",      "20%", "Duración del contrato + integración en plantilla"),
+                    ("Rendimiento",         "40%", "Percentil del jugador en su posición y liga × coef. dificultad"),
+                    ("ADN táctico",         "25%", "Pressing, verticalidad, intensidad sin balón (estilo Rayo)"),
+                    ("Encaje económico",    "20%", "Valor de mercado vs presupuesto del club"),
+                    ("Edad / potencial",    "5%",  "Banda óptima por posición (sub-25 bonus)"),
+                    ("Disponibilidad",      "10%", "Duración del contrato + integración en plantilla"),
                 ],
             ),
             _p("Para el Fit Rayo se aplica un coeficiente de dificultad de liga (0.85 a 1.0): "
                "LaLiga y Premier = 1.0 · Segunda División = 0.91 · ligas menores = 0.85 mín."),
+            _p("Jugadores en propiedad del Rayo: se excluye Disponibilidad y se normalizan los "
+               "restantes (÷0.90)."),
         ),
         _h("Datos económicos"),
         _card(
@@ -274,15 +277,16 @@ def _block_comparador():
             _simple_table(
                 ["Componente", "Peso"],
                 [
-                    ("Rendimiento (intra-liga)", "35%"),
-                    ("Encaje económico",         "25%"),
-                    ("ADN táctico",              "20%"),
-                    ("Disponibilidad",           "20%"),
+                    ("Rendimiento (intra-liga)", "40%"),
+                    ("ADN táctico",              "25%"),
+                    ("Encaje económico",         "20%"),
+                    ("Edad / potencial",         "5%"),
+                    ("Disponibilidad",           "10%"),
                 ],
             ),
             _p("Se aplica coeficiente de dificultad de liga (0.85–1.0) al rendimiento para "
-               "comparaciones cross-liga. Los jugadores del Rayo reciben +10 puntos en "
-               "disponibilidad por integración ya consolidada (max 85)."),
+               "comparaciones cross-liga. Jugadores del Rayo en propiedad: se excluye Disponibilidad "
+               "y se normalizan los pesos restantes (÷0.90)."),
         ),
         _h("Indicadores fortaleza / debilidad"),
         _card(
@@ -315,14 +319,17 @@ def _block_jugador():
             _simple_table(
                 ["Componente", "Peso", "Cómo se calcula"],
                 [
-                    ("Rendimiento",   "35%", "Percentil intra-liga × coeficiente dificultad liga (0.85–1.0)"),
-                    ("Económico",     "25%", "Valor de mercado vs presupuesto de fichajes del club"),
-                    ("ADN táctico",   "20%", "Similitud métricas del jugador con estilo objetivo Rayo"),
-                    ("Disponibilidad","20%", "Meses de contrato restantes (+10 bonus si ya es del Rayo, max 85)"),
+                    ("Rendimiento",   "40%", "Percentil intra-liga × coeficiente dificultad liga (0.85–1.0)"),
+                    ("ADN táctico",   "25%", "Pressing, verticalidad, intensidad sin balón vs. peers"),
+                    ("Económico",     "20%", "Valor de mercado vs presupuesto de fichajes del club"),
+                    ("Edad / potencial","5%","Banda óptima por posición (sub-25 bonus)"),
+                    ("Disponibilidad","10%", "Meses de contrato restantes (+10 bonus si ya es del Rayo, max 85)"),
                 ],
             ),
             _p("Coeficiente de liga: LaLiga/Premier = 1.0 · Serie A/Bundesliga = 0.99 · "
                "Ligue 1 = 0.97 · Segunda = 0.91 · ligas menores >= 0.85."),
+            _p("Jugadores del Rayo en propiedad: se excluye Disponibilidad y se "
+               "normalizan los restantes (÷0.90)."),
         ),
         _h("Riesgo de cláusula"),
         _card(

@@ -450,6 +450,7 @@ def _fit_rayo_card(name: str) -> html.Div:
 
     bars = [
         _bar("Rendimiento",    r.score_rendimiento,    "ti-run"),
+        _bar("ADN táctico",    r.score_adn_tactico,    "ti-flame"),
         _bar("Enc. economico", r.score_economico,      "ti-coin-euro"),
         _bar("Perfil de edad", r.score_edad,           "ti-calendar"),
         _bar("Disponibilidad", r.score_disponibilidad, "ti-door-enter"),
@@ -652,9 +653,10 @@ def _fit_rayo_card(name: str) -> html.Div:
     # Tabla resumen fórmula
     formula_items = [
         ("Rendimiento",    r.score_rendimiento,    "40%"),
-        ("Enc. económico", r.score_economico,      "30%"),
-        ("Perfil de edad", r.score_edad,           "15%"),
-        ("Disponibilidad", r.score_disponibilidad, "15%"),
+        ("ADN táctico",    r.score_adn_tactico,    "25%"),
+        ("Enc. económico", r.score_economico,      "20%"),
+        ("Perfil de edad", r.score_edad,           "5%"),
+        ("Disponibilidad", r.score_disponibilidad, "10%"),
     ]
     formula_rows = []
     for lbl, val, weight in formula_items:

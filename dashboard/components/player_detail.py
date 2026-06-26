@@ -617,7 +617,8 @@ def build_detail(name, team=None, league=None, age=None,
         _subpos = get_subposition(latest["name"], overrides=_ov, mv_df=_mv,
                                    position_group=latest.get("position_group"),
                                    lateral_pos=_lat_code, role_type=_role_type_key)
-        _rd = compute_rendimiento(latest, enriched(), subpos=_subpos)
+        _rd = compute_rendimiento(latest, enriched(), subpos=_subpos,
+                                  role_type=_role_type_key)
     except Exception as _exc:
         _rd = {"score": None, "dims": [], "subpos_label": "—",
                "pool_size": 0, "league_diff": 1.0, "error": str(_exc)}

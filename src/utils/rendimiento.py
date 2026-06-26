@@ -99,6 +99,8 @@ SUBPOS_TO_POOL: dict[str, str] = {
 # Cada entrada: (etiqueta, [columnas_p90], peso)
 # Columnas especiales calculadas al vuelo: saves_p90, big_chances_saved_p90,
 # clean_sheets_rate, goals_conceded_p90_inv
+
+# Pesos BASE por sub-posición (se usan cuando no hay role_type o no hay override)
 REND_DIMS: dict[str, list] = {
     "GK": [
         ("Paradas",         ["saves_p90", "big_chances_saved_p90"],               0.45),
@@ -182,6 +184,50 @@ REND_DIMS: dict[str, list] = {
         ("Pressing",        ["recoveries_p90", "tackles_won_p90",
                               "interceptions_p90"],                                 0.15),
     ],
+}
+
+# ── Pesos ADAPTATIVOS por role_type ──────────────────────────────────────────
+# Override de pesos cuando conocemos el estilo de juego exacto del jugador.
+# Solo se modifican los pesos (peso_dim); las métricas siguen siendo las mismas
+# de la sub-posición base para mantener la comparación justa dentro del pool.
+REND_DIMS_BY_ROLE: dict[str, dict[str, float]] = {
+    # Delanteros
+    "delantero_rematador": {
+        "Gol / Remate": 0.60, "Juego de área": 0.25, "Creación": 0.10, "Pressing": 0.05,
+    },
+    "delantero_movil": {
+        "Gol / Remate": 0.30, "Juego de área": 0.15, "Creación": 0.35, "Pressing": 0.20,
+    },
+    # Extremos
+    "extremo_vertical": {
+        "Regates / Desborde": 0.40, "Gol / Remate": 0.35, "Creación": 0.15, "Pressing": 0.10,
+    },
+    "extremo_asociativo": {
+        "Regates / Desborde": 0.20, "Gol / Remate": 0.15, "Creación": 0.50, "Pressing": 0.15,
+    },
+    # Centrocampistas
+    "mediocentro_organizador": {
+        "Pase": 0.45, "Recuperación": 0.20, "Creación": 0.25, "Contribución": 0.10,
+    },
+    "mediocentro_recuperador": {
+        "Pase": 0.15, "Recuperación": 0.50, "Creación": 0.10, "Contribución": 0.25,
+    },
+    "interior_llegador": {
+        "Creación": 0.30, "Gol": 0.35, "Pase en profundidad": 0.15, "Pressing": 0.20,
+    },
+    # Defensas
+    "central_dominador": {
+        "Defensiva": 0.25, "Duelo aéreo": 0.15, "Duelo 1v1": 0.15, "Construcción": 0.45,
+    },
+    "central_corrector": {
+        "Defensiva": 0.50, "Duelo aéreo": 0.25, "Duelo 1v1": 0.20, "Construcción": 0.05,
+    },
+    "lateral_ofensivo": {
+        "Defensiva": 0.15, "Proyección": 0.40, "Duelos": 0.15, "Ataque": 0.30,
+    },
+    "lateral_defensivo": {
+        "Defensiva": 0.45, "Proyección": 0.15, "Duelos": 0.30, "Ataque": 0.10,
+    },
 }
 
 # ── Texto metodológico (para criterios.py) ───────────────────────────────────
@@ -283,6 +329,7 @@ def compute_rendimiento(
     enriched_df: pd.DataFrame,
     subpos: str | None = None,
     min_minutes: int = 450,
+    role_type: str | None = None,
 ) -> dict:
     """
     Calcula el score de Rendimiento para un jugador.
@@ -298,6 +345,7 @@ def compute_rendimiento(
           "dims":       [{"label":..., "score":..., "weight":...}, ...],
           "league_diff": float,
           "league":     str,
+          "role_type":  str | None,
         }
     """
     if subpos is None:
@@ -341,6 +389,9 @@ def compute_rendimiento(
 
     pool_size = len(pool)
 
+    # Si tenemos role_type, usar pesos adaptativos sobre las mismas métricas base
+    role_weight_override = REND_DIMS_BY_ROLE.get(role_type, {}) if role_type else {}
+
     def _pct(col: str, val: float) -> float | None:
         if col not in pool.columns:
             return None
@@ -350,7 +401,9 @@ def compute_rendimiento(
         return float((series < val).sum() / len(series) * 100)
 
     dim_results, total_w, total_ws = [], 0.0, 0.0
-    for label, metrics, weight in dims_def:
+    for label, metrics, base_weight in dims_def:
+        # Usar peso del role_type si existe; si no, peso base de la sub-posición
+        weight = role_weight_override.get(label, base_weight)
         scores = []
         for m in metrics:
             val = float(player_row.get(m) or 0)
@@ -383,4 +436,5 @@ def compute_rendimiento(
         "dims":        dim_results,
         "league_diff": diff,
         "league":      str(player_row.get("league") or ""),
+        "role_type":   role_type,
     }
