@@ -314,9 +314,17 @@ def _tab_scouting():
         # Score por sub-posición
         html.Div([
             _section("2c", "Score de rendimiento por sub-posición"),
-            html.P("Para el Fit Rayo, el rendimiento se calcula con pesos específicos por sub-posición. "
-                   "Este es el score único que aparece en Scouting, Comparador, Decisiones y PDF export.",
+            html.P("El rendimiento se calcula con z-scores contra un pool GLOBAL (todas las ligas, "
+                   "mismo grupo posicional, ≥450 minutos). Esto mide el nivel real del jugador "
+                   "comparado con todos los jugadores del mundo en su posición.",
                    style={"fontSize":"12px","color":"#374151"}),
+            _formula("Para cada métrica p90:\n"
+                     "  z = (valor_jugador − media_global) / std_global\n"
+                     "  score_métrica = 50 + z × 15   (clip [3, 97])\n\n"
+                     "Score dimensión = media(scores métricas)\n"
+                     "Rendimiento bruto = Σ(peso_dim × score_dim)"),
+            html.P("Pesos por sub-posición (adaptativos según role_type del jugador):",
+                   style={"fontSize":"12px","color":"#374151","marginTop":"8px"}),
             html.Table([
                 html.Thead(html.Tr([html.Th("Sub-posición",style=TH),
                                     html.Th("Dimensiones y peso",style={**TH,"width":"65%"})])),
@@ -339,58 +347,105 @@ def _tab_scouting():
                              html.Td("Gol/Remate (45%) · Duelos área: aéreos+1v1 (20%) · Creación (20%) · Pressing (15%)",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"10px"}),
-        ], style=CARD),
-
-        # Factor dificultad de liga
-        html.Div([
-            _section("2d", "Factor de dificultad de liga"),
-            html.P("Los percentiles se ajustan por la competitividad de la liga donde actúa el jugador. "
-                   "LaLiga = referencia (1.00). Ligas menores se escalan hacia abajo.",
-                   style={"fontSize":"12px","color":"#374151"}),
-            _formula("score_ajustado = score_bruto × factor_liga"),
+            html.P("Pesos adaptativos por estilo de juego (role_type):",
+                   style={"fontSize":"12px","color":"#374151","fontWeight":"600","marginTop":"6px"}),
+            html.P("Cuando se conoce el estilo del jugador, los pesos de las dimensiones se redistribuyen "
+                   "para valorar lo que realmente importa en ese rol:",
+                   style={"fontSize":"11px","color":"#6B7280"}),
             html.Table([
-                html.Thead(html.Tr([html.Th("Liga",style=TH),html.Th("Factor",style=TH),
-                                    html.Th("Liga",style=TH),html.Th("Factor",style=TH)])),
+                html.Thead(html.Tr([html.Th("Estilo (role_type)",style=TH),html.Th("Redistribución de pesos",style=TH)])),
                 html.Tbody([
-                    html.Tr([html.Td("LaLiga (España)",style=TD),html.Td("1.00",style={**TD,"fontWeight":"700","color":"#166534"}),
-                             html.Td("Bundesliga (Alemania)",style=TD),html.Td("0.97",style=TD)]),
-                    html.Tr([html.Td("Premier League",style=TD),html.Td("1.00",style={**TD,"fontWeight":"700","color":"#166534"}),
-                             html.Td("Ligue 1 (Francia)",style=TD),html.Td("0.92",style=TD)]),
-                    html.Tr([html.Td("Serie A (Italia)",style=TD),html.Td("0.97",style=TD),
-                             html.Td("Eredivisie (Países Bajos)",style=TD),html.Td("0.88",style=TD)]),
-                    html.Tr([html.Td("Segunda División",style=TD),html.Td("0.82",style=TD),
-                             html.Td("Primera RFEF",style=TD),html.Td("0.70",style=TD)]),
-                    html.Tr([html.Td("Primeira Liga (Portugal)",style=TD),html.Td("0.88",style=TD),
-                             html.Td("Otras ligas",style=TD),html.Td("0.65-0.80",style=TD)]),
+                    html.Tr([html.Td("delantero_rematador",style=TD),
+                             html.Td("Gol/Remate 60% · Área 25% · Creación 10% · Pressing 5%",style=TD)]),
+                    html.Tr([html.Td("delantero_movil",style=TD),
+                             html.Td("Creación 35% · Gol 30% · Pressing 20% · Área 15%",style=TD)]),
+                    html.Tr([html.Td("extremo_vertical",style=TD),
+                             html.Td("Regates 40% · Gol 35% · Creación 15% · Pressing 10%",style=TD)]),
+                    html.Tr([html.Td("extremo_asociativo",style=TD),
+                             html.Td("Creación 50% · Regates 20% · Gol 15% · Pressing 15%",style=TD)]),
+                    html.Tr([html.Td("mediocentro_organizador",style=TD),
+                             html.Td("Pase 45% · Creación 25% · Recuperación 20% · Contribución 10%",style=TD)]),
+                    html.Tr([html.Td("mediocentro_recuperador",style=TD),
+                             html.Td("Recuperación 50% · Contribución 25% · Pase 15% · Creación 10%",style=TD)]),
+                    html.Tr([html.Td("central_dominador",style=TD),
+                             html.Td("Construcción 45% · Defensiva 25% · Aéreo 15% · 1v1 15%",style=TD)]),
+                    html.Tr([html.Td("central_corrector",style=TD),
+                             html.Td("Defensiva 50% · Aéreo 25% · 1v1 20% · Construcción 5%",style=TD)]),
+                    html.Tr([html.Td("lateral_ofensivo",style=TD),
+                             html.Td("Proyección 40% · Ataque 30% · Defensiva 15% · Duelos 15%",style=TD)]),
+                    html.Tr([html.Td("lateral_defensivo",style=TD),
+                             html.Td("Defensiva 45% · Duelos 30% · Proyección 15% · Ataque 10%",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
+            _note("Ejemplo: Sørloth como delantero_rematador sube de 69.7 a 79.2 porque su fortaleza (gol) "
+                  "recibe un 60% de peso en vez del 45% estándar."),
+        ], style=CARD),
+
+        # Factor calidad de liga
+        html.Div([
+            _section("2d", "Coeficiente de calidad de liga"),
+            html.P("El rendimiento bruto (z-score global) se multiplica por un coeficiente de calidad. "
+                   "Rendir al mismo nivel en una liga top vale más que en una liga inferior. "
+                   "El coeficiente se aplica de forma intrínseca al score final de rendimiento.",
+                   style={"fontSize":"12px","color":"#374151"}),
+            _formula("Rendimiento_final = Rendimiento_bruto × Coef_liga"),
+            html.Table([
+                html.Thead(html.Tr([html.Th("Liga",style=TH),html.Th("Coef.",style=TH),
+                                    html.Th("Liga",style=TH),html.Th("Coef.",style=TH)])),
+                html.Tbody([
+                    html.Tr([html.Td("Premier League",style=TD),html.Td("1.07",style={**TD,"fontWeight":"700","color":"#166534"}),
+                             html.Td("Bundesliga",style=TD),html.Td("1.03",style=TD)]),
+                    html.Tr([html.Td("LaLiga (Primera)",style=TD),html.Td("1.05",style={**TD,"fontWeight":"700","color":"#166534"}),
+                             html.Td("Serie A",style=TD),html.Td("1.03",style=TD)]),
+                    html.Tr([html.Td("Ligue 1",style=TD),html.Td("0.98",style=TD),
+                             html.Td("Eredivisie",style=TD),html.Td("0.92",style=TD)]),
+                    html.Tr([html.Td("Primeira Liga (Portugal)",style=TD),html.Td("0.92",style=TD),
+                             html.Td("Bélgica",style=TD),html.Td("0.88",style=TD)]),
+                    html.Tr([html.Td("Türkiye Süper Lig",style=TD),html.Td("0.87",style=TD),
+                             html.Td("Championship (Ingl.)",style=TD),html.Td("0.86",style=TD)]),
+                    html.Tr([html.Td("2ª Bundesliga",style=TD),html.Td("0.84",style=TD),
+                             html.Td("Dinamarca",style=TD),html.Td("0.84",style=TD)]),
+                    html.Tr([html.Td("Segunda División (Esp.)",style=TD),html.Td("0.83",style={**TD,"color":"#92400E"}),
+                             html.Td("Ligue 2 (Francia)",style=TD),html.Td("0.81",style={**TD,"color":"#92400E"})]),
+                    html.Tr([html.Td("Liga MX (México)",style=TD),html.Td("0.82",style=TD),
+                             html.Td("Argentina Liga Prof.",style=TD),html.Td("0.80",style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
+            _note("Resultado: un jugador medio de Primera (~54) siempre supera al mejor de Segunda (~57 bruto × 0.83 = 47). "
+                  "Solo los más destacados de ligas inferiores compiten con jugadores medios de ligas top."),
         ], style=CARD),
 
         # Fit Rayo global de scouting
         html.Div([
             _section("2e", "Fit Rayo global (0-100)"),
-            html.P("El Fit Rayo sintetiza el encaje de un candidato externo en cuatro dimensiones:",
+            html.P("El Fit Rayo sintetiza el encaje de un candidato externo en cinco dimensiones:",
                    style={"fontSize":"12px","color":"#374151"}),
             _formula("Fit_Rayo = 0.40 × Rendimiento\n"
-                     "         + 0.30 × Encaje_económico\n"
-                     "         + 0.20 × Perfil_de_edad\n"
+                     "         + 0.25 × ADN_Táctico\n"
+                     "         + 0.20 × Encaje_económico\n"
+                     "         + 0.05 × Perfil_de_edad\n"
                      "         + 0.10 × Disponibilidad"),
+            html.P("Para jugadores propios del Rayo: se excluye Disponibilidad y se normalizan los pesos (÷0.90).",
+                   style={"fontSize":"11px","color":"#6B7280","fontStyle":"italic","marginBottom":"8px"}),
             html.Table([
                 html.Thead(html.Tr([html.Th("Dimensión",style=TH),html.Th("Peso",style=TH),
                                     html.Th("Cómo se calcula",style=TH)])),
                 html.Tbody([
                     html.Tr([html.Td("Rendimiento",style={**TD,"fontWeight":"700"}),
                              html.Td("40%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Score por sub-posición ajustado por dificultad de liga",style=TD)]),
+                             html.Td("Z-score global por sub-posición × coef. liga. Pesos adaptativos por role_type.",style=TD)]),
+                    html.Tr([html.Td("ADN Táctico",style={**TD,"fontWeight":"700"}),
+                             html.Td("25%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Encaje con el estilo Rayo: pressing, verticalidad, intensidad (5 métricas p90).",style=TD)]),
                     html.Tr([html.Td("Encaje económico",style={**TD,"fontWeight":"700"}),
-                             html.Td("30%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Valor TM vs horquilla de inversión del Rayo (0.5–5M€)",style=TD)]),
-                    html.Tr([html.Td("Perfil de edad",style={**TD,"fontWeight":"700"}),
                              html.Td("20%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Curva óptima por posición; prime (24-28) = máximo",style=TD)]),
+                             html.Td("Valor TM vs horquilla de inversión del Rayo (curva: ≤7M€ ideal, >20M€ inviable).",style=TD)]),
+                    html.Tr([html.Td("Perfil de edad",style={**TD,"fontWeight":"700"}),
+                             html.Td("5%",style={**TD,"color":"#6B7280","fontWeight":"700"}),
+                             html.Td("Curva óptima por posición; prime (24-29) = máximo.",style=TD)]),
                     html.Tr([html.Td("Disponibilidad",style={**TD,"fontWeight":"700"}),
                              html.Td("10%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Contrato expirante=100, libre=90, cedido con opción=80, atado=0",style=TD)]),
+                             html.Td("Contrato expirante=95, libre=90, opción compra=70, atado largo=25.",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
             html.Table([
@@ -405,9 +460,57 @@ def _tab_scouting():
             ], style={"width":"100%","borderCollapse":"collapse"}),
         ], style=CARD),
 
+        # ADN Táctico
+        html.Div([
+            _section("2f", "ADN Táctico (25% del Fit Rayo)"),
+            html.P("Mide cuánto encaja un jugador con el estilo de juego del Rayo Vallecano: "
+                   "pressing alto, verticalidad, intensidad sin balón y vocación ofensiva. "
+                   "Se calcula mediante z-score global (mismo método que el rendimiento) sobre 5 métricas clave p90.",
+                   style={"fontSize":"12px","color":"#374151"}),
+            html.Table([
+                html.Thead(html.Tr([html.Th("Métrica p90",style=TH),html.Th("Peso",style=TH),
+                                    html.Th("Qué refleja del estilo Rayo",style=TH)])),
+                html.Tbody([
+                    html.Tr([html.Td("Recoveries",style={**TD,"fontWeight":"700"}),
+                             html.Td("30%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Pressing alto: recuperar el balón tras pérdida propia o rival",style=TD)]),
+                    html.Tr([html.Td("Tackles won",style={**TD,"fontWeight":"700"}),
+                             html.Td("25%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Intensidad defensiva: duelos ganados, agresividad sin balón",style=TD)]),
+                    html.Tr([html.Td("Forward passes",style={**TD,"fontWeight":"700"}),
+                             html.Td("20%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Verticalidad: pases hacia delante, juego directo",style=TD)]),
+                    html.Tr([html.Td("Successful dribbles",style={**TD,"fontWeight":"700"}),
+                             html.Td("15%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Desborde: capacidad de superar rival 1v1, juego dinámico",style=TD)]),
+                    html.Tr([html.Td("Touches in opp. box",style={**TD,"fontWeight":"700"}),
+                             html.Td("10%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Vocación ofensiva: presencia en zona de finalización",style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
+            _formula("ADN_Táctico = Σ(peso_i × z_score_métrica_i)\n"
+                     "  z calculado vs pool global (misma posición, ≥450 min)\n"
+                     "  Escala 0-100: media global = 50, desv. típica = 15 puntos"),
+            html.Table([
+                html.Thead(html.Tr([html.Th("ADN Score",style=TH),html.Th("Interpretación",style=TH)])),
+                html.Tbody([
+                    html.Tr([html.Td("≥ 70",style={**TD,"fontWeight":"700","color":"#166534"}),
+                             html.Td("Muy alineado con el estilo Rayo — encaje táctico excelente",style=TD)]),
+                    html.Tr([html.Td("50-69",style=TD),
+                             html.Td("Moderadamente compatible — puede adaptarse al sistema",style=TD)]),
+                    html.Tr([html.Td("30-49",style=TD),
+                             html.Td("Margen de mejora — estilo diferente, necesita adaptación",style=TD)]),
+                    html.Tr([html.Td("< 30",style={**TD,"fontWeight":"700","color":"#991B1B"}),
+                             html.Td("Poco compatible — perfil pasivo o posicional, lejos del pressing Rayo",style=TD)]),
+                ]),
+            ], style={"width":"100%","borderCollapse":"collapse"}),
+            _note("El ADN Táctico valora el estilo, no la calidad absoluta. Un jugador excelente "
+                  "puede tener ADN bajo si su estilo (ej: posesión lenta, poco pressing) no encaja con el Rayo."),
+        ], style=CARD),
+
         # Explorador
         html.Div([
-            _section("2f", "Filtros del explorador de scouting"),
+            _section("2g", "Filtros del explorador de scouting"),
             html.P("El explorador permite combinar cualquier subconjunto de estos filtros:",
                    style={"fontSize":"12px","color":"#374151"}),
             html.Table([
