@@ -12,7 +12,7 @@ import yaml
 from pathlib import Path
 
 import dash
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc, callback, Input, Output, clientside_callback, ClientsideFunction
 import dash_bootstrap_components as dbc
 import pandas as pd
 
@@ -467,8 +467,7 @@ def layout(**_params):
                     )], md=4),
             ], className="g-2", style={"marginTop": "4px"}),
 
-            dcc.Loading(html.Div(id="exp-results", style={"marginTop": "12px"}),
-                        type="dot", color="#FFD600"),
+            html.Div(id="exp-results", style={"marginTop": "12px"}),
         ], style={"background": "#fff", "border": "1px solid #E5E7EB",
                   "borderRadius": "12px", "padding": "18px 20px"}),
     ])
@@ -737,6 +736,18 @@ def _get_lateral_map():
         lat_d, rt_d = {}, {}
     _LATERAL_MAP_CACHE["data"] = (lat_d, rt_d)
     return lat_d, rt_d
+
+
+# ── Clientside: limpiar resultados al cambiar filtro (evita ver datos viejos) ──
+clientside_callback(
+    """function() { return "⏳ Cargando candidatos…"; }""",
+    Output("exp-results", "children", allow_duplicate=True),
+    Input("exp-role", "value"), Input("exp-leagues", "value"), Input("exp-min", "value"),
+    Input("exp-maxval", "value"), Input("exp-flags", "value"),
+    Input("exp-maxage", "value"), Input("exp-maxcontract", "value"),
+    Input("exp-pos", "value"),
+    prevent_initial_call=True,
+)
 
 
 @callback(Output("exp-results", "children"),

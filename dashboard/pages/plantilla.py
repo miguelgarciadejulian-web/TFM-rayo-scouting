@@ -191,16 +191,16 @@ def player_row(p, i, role_map=None, role_labels=None):
                                       "whiteSpace": "nowrap", "overflow": "hidden",
                                       "textOverflow": "ellipsis", "maxWidth": "160px"}),
                 html.Div(
-                    html.Span(f"↗ {loan}", style={
-                        "fontSize": "9px", "color": "#1D4ED8",
-                        "background": "#EFF6FF", "borderRadius": "4px", "padding": "1px 5px",
+                    html.Span(f"↗ Cedido ({loan})", style={
+                        "fontSize": "10px", "color": "#1D4ED8",
+                        "background": "#EFF6FF", "borderRadius": "4px", "padding": "2px 6px",
                     }) if loan else (
-                    html.Span(f"🔙 Vuelve de cesión ({loan_to})", style={
-                        "fontSize": "9px", "color": "#15803D",
-                        "background": "#DCFCE7", "borderRadius": "4px", "padding": "1px 5px",
+                    html.Span(f"↩ Vuelve de {loan_to}", style={
+                        "fontSize": "10px", "color": "#15803D",
+                        "background": "#DCFCE7", "borderRadius": "4px", "padding": "2px 6px",
                         "fontWeight": "600",
                     }) if loan_to else None),
-                    style={"height": "16px", "display": "flex", "alignItems": "center"},
+                    style={"height": "18px", "display": "flex", "alignItems": "center"},
                 ),
             ], style={"display": "flex", "flexDirection": "column", "gap": "1px"}),
         ], style={"display": "flex", "alignItems": "center", "gap": "10px"})),
