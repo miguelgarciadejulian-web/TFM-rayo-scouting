@@ -142,29 +142,20 @@ app.layout = html.Div([
     ], className="main-wrap"),
 ], style={"display": "flex"})
 
-# Clientside: titulo del topbar segun ruta
-_PT_JS = _json.dumps({k: list(v) for k, v in PAGE_TITLES.items()})
-
-clientside_callback(
-    (
-        "function(pathname){"
-        "var titles=" + _PT_JS + ";"
-        "var found=titles[pathname]||['Rayo Scouting',''];"
-        "var pill={'display':'inline-flex','alignItems':'center','gap':'5px',"
-        "'background':'rgba(227,6,19,.07)','border':'1px solid rgba(227,6,19,.16)',"
-        "'color':'#B8000E','fontSize':'9.5px','fontWeight':'700',"
-        "'letterSpacing':'.05em','padding':'3px 9px','borderRadius':'99px','textTransform':'uppercase'};"
-        "return ["
-        "{'type':'I','namespace':'dash_html_components','props':{'className':'ti ti-bolt','style':{'color':'#E30613','fontSize':'15px'}}},"
-        "{'type':'Div','namespace':'dash_html_components','props':{'children':found[0],'style':{'fontSize':'14px','fontWeight':'800','color':'#0F1117','letterSpacing':'-.02em'}}},"
-        "{'type':'Div','namespace':'dash_html_components','props':{'children':found[1],'style':{'fontSize':'11px','color':'#9CA3AF','fontWeight':'400','marginLeft':'2px'}}},"
-        "{'type':'Div','namespace':'dash_html_components','props':{'style':{'flex':'1'}}},"
-        "{'type':'Div','namespace':'dash_html_components','props':{'children':'2026/27','style':pill}}"
-        "];}"
-    ),
+# Titulo del topbar segun ruta — callback de servidor (robusto entre versiones de Dash)
+@app.callback(
     Output("topbar-content", "children"),
     Input("url-app", "pathname"),
 )
+def _render_topbar(pathname):
+    title, sub = PAGE_TITLES.get(pathname, ("Rayo Scouting", ""))
+    return [
+        html.I(className="ti ti-bolt", style={"color": "#E30613", "fontSize": "15px"}),
+        html.Div(title, className="topbar-title"),
+        html.Div(sub, className="topbar-sub", style={"marginLeft": "2px"}),
+        html.Div(className="topbar-spacer"),
+        html.Div("2026/27", className="topbar-pill"),
+    ]
 
 
 if __name__ == "__main__":
@@ -175,4 +166,5 @@ if __name__ == "__main__":
         warmup()
     except Exception as _e:
         print(f"[WARN] warmup fallido: {_e}")
-    app.run(debug=True, host="127.0.0.1", port=8050)
+    app.run(host="127.0.0.1", port=8050, debug=False,
+            dev_tools_hot_reload=False, use_reloader=False)

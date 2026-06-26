@@ -1,16 +1,16 @@
 club:
-  name: "Rayo Vallecano de Madrid"
-  stadium: "Campo de Fútbol de Vallecas"
-  manager: "Íñigo Pérez"
-  base_formation: "4-2-3-1"
-  alt_formations: ["4-3-3", "4-4-2"]
-
-# Cifras orientativas para temporada 2026/2027 (validar con dirección deportiva)
+  name: Rayo Vallecano de Madrid
+  stadium: Campo de Fútbol de Vallecas
+  manager: Íñigo Pérez
+  base_formation: 4-2-3-1
+  alt_formations:
+  - 4-3-3
+  - 4-4-2
 finances_eur:
   income:
     tv_rights: 50000000
     competition_prizes: 6000000
-    european_competition: 4000000      # Si participa en Conference League
+    european_competition: 4000000
     sponsors_commercial: 13000000
     estimated_player_sales: 18000000
     other: 2000000
@@ -20,65 +20,206 @@ finances_eur:
     operating_costs: 18000000
   transfer_budget_net_eur: 10000000
   salary_cap_laliga_eur: 55000000
-
-# Plantilla a 25 de mayo de 2026 — fuente Transfermarkt
-# Campos: name, position (GK/CB/RB/LB/DM/CM/AM/RW/LW/ST), age, nationality, contract_end, market_value (€)
 squad_2025_26:
   goalkeepers:
-    - {name: "Augusto Batalla",   position: "GK", age: 30, nationality: "Argentina/Italia",      contract_end: "2030-06-30", market_value: 6000000}
-    - {name: "Dani Cárdenas",     position: "GK", age: 29, nationality: "España",                contract_end: "2027-06-30", market_value: 1800000}
-
+  - name: Augusto Batalla
+    position: GK
+    age: 30
+    nationality: Argentina/Italia
+    contract_end: '2030-06-30'
+    market_value: 6000000
+  - name: Dani Cárdenas
+    position: GK
+    age: 29
+    nationality: España
+    contract_end: '2027-06-30'
+    market_value: 1800000
   defenders:
-    - {name: "Andrei Rațiu",      position: "RB", age: 27, nationality: "Rumania/España",        contract_end: "2030-06-30", market_value: 18000000}
-    - {name: "Iván Balliu",       position: "RB", age: 34, nationality: "Albania/España",        contract_end: "2027-06-30", market_value: 1200000}
-    - {name: "Pep Chavarría",     position: "LB", age: 28, nationality: "España",                contract_end: "2030-06-30", market_value: 10000000}
-    - {name: "Alfonso Espino",    position: "LB", age: 34, nationality: "Uruguay/España",        contract_end: "2026-06-30", market_value: 1000000}
-    - {name: "Nobel Mendy",       position: "CB", age: 21, nationality: "Senegal/Guinea-Bissau", contract_end: "2029-06-30", market_value: 7000000}
-    # Fichado en propiedad (verano 2026). Opcion ejercida por ~3M euros (80% derechos). Contrato nuevo firmado hasta 2029.
-    - {name: "Abdul Mumin",       position: "CB", age: 27, nationality: "Ghana/Nigeria",         contract_end: "2026-06-30", market_value: 4000000}
-    - {name: "Luiz Felipe",       position: "CB", age: 29, nationality: "Italia/Brasil",         contract_end: "2026-06-30", market_value: 3000000}
-    - {name: "Jozhua Vertrouwd",  position: "CB", age: 21, nationality: "Países Bajos",          contract_end: "2028-06-30", market_value: 3000000}
-    # Fichado en propiedad (verano 2026). Compra obligatoria ejecutada (~1,25M + variables). Contrato firmado hasta 2028.
-    - {name: "Florian Lejeune",   position: "CB", age: 35, nationality: "Francia",               contract_end: "2028-06-30", market_value: 2000000}
-
+  - name: Andrei Rațiu
+    position: RB
+    age: 27
+    nationality: Rumania/España
+    contract_end: '2030-06-30'
+    market_value: 18000000
+  - name: Iván Balliu
+    position: RB
+    age: 34
+    nationality: Albania/España
+    contract_end: '2027-06-30'
+    market_value: 1200000
+  - name: Pep Chavarría
+    position: LB
+    age: 28
+    nationality: España
+    contract_end: '2030-06-30'
+    market_value: 10000000
+  - name: Alfonso Espino
+    position: LB
+    age: 34
+    nationality: Uruguay/España
+    contract_end: '2026-06-30'
+    market_value: 1000000
+  - name: Nobel Mendy
+    position: CB
+    age: 21
+    nationality: Senegal/Guinea-Bissau
+    contract_end: '2029-06-30'
+    market_value: 7000000
+  - name: Abdul Mumin
+    position: CB
+    age: 27
+    nationality: Ghana/Nigeria
+    contract_end: '2026-06-30'
+    market_value: 4000000
+  - name: Luiz Felipe
+    position: CB
+    age: 29
+    nationality: Italia/Brasil
+    contract_end: '2026-06-30'
+    market_value: 3000000
+  - name: Jozhua Vertrouwd
+    position: CB
+    age: 21
+    nationality: Países Bajos
+    contract_end: '2028-06-30'
+    market_value: 3000000
+  - name: Florian Lejeune
+    position: CB
+    age: 35
+    nationality: Francia
+    contract_end: '2028-06-30'
+    market_value: 2000000
   midfielders:
-    - {name: "Gerard Gumbau",     position: "DM", age: 31, nationality: "España",                contract_end: "2026-06-30", market_value: 1400000, loan_from: "Granada CF"}
-    - {name: "Pedro Díaz",        position: "CM", age: 27, nationality: "España",                contract_end: "2028-06-30", market_value: 3000000}
-    - {name: "Unai López",        position: "CM", age: 30, nationality: "España",                contract_end: "2026-06-30", market_value: 2500000}
-    - {name: "Óscar Valentín",    position: "CM", age: 31, nationality: "España",                contract_end: "2027-06-30", market_value: 2200000}
-    - {name: "Pathé Ciss",        position: "CM", age: 32, nationality: "Senegal",               contract_end: "2027-06-30", market_value: 2000000}
-    - {name: "Samu Becerra",      position: "CM", age: 19, nationality: "España",                contract_end: "2027-06-30", market_value: 300000, homegrown: true}
-    - {name: "Isi Palazón",       position: "AM", age: 31, nationality: "España",                contract_end: "2028-06-30", market_value: 3000000}
-    - {name: "Randy Nteka",       position: "AM", age: 28, nationality: "Angola/Francia",        contract_end: "2028-06-30", market_value: 1200000}
-    - {name: "Óscar Trejo",       position: "AM", age: 38, nationality: "Argentina/Italia",      contract_end: "2026-06-30", market_value: 400000}
-
+  - name: Gerard Gumbau
+    position: DM
+    age: 31
+    nationality: España
+    contract_end: '2026-06-30'
+    market_value: 1400000
+    loan_from: Granada CF
+  - name: Pedro Díaz
+    position: CM
+    age: 27
+    nationality: España
+    contract_end: '2028-06-30'
+    market_value: 3000000
+  - name: Unai López
+    position: CM
+    age: 30
+    nationality: España
+    contract_end: '2026-06-30'
+    market_value: 2500000
+  - name: Óscar Valentín
+    position: CM
+    age: 31
+    nationality: España
+    contract_end: '2029-06-30'
+    market_value: 2200000
+  - name: Pathé Ciss
+    position: CM
+    age: 32
+    nationality: Senegal
+    contract_end: '2027-06-30'
+    market_value: 2000000
+  - name: Samu Becerra
+    position: CM
+    age: 19
+    nationality: España
+    contract_end: '2027-06-30'
+    market_value: 300000
+    homegrown: true
+  - name: Isi Palazón
+    position: AM
+    age: 31
+    nationality: España
+    contract_end: '2028-06-30'
+    market_value: 3000000
+  - name: Randy Nteka
+    position: AM
+    age: 28
+    nationality: Angola/Francia
+    contract_end: '2028-06-30'
+    market_value: 1200000
+  - name: Óscar Trejo
+    position: AM
+    age: 38
+    nationality: Argentina/Italia
+    contract_end: '2026-06-30'
+    market_value: 400000
   forwards:
-    - {name: "Álvaro García",     position: "LW", age: 33, nationality: "España",                contract_end: "2028-06-30", market_value: 1800000}
-    - {name: "Carlos Martín",     position: "LW", age: 24, nationality: "España",                contract_end: "2026-06-30", market_value: 2000000, loan_from: "Atletico de Madrid"}
-    - {name: "Jorge de Frutos",   position: "RW", age: 29, nationality: "España",                contract_end: "2028-06-30", market_value: 12000000}
-    - {name: "Ilias Akhomach",    position: "RW", age: 22, nationality: "Marruecos/España",      contract_end: "2026-06-30", market_value: 12000000, loan_from: "Villarreal CF"}
-    - {name: "Fran Pérez",        position: "RW", age: 23, nationality: "España",                contract_end: "2029-06-30", market_value: 3000000}
-    - {name: "Sergio Camello",    position: "ST", age: 25, nationality: "España",                contract_end: "2027-06-30", market_value: 2000000}
-    - {name: "Alemão",            position: "ST", age: 28, nationality: "Brasil/Polonia",        contract_end: "2030-06-30", market_value: 3000000}
-
-# Metricas agregadas (Transfermarkt, mayo 2026)
+  - name: Álvaro García
+    position: LW
+    age: 33
+    nationality: España
+    contract_end: '2028-06-30'
+    market_value: 1800000
+  - name: Carlos Martín
+    position: LW
+    age: 24
+    nationality: España
+    contract_end: '2026-06-30'
+    market_value: 2000000
+    loan_from: Atletico de Madrid
+  - name: Jorge de Frutos
+    position: RW
+    age: 29
+    nationality: España
+    contract_end: '2028-06-30'
+    market_value: 12000000
+  - name: Ilias Akhomach
+    position: RW
+    age: 22
+    nationality: Marruecos/España
+    contract_end: '2026-06-30'
+    market_value: 12000000
+    loan_from: Villarreal CF
+  - name: Fran Pérez
+    position: RW
+    age: 23
+    nationality: España
+    contract_end: '2029-06-30'
+    market_value: 3000000
+  - name: Sergio Camello
+    position: ST
+    age: 25
+    nationality: España
+    contract_end: '2027-06-30'
+    market_value: 2000000
+  - name: Alemão
+    position: ST
+    age: 28
+    nationality: Brasil/Polonia
+    contract_end: '2030-06-30'
+    market_value: 3000000
 squad_summary:
   total_players: 27
   total_market_value_eur: 109300000
   average_age: 28.8
-
-# Cambios verano 2026 — completar
 transfer_window_summer_2026:
   in: []
   out: []
   loans_out: []
   loans_in: []
-
 squad_needs_priority:
-  - {position: "CB", urgency: "media", reason: "Mendy y Vertrouwd fichados en propiedad (2029/2028). Mumin y Luiz Felipe acaban en 2026 — renovar o buscar recambio."}
-  - {position: "LB", urgency: "alta",  reason: "Espino (34) finaliza contrato; solo Chavarria como lateral izquierdo natural."}
-  - {position: "DM", urgency: "alta",  reason: "Gumbau acaba contrato; sin pivote defensivo puro de relevo."}
-  - {position: "CM", urgency: "media", reason: "Unai Lopez finaliza, Valentin/Ciss >31. Necesidad de rejuvenecer."}
-  - {position: "RW", urgency: "media", reason: "Akhomach finaliza; posible salida y necesidad de competencia para De Frutos."}
-  - {position: "ST", urgency: "media", reason: "Solo Camello y Alemao; falta un 9 con perfil de area."}
-  - {position: "GK", urgency: "baja",  reason: "Batalla renovado hasta 2030, Cardenas hasta 2027. Cubierto."}
+- position: CB
+  urgency: media
+  reason: Mendy y Vertrouwd fichados en propiedad (2029/2028). Mumin y Luiz Felipe
+    acaban en 2026 — renovar o buscar recambio.
+- position: LB
+  urgency: alta
+  reason: Espino (34) finaliza contrato; solo Chavarria como lateral izquierdo natural.
+- position: DM
+  urgency: alta
+  reason: Gumbau acaba contrato; sin pivote defensivo puro de relevo.
+- position: CM
+  urgency: media
+  reason: Unai Lopez finaliza, Valentin/Ciss >31. Necesidad de rejuvenecer.
+- position: RW
+  urgency: media
+  reason: Akhomach finaliza; posible salida y necesidad de competencia para De Frutos.
+- position: ST
+  urgency: media
+  reason: Solo Camello y Alemao; falta un 9 con perfil de area.
+- position: GK
+  urgency: baja
+  reason: Batalla renovado hasta 2030, Cardenas hasta 2027. Cubierto.

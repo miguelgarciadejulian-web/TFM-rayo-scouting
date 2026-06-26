@@ -4,7 +4,7 @@ from __future__ import annotations
 import sys, time, urllib.parse, unicodedata
 from pathlib import Path
 import dash, pandas as pd
-from dash import Input, Output, State, callback, clientside_callback, dash_table, dcc, html, no_update
+from dash import Input, Output, State, callback, dash_table, dcc, html, no_update
 import dash_bootstrap_components as dbc
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -215,8 +215,8 @@ def layout(**_params):
     role_opt = [{"label": v, "value": k} for k, v in ROLE_TYPE_LABELS.items()]
 
     return html.Div([
-        # Store para navegación — clientside callback navega con window.location.href
-        dcc.Store(id="scouting-nav-url", data=None),
+        # Location para navegación directa al perfil de jugador
+        dcc.Location(id="scouting-redirect", refresh=True),
 
         # ── Hero ──────────────────────────────────────────────────────────────
         html.Div([
@@ -254,29 +254,29 @@ def layout(**_params):
                 dbc.Col(_filter_chip("f-league",   "Liga",             "Todas",  leagues, value=None),  md=2),
                 dbc.Col(_filter_chip("f-team",     "Equipo",           "Todos",  []),                      md=2),
                 dbc.Col(_filter_chip("f-foot",     "Pie dominante",    "Todos",  foot_opt, multi=False),   md=2),
+            ], className="g-3"),
+            dbc.Row([
                 dbc.Col(html.Div([
                     html.Span("Edad máx.", className="filter-label"),
                     dcc.Slider(16, 45, 1, value=45, id="f-age",
                                marks={16:"16", 23:"23", 30:"30", 37:"37", 45:"45"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
-                ]), md=2),
-            ], className="g-3"),
-            dbc.Row([
+                ]), md=4),
                 dbc.Col(html.Div([
                     html.Span("Valor máx. (M€)", className="filter-label"),
                     dcc.Slider(0, 200, 10, value=200, id="f-mv",
                                marks={0:"0", 50:"50M", 100:"100M", 150:"150M", 200:"200M+"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
-                ]), md=3),
+                ]), md=4),
                 dbc.Col(html.Div([
                     html.Span("Minutos mín.", className="filter-label"),
                     dcc.Slider(0, 3500, 100, value=500, id="f-min",
-                               marks={0:"0", 900:"900", 1800:"1800", 3000:"3000"},
+                               marks={0:"0", 900:"900", 1800:"1800", 2700:"2700", 3500:"3500"},
                                tooltip={"always_visible": True, "placement": "bottom"},
                                updatemode="mouseup"),
-                ]), md=3),
+                ]), md=4),
             ], className="g-3 mt-2"),
         ], className="filter-panel"),
 
@@ -467,7 +467,7 @@ def filter_table(player, lat_pos, role_types, leagues, teams, foot, age_max, mv_
 
 
 @callback(
-    Output("scouting-nav-url", "data"),
+    Output("scouting-redirect", "href"),
     Input("scouting-table", "active_cell"),
     State("scouting-table", "derived_viewport_data"),
     prevent_initial_call=True,
@@ -483,18 +483,4 @@ def go_to_player(active_cell, view_data):
     nombre = urllib.parse.quote(str(row.get("name", "")))
     equipo = urllib.parse.quote(str(row.get("team", "")))
     return f"/jugador?id={pid}&name={nombre}&team={equipo}"
-
-
-clientside_callback(
-    """
-    function(url) {
-        if (url) {        if (url) {
-            window.location.href = url;
-        }
-        return null;
-    }
-    """,
-    Output("scouting-nav-url", "data", allow_duplicate=True),
-    Input("scouting-nav-url", "data"),
-    prevent_initial_call=True,
-)
+                                                                                                                                                                                                                                                                                                                                            
