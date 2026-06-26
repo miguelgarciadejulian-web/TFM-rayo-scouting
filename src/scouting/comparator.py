@@ -301,13 +301,15 @@ class FitRayoScorer:
             age = 0.0
         if age == 0.0 and squad_entry:
             age = float(squad_entry.get("age", 0) or 0)
-        # Segundo fallback: TM market data
-        if age == 0.0 and _get_tm_value:
-            try:
-                _tm = _get_tm_value(name)
-                age = float(_tm.get("age") or 0)
-            except Exception:
-                pass
+        # Fallback edad desde enriched (más rápido que TM API)
+        if age == 0.0:
+            _enr = self._get_enriched_row(name)
+            if _enr is not None:
+                try:
+                    _ea = float(_enr.get("age") or 0)
+                    age = 0.0 if (_ea != _ea) else _ea
+                except (TypeError, ValueError):
+                    pass
 
         # Económico
         mv = self._get_mv(name) or 0
@@ -957,43 +959,46 @@ class FitRayoScorer:
             ("pass_accuracy",       "passes_completed_pct"),
         ]
 
-        # Pre-calcular columna combinada en master una sola vez
-        df_master = self.master.copy()
-        if "goals_p90" in df_master.columns and "assists_p90" in df_master.columns:
-            df_master["_goal_contrib_p90"] = (
-                df_master["goals_p90"].fillna(0) + df_master["assists_p90"].fillna(0)
-            )
-        else:
-            df_master["_goal_contrib_p90"] = 0.0
+        # Pre-calcular columna combinada y grupo posicional en master una sola vez
+        if not hasattr(self, "_radar_cache"):
+            df_m = self.master.copy()
+            if "goals_p90" in df_m.columns and "assists_p90" in df_m.columns:
+                df_m["_goal_contrib_p90"] = (
+                    df_m["goals_p90"].fillna(0) + df_m["assists_p90"].fillna(0)
+                )
+            else:
+                df_m["_goal_contrib_p90"] = 0.0
+            # Pre-compute position group for all rows (single pass)
+            if "position_primary" in df_m.columns:
+                df_m["_pos_group"] = df_m["position_primary"].apply(
+                    lambda p: _POS_GROUP.get(str(p).upper().split("/")[0].strip(), "OTHER")
+                )
+            else:
+                df_m["_pos_group"] = "OTHER"
+            # Pre-filter by minimum minutes
+            if "minutes" in df_m.columns:
+                min_thresh = float(df_m["minutes"].quantile(0.25))
+                df_m = df_m[df_m["minutes"] >= max(min_thresh, 180)]
+            # Cache sub-DataFrames by group
+            self._radar_cache = {}
+            for grp in ("GK", "DEF", "MID", "FWD"):
+                sub = df_m[df_m["_pos_group"] == grp]
+                self._radar_cache[grp] = sub if len(sub) >= 20 else df_m
+            self._radar_cache["ALL"] = df_m
 
         for r in results:
             pos_short = (r.position or "").upper().split("/")[0].strip()
             group = _POS_GROUP.get(pos_short)
-
-            # Universo de referencia: misma posición, mínimo de minutos jugados
-            if group and "position_primary" in df_master.columns:
-                def _grp(p):
-                    p2 = str(p).upper().split("/")[0].strip()
-                    return _POS_GROUP.get(p2, "OTHER")
-                mask = df_master["position_primary"].apply(_grp) == group
-                df_pos = df_master[mask] if mask.sum() >= 20 else df_master
-            else:
-                df_pos = df_master
-
-            # Excluir jugadores con muy pocos minutos (evita distorsión con ceros)
-            if "minutes" in df_pos.columns:
-                min_thresh = float(df_pos["minutes"].quantile(0.25))
-                df_pos = df_pos[df_pos["minutes"] >= max(min_thresh, 180)]
+            df_pos = self._radar_cache.get(group, self._radar_cache["ALL"])
 
             radar = {}
             for attr, col in _METRICS:
                 val = float(getattr(r, attr, 0) or 0)
-                # Columna del universo: especial para goal_contrib
                 ref_col = "_goal_contrib_p90" if attr == "goal_contrib_p90" else col
                 if ref_col and ref_col in df_pos.columns:
-                    series = df_pos[ref_col].dropna().astype(float)
+                    series = df_pos[ref_col].dropna().values
                     if len(series) > 0:
-                        pct = (series < val).sum() / len(series) * 100.0
+                        pct = float((series < val).sum()) / len(series) * 100.0
                         radar[attr] = round(pct, 1)
                     else:
                         radar[attr] = 50.0
@@ -1060,23 +1065,37 @@ class FitRayoScorer:
             return 0.0
         import unicodedata
         def _n(s): return unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode().lower()
+
+        # Build normalized lookup dicts once (O(n) single pass instead of O(n) per call)
+        if not hasattr(self, "_mv_by_canon"):
+            self._mv_by_canon = {}
+            self._mv_by_display = {}
+            eco = self.economic
+            cn_col = eco["canonical_name"].values if "canonical_name" in eco.columns else []
+            dn_col = eco["display_name"].values if "display_name" in eco.columns else []
+            mv_col = eco["market_value_eur"].values if "market_value_eur" in eco.columns else [None] * len(eco)
+            for i in range(len(eco)):
+                mv_v = mv_col[i]
+                try:
+                    mv_f = float(mv_v)
+                    if mv_f != mv_f or mv_f <= 0:
+                        continue
+                except (TypeError, ValueError):
+                    continue
+                if i < len(cn_col) and cn_col[i] is not None:
+                    k = _n(cn_col[i])
+                    if k:
+                        self._mv_by_canon[k] = mv_f
+                if i < len(dn_col) and dn_col[i] is not None:
+                    k = _n(dn_col[i])
+                    if k:
+                        self._mv_by_display[k] = mv_f
+
         nl = _n(name)
-        # 1) por canonical_name
-        if "canonical_name" in self.economic.columns:
-            mask = self.economic["canonical_name"].apply(_n) == nl
-            rows = self.economic[mask]
-            if not rows.empty:
-                v = rows.iloc[0].get("market_value_eur")
-                if v and float(v) > 0:
-                    return float(v)
-        # 2) por display_name
-        if "display_name" in self.economic.columns:
-            mask = self.economic["display_name"].apply(_n) == nl
-            rows = self.economic[mask]
-            if not rows.empty:
-                v = rows.iloc[0].get("market_value_eur")
-                if v and float(v) > 0:
-                    return float(v)
+        if nl in self._mv_by_canon:
+            return self._mv_by_canon[nl]
+        if nl in self._mv_by_display:
+            return self._mv_by_display[nl]
         return 0.0
 
     def _get_contract(self, name: str) -> str | None:
