@@ -837,7 +837,7 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
             html.Td(_league_name(str(r.league)),
                     style={"fontSize": "10px", "padding": "5px 10px", "color": "#6B7280"}),
             html.Td(
-                str(int(float(getattr(r, "age", None) or 0))) if getattr(r, "age", None) else "—",
+                str(int(float(getattr(r, "age", None) or 0))) if pd.notna(getattr(r, "age", None)) else "—",
                 style={"fontSize": "11px", "padding": "5px 10px", "color": "#374151"}),
             html.Td(str(int(r.minutes)) if pd.notna(r.minutes) else "—",
                     style={"fontSize": "11px", "padding": "5px 10px", "color": "#374151"}),
