@@ -11,8 +11,12 @@ CONFIG_DIR = ROOT / "config"
 
 def load_yaml(name: str) -> dict:
     path = CONFIG_DIR / name
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    # Lectura tolerante: si una escritura previa dejo bytes nulos en el archivo
+    # (corrupcion por escritura interrumpida), los descartamos en lugar de fallar.
+    raw = path.read_bytes()
+    if b"\x00" in raw:
+        raw = raw.replace(b"\x00", b"")
+    return yaml.safe_load(raw.decode("utf-8", "ignore"))
 
 
 def settings() -> dict:

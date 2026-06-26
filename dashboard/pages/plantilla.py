@@ -570,6 +570,7 @@ def layout(**_params):
 
     return html.Div([
         dcc.Location(id="plantilla-nav", refresh=True),
+        dcc.Location(id="plantilla-reload", refresh=True),
 
         # ── Hero ─────────────────────────────────────────────────────────────
         html.Div([
@@ -731,19 +732,47 @@ def _toggle_edit(n, is_open):
     return not is_open
 
 
+def _read_yaml_safe(path: Path) -> dict:
+    """Lee un YAML tolerando posibles bytes nulos por escrituras corruptas previas."""
+    raw = path.read_bytes()
+    if b"\x00" in raw:
+        raw = raw.replace(b"\x00", b"")
+    return yaml.safe_load(raw.decode("utf-8", "ignore")) or {}
+
+
+def _write_yaml_atomic(path: Path, data: dict) -> None:
+    """Escribe el YAML de forma atomica (temporal + replace) para evitar
+    archivos a medio escribir si el proceso se interrumpe."""
+    import os
+    import tempfile
+    text = yaml.safe_dump(data, allow_unicode=True, sort_keys=False)
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
 @callback(
     Output("save-contracts-feedback", "children"),
+    Output("plantilla-reload", "href"),
     Input("btn-save-contracts", "n_clicks"),
     State("edit-contracts-table", "data"),
     prevent_initial_call=True,
 )
 def _save_contracts(n, rows):
     if not n or not rows:
-        return no_update
+        return no_update, no_update
     try:
-        data = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
+        data = _read_yaml_safe(CONFIG)
         sq = data.get("squad_2025_26", {})
         name_to_row = {r["Jugador"]: r for r in rows}
+        changed = 0
         for grp_key, grp_players in sq.items():
             if not isinstance(grp_players, list):
                 continue
@@ -759,11 +788,13 @@ def _save_contracts(n, rows):
                             p["market_value"] = mv
                     except (ValueError, TypeError):
                         pass
-        CONFIG.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False),
-                          encoding="utf-8")
-        return "✓ Guardado correctamente"
+                    changed += 1
+        _write_yaml_atomic(CONFIG, data)
+        import time as _time
+        href = f"/plantilla?saved={int(_time.time())}"
+        return f"✓ Guardado ({changed} jugadores). Actualizando…", href
     except Exception as e:
-        return f"Error: {e}"
+        return f"Error al guardar: {e}", no_update
 
 
 @callback(
