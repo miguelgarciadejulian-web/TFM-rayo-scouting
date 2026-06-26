@@ -887,7 +887,7 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
                         getattr(r, "value_eur", None),
                         league=str(getattr(r, "league", "") or ""),
                         minutes=float(r.minutes) if pd.notna(r.minutes) else 0,
-                        age=int(float(getattr(r, "age", 25) or 25)) if pd.notna(getattr(r, "age", None)) else 25,
+                        age=int(a) if (a := pd.to_numeric(getattr(r, "age", None), errors="coerce")) == a else 25,
                         position=str(getattr(r, "position_primary", "") or ""),
                         team=str(getattr(r, "team", "") or ""),
                     ), style={"fontSize": "10px", "padding": "5px 10px", "color": "#6B7280",
