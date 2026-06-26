@@ -418,6 +418,11 @@ def compute_rendimiento(
 
     raw = round(total_ws / total_w, 1) if total_w > 0 else 10.0
 
+    # Calibración: el percentil puro (0-100) penaliza a jugadores de equipos medios.
+    # Aplicamos curva generosa: score = 30 + percentil * 0.70
+    # Esto da: percentil 0→30, 50→65, 100→100.
+    calibrated = round(min(100.0, 30.0 + raw * 0.70), 1)
+
     # league_diff se calcula pero NO se aplica al score de rendimiento.
     # Solo se usa externamente (Fit Rayo) para ponderar la dificultad de la liga.
     try:
@@ -427,7 +432,7 @@ def compute_rendimiento(
         diff = 1.0
 
     return {
-        "score":       raw,
+        "score":       calibrated,
         "raw_score":   raw,
         "subpos":      subpos,
         "subpos_label": SUBPOS_LABELS.get(subpos, subpos),
