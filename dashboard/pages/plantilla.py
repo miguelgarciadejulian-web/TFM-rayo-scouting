@@ -171,6 +171,8 @@ def player_row(p, i, role_map=None, role_labels=None):
     initials = "".join(w[0].upper() for w in name.split()[:2] if w)
     year = int(str(end)[:4]) if end else 9999
     row_bg = "#FFF5F5" if year <= 2026 else ("#FFFFFF" if i % 2 == 0 else "#FAFAFA")
+    if loan_to:
+        row_bg = "#F0FDF4"  # verde claro: vuelve de cesión
     # role_map aquí ya es {yaml_name: label} (pre-resuelto por _squad_role_map)
     role_label  = (role_map or {}).get(name, "")
     is_inferred = bool(role_label)
@@ -180,7 +182,7 @@ def player_row(p, i, role_map=None, role_labels=None):
         html.Td(html.Div([
             html.Div(initials, style={
                 "width": "32px", "height": "32px", "borderRadius": "50%",
-                "background": _AZUL, "color": "#fff",
+                "background": "#16A34A" if loan_to else _AZUL, "color": "#fff",
                 "display": "flex", "alignItems": "center", "justifyContent": "center",
                 "fontSize": "11px", "fontWeight": "600", "flexShrink": "0",
             }),
@@ -193,9 +195,10 @@ def player_row(p, i, role_map=None, role_labels=None):
                         "fontSize": "9px", "color": "#1D4ED8",
                         "background": "#EFF6FF", "borderRadius": "4px", "padding": "1px 5px",
                     }) if loan else (
-                    html.Span(f"↙ Cedido en {loan_to}", style={
-                        "fontSize": "9px", "color": "#B45309",
-                        "background": "#FFFBEB", "borderRadius": "4px", "padding": "1px 5px",
+                    html.Span(f"🔙 Vuelve de cesión ({loan_to})", style={
+                        "fontSize": "9px", "color": "#15803D",
+                        "background": "#DCFCE7", "borderRadius": "4px", "padding": "1px 5px",
+                        "fontWeight": "600",
                     }) if loan_to else None),
                     style={"height": "16px", "display": "flex", "alignItems": "center"},
                 ),
