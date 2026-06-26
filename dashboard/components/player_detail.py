@@ -379,7 +379,9 @@ def _rendimiento_card(rd: dict) -> html.Div:
         ], style={"display": "flex", "alignItems": "center",
                   "gap": "8px", "marginBottom": "7px"}))
 
-    ld_note = f" · dif. liga ×{ld:.2f}" if ld != 1.0 else ""
+    ld_note = f" · coef. liga ×{ld:.2f} (solo para Fit Rayo)" if ld != 1.0 else ""
+    _league_str = rd.get("league", "")
+    _pool_desc = f"Comparado vs {subpos_lbl.lower()}s de {_league_str}" if _league_str else f"Comparado vs {subpos_lbl.lower()}s"
     return html.Div([
         html.Div([
             html.Div([
@@ -408,7 +410,7 @@ def _rendimiento_card(rd: dict) -> html.Div:
                   "alignItems": "center", "marginBottom": "12px"}),
         html.Div(bars),
         html.P(
-            f"Percentiles vs {subpos_lbl.lower()}s con ≥450 min{ld_note}  ·  pool: {pool_size} jugadores",
+            f"{_pool_desc} con ≥450 min{ld_note}  ·  pool: {pool_size} jugadores",
             style={"fontSize": "9px", "color": "#9CA3AF",
                    "fontStyle": "italic", "margin": "4px 0 0"},
         ),

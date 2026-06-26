@@ -83,28 +83,28 @@ LEAGUE_DIFFICULTY: dict[str, float] = {
     # Top 5 ligas europeas → 1.00
     "Spain_Primera_Division":    1.00,
     "England_Premier_League":    1.00,
-    "Germany_Bundesliga":        0.97,
-    "Italy_Serie_A":             0.97,
-    "France_Ligue_1":            0.95,
+    "Germany_Bundesliga":        0.99,
+    "Italy_Serie_A":             0.99,
+    "France_Ligue_1":            0.97,
     # Ligas de nivel medio-alto
-    "Portugal_Primeira_Liga":    0.90,
-    "Netherlands_Eredivisie":    0.90,
-    "Belgium_First_Division_A":  0.88,
-    "Türkiye_Süper_Lig":         0.88,
-    "England_Championship":      0.87,
-    "Scotland_Premiership":      0.85,
-    "Germany_2_Bundesliga":      0.85,
+    "Portugal_Primeira_Liga":    0.95,
+    "Netherlands_Eredivisie":    0.94,
+    "Belgium_First_Division_A":  0.93,
+    "Türkiye_Süper_Lig":         0.93,
+    "England_Championship":      0.92,
+    "Scotland_Premiership":      0.90,
+    "Germany_2_Bundesliga":      0.90,
     # América y resto
-    "Brazil_Serie_A":            0.85,
-    "Argentina_Liga_Profesional":0.84,
-    "Mexico_Liga_MX":            0.82,
-    "USA_MLS":                   0.80,
-    "Colombia_Primera_A":        0.78,
-    "Chile_Primera_Division":    0.77,
+    "Brazil_Serie_A":            0.92,
+    "Argentina_Liga_Profesional":0.91,
+    "Mexico_Liga_MX":            0.89,
+    "USA_MLS":                   0.88,
+    "Colombia_Primera_A":        0.87,
+    "Chile_Primera_Division":    0.86,
     # Segunda española
-    "Spain_Segunda_Division":    0.82,
+    "Spain_Segunda_Division":    0.91,
 }
-_LEAGUE_DIFF_DEFAULT = 0.80  # para ligas no listadas
+_LEAGUE_DIFF_DEFAULT = 0.85  # para ligas no listadas
 
 
 def _league_difficulty(league: str | None) -> float:

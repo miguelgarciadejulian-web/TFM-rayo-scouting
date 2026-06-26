@@ -64,12 +64,14 @@ def _simple_table(headers, rows):
 
 def _block_scouting():
     return [
-        _h("Puntuación de rendimiento por rol (score 0-100)"),
+        _h("Puntuación de rendimiento por sub-posición (score 0-100)"),
         _card(
-            _p("Cada métrica se convierte en percentil 0-100 dentro del mismo grupo posicional "
-               "y liga. Solo se incluyen jugadores con >= 450 minutos."),
-            _p("El rol principal es la combinación ponderada de métricas con mayor puntuación total. "
-               "Roles secundarios = aquellos a menos de 12 puntos del principal."),
+            _p("Cada métrica se convierte en percentil 0-100 comparando SOLO con jugadores "
+               "de la MISMA POSICIÓN y MISMA LIGA. Se usa un mínimo de 450 minutos."),
+            _p("La sub-posición se determina automáticamente: 1) Posición TM (market_values.csv), "
+               "2) Posición lateral inferida + tipología de rol, 3) Grupo OPTA como fallback."),
+            _p("Dimensiones ponderadas por posición — ejemplo Delantero Centro: "
+               "Gol/Remate 45% · Juego de área 20% · Creación 20% · Pressing 15%."),
             _simple_table(
                 ["Umbral minutos", "Confianza del perfil"],
                 [(">=1800 min", "Alta"), (">=900 min", "Media"),
@@ -81,12 +83,14 @@ def _block_scouting():
             _simple_table(
                 ["Componente", "Peso", "Qué mide"],
                 [
-                    ("Rendimiento en rol",  "35%", "Percentil del jugador en su grupo posicional"),
+                    ("Rendimiento",         "35%", "Percentil del jugador en su posición y liga"),
                     ("Encaje económico",    "25%", "Valor de mercado vs presupuesto del club"),
                     ("ADN táctico",         "20%", "Similitud con el estilo objetivo del Rayo"),
                     ("Disponibilidad",      "20%", "Duración del contrato + integración en plantilla"),
                 ],
             ),
+            _p("Para el Fit Rayo se aplica un coeficiente de dificultad de liga (0.85 a 1.0): "
+               "LaLiga y Premier = 1.0 · Segunda División = 0.91 · ligas menores = 0.85 mín."),
         ),
         _h("Datos económicos"),
         _card(
@@ -174,8 +178,12 @@ def _block_decisiones():
         _h("Pestaña Fichajes — Fit Rayo"),
         _card(
             _p("El 'Fit Rayo' usa los mismos 4 componentes ponderados que en la ficha individual "
-               "(35% rendimiento · 25% económico · 20% ADN táctico · 20% disponibilidad). "
-               "Los candidatos se ordenan por ese score dentro de cada rol."),
+               "(35% rendimiento · 25% económico · 20% ADN táctico · 20% disponibilidad)."),
+            _p("El rendimiento se calcula comparando al jugador con los de su misma posición "
+               "y liga. Luego se aplica un coeficiente de dificultad de liga (0.85–1.0) "
+               "para ajustar al contexto de LaLiga."),
+            _p("Los candidatos se ordenan por Fit Rayo descendente. "
+               "Los sliders solo aplican al soltar (no en cada arrastre)."),
         ),
         _h("Pestaña Renovaciones — Score de renovación (0-100)"),
         _card(
@@ -183,7 +191,7 @@ def _block_decisiones():
             _simple_table(
                 ["Componente", "Peso", "Descripción"],
                 [
-                    ("Rendimiento",   "40%", "Score de rol calculado desde el histórico completo"),
+                    ("Rendimiento",   "40%", "Percentil del jugador en su posición dentro de su liga"),
                     ("Edad",          "20%", "Curva de rendimiento esperado por posición y edad"),
                     ("Económico",     "20%", "Valor de mercado relativo a la media de plantilla"),
                     ("Contractual",   "20%", "Meses restantes + clausula vs valor de mercado"),
@@ -259,22 +267,22 @@ def _block_comparador():
         _h("Radar de comparación (percentiles)"),
         _card(
             _p("El radar superpone hasta 6 jugadores en los mismos ejes posicionales. "
-               "Los valores son percentiles 0-100 dentro del mismo grupo posicional y liga. "
-               "Para comparaciones cross-liga, el percentil es relativo a la liga de cada jugador."),
+               "Los valores son percentiles 0-100 dentro de la MISMA LIGA y POSICIÓN del jugador."),
         ),
         _h("Fit Rayo en el comparador — mismos pesos que en ficha individual"),
         _card(
             _simple_table(
                 ["Componente", "Peso"],
                 [
-                    ("Rendimiento en rol",  "35%"),
-                    ("Encaje económico",    "25%"),
-                    ("ADN táctico",         "20%"),
-                    ("Disponibilidad",      "20%"),
+                    ("Rendimiento (intra-liga)", "35%"),
+                    ("Encaje económico",         "25%"),
+                    ("ADN táctico",              "20%"),
+                    ("Disponibilidad",           "20%"),
                 ],
             ),
-            _p("Los jugadores del Rayo reciben +10 puntos en disponibilidad por integración "
-               "ya consolidada, con un máximo de 85 puntos en ese componente."),
+            _p("Se aplica coeficiente de dificultad de liga (0.85–1.0) al rendimiento para "
+               "comparaciones cross-liga. Los jugadores del Rayo reciben +10 puntos en "
+               "disponibilidad por integración ya consolidada (max 85)."),
         ),
         _h("Indicadores fortaleza / debilidad"),
         _card(
@@ -292,23 +300,29 @@ def _block_comparador():
 
 def _block_jugador():
     return [
-        _h("Perfil de rendimiento (percentiles)"),
+        _h("Perfil de rendimiento (percentiles intra-liga)"),
         _card(
-            _p("Los percentiles se calculan sobre TODO el histórico del jugador "
-               "(no una sola temporada). Se compara contra jugadores del mismo grupo posicional y liga. "
-               "Confianza: >=1800 min = alta · >=900 = media · >=450 = baja · <450 = insuficiente."),
+            _p("Los percentiles se calculan sobre la temporada más reciente del jugador, "
+               "comparándolo SOLO con jugadores de su misma posición y su misma liga. "
+               "Esto asegura que un delantero goleador en Segunda tenga un score alto "
+               "reflejando su dominio real en su contexto competitivo."),
+            _p("Sub-posiciones: ST (delantero centro) · WG (extremo) · AM (mediapunta) · "
+               "CM (centrocampista) · DM (pivote) · FB (lateral) · CB (central) · GK (portero)."),
+            _p("Confianza: >=1800 min = alta · >=900 = media · >=450 = baja · <450 = insuficiente."),
         ),
         _h("Fit Rayo (0-100) — pesos reales del modelo"),
         _card(
             _simple_table(
                 ["Componente", "Peso", "Cómo se calcula"],
                 [
-                    ("Rendimiento",   "35%", "Percentil del jugador en su rol principal"),
+                    ("Rendimiento",   "35%", "Percentil intra-liga × coeficiente dificultad liga (0.85–1.0)"),
                     ("Económico",     "25%", "Valor de mercado vs presupuesto de fichajes del club"),
                     ("ADN táctico",   "20%", "Similitud métricas del jugador con estilo objetivo Rayo"),
                     ("Disponibilidad","20%", "Meses de contrato restantes (+10 bonus si ya es del Rayo, max 85)"),
                 ],
             ),
+            _p("Coeficiente de liga: LaLiga/Premier = 1.0 · Serie A/Bundesliga = 0.99 · "
+               "Ligue 1 = 0.97 · Segunda = 0.91 · ligas menores >= 0.85."),
         ),
         _h("Riesgo de cláusula"),
         _card(

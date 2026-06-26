@@ -186,14 +186,14 @@ REND_DIMS: dict[str, list] = {
 
 # ── Texto metodológico (para criterios.py) ───────────────────────────────────
 REND_METHODOLOGY: dict[str, str] = {
-    "GK":  "Paradas/90 + big chances salvadas (45%) · Limpiezas + goles encajados invertido (30%) · Juego con balón (15%) · Duelos aéreos (10%)",
-    "CB":  "Acciones defensivas/90: entradas+intercepciones+recuperaciones+bloqueos+despejes (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción de juego (15%)",
-    "FB":  "Defensiva (30%) · Proyección ofensiva: centros+pases adelante (30%) · Duelos (20%) · Contribución en ataque (20%)",
-    "DM":  "Recuperación de balón (40%) · Pase (30%) · Presión y duelos (20%) · Contribución ofensiva (10%)",
-    "CM":  "Pase (30%) · Recuperación (30%) · Creación (25%) · Contribución gol/asist (15%)",
-    "AM":  "Creación (35%) · Gol/Remate (30%) · Pase en profundidad (20%) · Pressing (15%)",
-    "WG":  "Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%)",
-    "ST":  "Gol/Remate (45%) · Juego de área: duelos aéreos y 1v1 (20%) · Creación (20%) · Pressing (15%)",
+    "GK":  "Paradas/90 + big chances salvadas (45%) · Limpiezas + goles encajados invertido (30%) · Juego con balón (15%) · Duelos aéreos (10%) — comparado dentro de su liga",
+    "CB":  "Acciones defensivas/90 (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción de juego (15%) — comparado vs centrales de su liga",
+    "FB":  "Defensiva (30%) · Proyección ofensiva (30%) · Duelos (20%) · Contribución en ataque (20%) — comparado vs laterales de su liga",
+    "DM":  "Recuperación de balón (40%) · Pase (30%) · Presión y duelos (20%) · Contribución ofensiva (10%) — comparado vs pivotes de su liga",
+    "CM":  "Pase (30%) · Recuperación (30%) · Creación (25%) · Contribución gol/asist (15%) — comparado vs centrocampistas de su liga",
+    "AM":  "Creación (35%) · Gol/Remate (30%) · Pase en profundidad (20%) · Pressing (15%) — comparado vs mediapuntas de su liga",
+    "WG":  "Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%) — comparado vs extremos de su liga",
+    "ST":  "Gol/Remate (45%) · Juego de área (20%) · Creación (20%) · Pressing (15%) — comparado vs delanteros de su liga",
 }
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -316,7 +316,9 @@ def compute_rendimiento(
             "league_diff": 1.0, "league": str(player_row.get("league") or ""),
         }
 
-    # Pool: misma grupo posicional, ≥ min_minutes, misma liga si hay suficientes
+    # Pool: misma grupo posicional, ≥ min_minutes, SIEMPRE dentro de la misma liga
+    # El rendimiento mide cómo rinde el jugador vs. sus pares directos en su liga.
+    # La dificultad de liga se aplica SOLO para el Fit Rayo (fuera de esta función).
     pool_all = enriched_df[
         enriched_df["position_group"].str.upper() == pool_grp
     ].copy()
@@ -325,7 +327,8 @@ def compute_rendimiento(
     player_league = str(player_row.get("league") or "")
     if player_league:
         pool_liga = pool_all[pool_all["league"] == player_league]
-        pool = pool_liga if len(pool_liga) >= 30 else pool_all
+        # Usar pool de liga siempre que haya al menos 10 jugadores; si no, fallback a global
+        pool = pool_liga if len(pool_liga) >= 10 else pool_all
     else:
         pool = pool_all
 
@@ -362,7 +365,8 @@ def compute_rendimiento(
 
     raw = round(total_ws / total_w, 1) if total_w > 0 else 10.0
 
-    # Ajuste por dificultad de liga
+    # league_diff se calcula pero NO se aplica al score de rendimiento.
+    # Solo se usa externamente (Fit Rayo) para ponderar la dificultad de la liga.
     try:
         from src.scouting.comparator import _league_difficulty
         diff = _league_difficulty(player_row.get("league"))
@@ -370,7 +374,7 @@ def compute_rendimiento(
         diff = 1.0
 
     return {
-        "score":       round(raw * diff, 1),
+        "score":       raw,
         "raw_score":   raw,
         "subpos":      subpos,
         "subpos_label": SUBPOS_LABELS.get(subpos, subpos),
