@@ -479,29 +479,41 @@ class FitRayoScorer:
         return texts
 
     def _get_enriched_row(self, name: str):
-        """Fila más reciente del jugador en enriched (columnas OPTA)."""
+        """Fila más reciente del jugador en enriched (columnas OPTA). Cacheada."""
         if self.enriched.empty:
             return None
+        # Cache de resultados por nombre
+        if not hasattr(self, "_enr_row_cache"):
+            self._enr_row_cache = {}
+        if name in self._enr_row_cache:
+            return self._enr_row_cache[name]
+
         nl = str(name).strip().lower()
-        mask = self.enriched["name"].fillna("").str.lower() == nl
+        # Índice por nombre (construido una sola vez)
+        if not hasattr(self, "_enr_name_lower"):
+            self._enr_name_lower = self.enriched["name"].fillna("").str.lower()
+        mask = self._enr_name_lower == nl
         rows = self.enriched[mask]
         if rows.empty:
             parts = nl.split()
             if len(parts) >= 2:
                 abbrev = f"{parts[0][0]}. {' '.join(parts[1:])}"
-                rows = self.enriched[self.enriched["name"].fillna("").str.lower() == abbrev]
+                rows = self.enriched[self._enr_name_lower == abbrev]
         if rows.empty:
+            self._enr_row_cache[name] = None
             return None
         ORDER = {"2025-2026":6,"2025":5,"2024-2025":4,"2023-2024":3,"2022-2023":2,"2021-2022":1}
         rows = rows.copy()
         rows["_o"] = rows["season"].map(ORDER).fillna(0)
-        return rows.loc[rows["_o"].idxmax()].drop("_o")
+        result = rows.loc[rows["_o"].idxmax()].drop("_o")
+        self._enr_row_cache[name] = result
+        return result
 
     def _score_rendimiento(self, row: pd.Series) -> float:
         """Rendimiento via módulo compartido. Usa fila enriched (métricas OPTA)."""
         try:
-            from src.utils.rendimiento import compute_rendimiento, get_subposition
-            from src.utils.lateral_position import build_lateral_map
+            from src.utils.rendimiento import compute_rendimiento, get_subposition, \
+                precompute_pool_stats, SUBPOS_TO_POOL
             name = str(row.get("name", ""))
             _enr = self._get_enriched_row(name)
             enr_row = _enr if _enr is not None else row
@@ -509,29 +521,25 @@ class FitRayoScorer:
             _mv = self._load_mv_cached()
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "")))
 
-            # Obtener lateral_pos y role_type para pesos adaptativos
+            # Obtener lateral_pos y role_type (cacheado)
             _lat_code, _role_type = None, None
-            try:
-                from pathlib import Path as _P
-                from src.utils.config import settings as _stg
-                _proc = _P(_stg()["paths"]["data_processed"])
-                _lat_map = build_lateral_map(
-                    _proc / "player_seasons_enriched.parquet",
-                    _proc / "master_players.parquet",
-                )
-                _player_row = _lat_map[_lat_map["name"] == name]
+            lat_map = self._get_lateral_map_cached()
+            if lat_map is not None:
+                _player_row = lat_map[lat_map["name"] == name]
                 if not _player_row.empty:
                     _lat_code = _player_row.iloc[0].get("lateral_pos")
                     _role_type = _player_row.iloc[0].get("role_type")
-            except Exception:
-                pass
 
             subpos = get_subposition(name, overrides=_ov, mv_df=_mv,
                                      position_group=pos_grp,
                                      lateral_pos=_lat_code, role_type=_role_type)
+
+            # Pool stats cacheados para evitar recálculo en batch
+            pool_grp = SUBPOS_TO_POOL.get(subpos, "MID")
+            ps = self._get_pool_stats_cached(pool_grp)
+
             rd = compute_rendimiento(enr_row, self.enriched, subpos=subpos,
-                                     role_type=_role_type)
-            # El score ya incorpora el coeficiente de liga internamente
+                                     role_type=_role_type, pool_stats=ps)
             return round(rd["score"], 1)
         except Exception:
             mins = self._sf(row.get("minutes"))
@@ -579,6 +587,34 @@ class FitRayoScorer:
             except Exception:
                 self._mv_cache = None
         return self._mv_cache
+
+    def _get_lateral_map_cached(self):
+        """Lateral map cacheado (evita leer parquets en cada llamada)."""
+        if not hasattr(self, "_lat_map_cache"):
+            try:
+                from src.utils.lateral_position import build_lateral_map
+                from src.utils.config import settings as _stg
+                _proc = Path(_stg()["paths"]["data_processed"])
+                self._lat_map_cache = build_lateral_map(
+                    _proc / "player_seasons_enriched.parquet",
+                    _proc / "master_players.parquet",
+                )
+            except Exception:
+                self._lat_map_cache = None
+        return self._lat_map_cache
+
+    def _get_pool_stats_cached(self, pool_grp: str) -> dict | None:
+        """Pool stats cacheados por grupo posicional."""
+        if not hasattr(self, "_pool_stats_cache"):
+            self._pool_stats_cache = {}
+        if pool_grp not in self._pool_stats_cache:
+            try:
+                from src.utils.rendimiento import precompute_pool_stats
+                self._pool_stats_cache[pool_grp] = precompute_pool_stats(
+                    self.enriched, pool_grp, min_minutes=450)
+            except Exception:
+                self._pool_stats_cache[pool_grp] = None
+        return self._pool_stats_cache[pool_grp]
 
     def _score_economico(self, mv: float) -> float:
         """
@@ -738,19 +774,15 @@ class FitRayoScorer:
           - total_touches_in_opposition_box_p90 (vocación ofensiva)
         """
         try:
-            # Usar fila enriched que contiene métricas OPTA p90
             _enr = self._get_enriched_row(name)
             enr_row = _enr if _enr is not None else row
-
-            pool = self.enriched
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "MID"))).upper()
-            pool_pos = pool[pool["position_group"].str.upper() == pos_grp].copy()
-            pool_pos = pool_pos[pd.to_numeric(pool_pos["minutes"], errors="coerce").fillna(0) >= 450]
 
-            if len(pool_pos) < 10:
-                return 50.0  # neutro si no hay suficiente pool
+            # Usar pool_stats cacheados
+            from src.utils.rendimiento import SUBPOS_TO_POOL
+            pool_grp = SUBPOS_TO_POOL.get({"GK": "GK", "DEF": "DEF", "MID": "MID", "FWD": "FWD"}.get(pos_grp, "MID"), "MID")
+            _stats = self._get_pool_stats_cached(pool_grp)
 
-            # Métricas ADN ponderadas
             adn_metrics = [
                 ("recoveries_p90", 0.30),
                 ("tackles_won_p90", 0.25),
@@ -762,14 +794,20 @@ class FitRayoScorer:
             total_w, total_ws = 0.0, 0.0
             for metric, weight in adn_metrics:
                 val = float(enr_row.get(metric) or 0)
-                if metric not in pool_pos.columns:
-                    continue
-                series = pd.to_numeric(pool_pos[metric], errors="coerce").dropna()
-                if len(series) < 5:
-                    continue
-                pct = float((series < val).sum() / len(series) * 100)
-                total_ws += weight * pct
-                total_w += weight
+                if _stats and metric in _stats:
+                    mean, std, n = _stats[metric]
+                    if n >= 10 and std > 1e-9:
+                        z = (val - mean) / std
+                        score = max(3.0, min(97.0, 50.0 + z * 15.0))
+                        total_ws += weight * score
+                        total_w += weight
+                elif metric in self.enriched.columns:
+                    # Fallback: calcular directamente (solo si no hay cache)
+                    series = pd.to_numeric(self.enriched[metric], errors="coerce").dropna()
+                    if len(series) >= 10:
+                        pct = float((series < val).sum() / len(series) * 100)
+                        total_ws += weight * pct
+                        total_w += weight
 
             if total_w > 0:
                 return round(total_ws / total_w, 1)
@@ -968,28 +1006,43 @@ class FitRayoScorer:
     # ------------------------------------------------------------------ #
 
     def _best_row(self, name: str) -> pd.Series | None:
-        """Busca la mejor fila para un jugador."""
+        """Busca la mejor fila para un jugador. Cacheada por nombre."""
+        if not hasattr(self, "_best_row_cache"):
+            self._best_row_cache = {}
+        if name in self._best_row_cache:
+            return self._best_row_cache[name]
+
+        if not hasattr(self, "_master_name_lower"):
+            self._master_name_lower = self.master["name"].str.lower()
+
         nl = name.strip().lower()
-        mask = self.master["name"].str.lower() == nl
+        mask = self._master_name_lower == nl
         rows = self.master[mask]
         if not rows.empty:
-            return self._dedup_latest(rows).iloc[0]
+            result = self._dedup_latest(rows).iloc[0]
+            self._best_row_cache[name] = result
+            return result
 
         parts = nl.split()
         if len(parts) >= 2:
             initial = parts[0][0] + "."
             abbrev  = (initial + " " + " ".join(parts[1:])).lower()
-            mask2   = self.master["name"].str.lower() == abbrev
+            mask2   = self._master_name_lower == abbrev
             rows    = self.master[mask2]
             if not rows.empty:
-                return self._dedup_latest(rows).iloc[0]
+                result = self._dedup_latest(rows).iloc[0]
+                self._best_row_cache[name] = result
+                return result
 
             surname = " ".join(parts[1:])
-            mask3   = self.master["name"].str.lower().str.contains(surname, regex=False)
+            mask3   = self._master_name_lower.str.contains(surname, regex=False)
             rows    = self.master[mask3]
             if not rows.empty:
-                return self._dedup_latest(rows).iloc[0]
+                result = self._dedup_latest(rows).iloc[0]
+                self._best_row_cache[name] = result
+                return result
 
+        self._best_row_cache[name] = None
         return None
 
     def _dedup_latest(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -1031,14 +1084,19 @@ class FitRayoScorer:
             return None
         import unicodedata
         def _n(s): return unicodedata.normalize("NFKD",str(s)).encode("ascii","ignore").decode().lower()
+
+        # Build normalized index once
+        if not hasattr(self, "_eco_norm_idx"):
+            self._eco_norm_idx = {}
+            for col in ("canonical_name", "display_name"):
+                if col in self.economic.columns:
+                    self._eco_norm_idx[col] = self.economic[col].apply(_n)
+
         nl = _n(name)
-        for col in ("canonical_name", "display_name"):
-            if col not in self.economic.columns:
-                continue
-            mask = self.economic[col].apply(_n) == nl
-            rows = self.economic[mask]
-            if not rows.empty:
-                v = rows.iloc[0].get("contract_until")
+        for col, norm_series in self._eco_norm_idx.items():
+            mask = norm_series == nl
+            if mask.any():
+                v = self.economic.loc[mask.idxmax(), "contract_until"] if "contract_until" in self.economic.columns else None
                 if v and str(v) not in ("nan", "None", ""):
                     return str(v)[:10]
         return None

@@ -199,7 +199,8 @@ class RenewalEngine:
 
         # ── Rendimiento desde parquet enriquecido ──
         perf   = self._get_performance(name)
-        minutes    = int(perf.get("minutes") or 0)
+        _mins_raw = perf.get("minutes") or 0
+        minutes    = int(float(_mins_raw)) if _mins_raw == _mins_raw else 0  # NaN-safe
         role_score = perf.get("role_score")       # 0-100 o None
         role_label = perf.get("role_label", "")
 
@@ -484,13 +485,41 @@ class RenewalEngine:
         # Usar la temporada más reciente disponible para este jugador
         _ORDER = {"2026": 7, "2025-2026": 6, "2025/2026": 6, "2025": 5,
                   "2024-2025": 4, "2024": 4}
+
+        import unicodedata
+        def _n(s): return unicodedata.normalize("NFKD", str(s)).encode("ascii","ignore").decode().lower().strip()
+
+        # 1. Match exacto (case insensitive)
         mask = self.enriched["name"].astype(str).str.lower() == name.lower()
         rows = self.enriched[mask]
+
+        # 2. Match normalizado (sin acentos)
         if rows.empty:
-            # Intentar match normalizado
-            import unicodedata
-            def _n(s): return unicodedata.normalize("NFKD", str(s)).encode("ascii","ignore").decode().lower()
             rows = self.enriched[self.enriched["name"].apply(_n) == _n(name)]
+
+        # 3. Match por apellido: YAML "Ilias Akhomach" → enriched "I. Akhomach"
+        if rows.empty:
+            surname = _n(name).split()[-1] if _n(name).split() else ""
+            if surname and len(surname) >= 3:
+                # Filtrar por equipo Rayo para evitar falsos positivos
+                rayo_mask = self.enriched["team"].str.contains("Rayo", case=False, na=False)
+                candidates = self.enriched[rayo_mask]
+                surname_mask = candidates["name"].apply(
+                    lambda x: _n(x).split()[-1] == surname if _n(x).split() else False
+                )
+                rows = candidates[surname_mask]
+
+        # 4. Match parcial: primer carácter + apellido (P. Ciss, Ó. Trejo)
+        if rows.empty and len(_n(name).split()) >= 2:
+            first_initial = _n(name)[0]
+            surname = _n(name).split()[-1]
+            pattern = first_initial + "." if len(first_initial) == 1 else ""
+            if pattern:
+                candidates = self.enriched[self.enriched["team"].str.contains("Rayo", case=False, na=False)]
+                rows = candidates[candidates["name"].apply(
+                    lambda x: _n(x).endswith(surname) and len(_n(x)) > 0
+                )]
+
         if rows.empty:
             return {}
         rows = rows.copy()

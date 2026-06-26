@@ -347,12 +347,50 @@ LEAGUE_QUALITY: dict[str, float] = {
 }
 
 
+def precompute_pool_stats(
+    enriched_df: pd.DataFrame,
+    pool_grp: str,
+    min_minutes: int = 450,
+) -> dict:
+    """
+    Pre-calcula media y std de cada métrica para un pool posicional.
+    Devuelve: {"metric_name": (mean, std, n), ...}
+    Usar con compute_rendimiento(pool_stats=...) para evitar recálculos.
+    """
+    pool = enriched_df[
+        enriched_df["position_group"].str.upper() == pool_grp
+    ].copy()
+    pool = pool[pd.to_numeric(pool["minutes"], errors="coerce").fillna(0) >= min_minutes]
+
+    if pool_grp == "GK":
+        pool = _add_gk_derived(pool)
+
+    stats: dict[str, tuple[float, float, int]] = {}
+    # Recoger todas las métricas posibles de todas las sub-posiciones de este pool
+    all_metrics = set()
+    for subpos, sp_pool in SUBPOS_TO_POOL.items():
+        if sp_pool == pool_grp:
+            for _, metrics, _ in REND_DIMS.get(subpos, []):
+                all_metrics.update(metrics)
+
+    for col in all_metrics:
+        if col not in pool.columns:
+            continue
+        series = pd.to_numeric(pool[col], errors="coerce").dropna()
+        if len(series) >= 10:
+            stats[col] = (float(series.mean()), float(series.std()), len(series))
+
+    stats["__pool_size__"] = (float(len(pool)), 0.0, len(pool))
+    return stats
+
+
 def compute_rendimiento(
     player_row: pd.Series,
     enriched_df: pd.DataFrame,
     subpos: str | None = None,
     min_minutes: int = 450,
     role_type: str | None = None,
+    pool_stats: dict | None = None,
 ) -> dict:
     """
     Calcula el score de Rendimiento basado en datos brutos p90.
@@ -362,6 +400,10 @@ def compute_rendimiento(
       2. Para cada métrica: z-score vs pool global → escala 0-100
       3. Media ponderada de dimensiones (pesos según role_type)
       4. Coeficiente de liga multiplicativo (Premier/Liga > Segunda/Ligue2)
+
+    Args:
+      pool_stats: dict pre-computado por precompute_pool_stats(). Si se pasa,
+                  evita recalcular el pool completo (10-50x más rápido en batch).
 
     Devuelve:
         {
@@ -397,36 +439,52 @@ def compute_rendimiento(
             "role_type": role_type,
         }
 
-    # ── Pool GLOBAL: todos los jugadores del mismo grupo posicional ───────────
-    pool = enriched_df[
-        enriched_df["position_group"].str.upper() == pool_grp
-    ].copy()
-    pool = pool[pd.to_numeric(pool["minutes"], errors="coerce").fillna(0) >= min_minutes]
+    # ── Pool stats: usar pre-computados si están disponibles ──────────────────
+    if pool_stats is not None:
+        _stats = pool_stats
+        pool_size = int(_stats.get("__pool_size__", (0, 0, 0))[0])
+        # GK derived: calcular para la fila del jugador si es portero
+        if subpos == "GK":
+            tmp = pd.DataFrame([player_row])
+            tmp = _add_gk_derived(tmp)
+            player_row = tmp.iloc[0]
+    else:
+        # Calcular pool desde cero (lento, evitar en batch)
+        pool = enriched_df[
+            enriched_df["position_group"].str.upper() == pool_grp
+        ].copy()
+        pool = pool[pd.to_numeric(pool["minutes"], errors="coerce").fillna(0) >= min_minutes]
 
-    if subpos == "GK":
-        pool = _add_gk_derived(pool)
-        tmp = pd.DataFrame([player_row])
-        tmp = _add_gk_derived(tmp)
-        player_row = tmp.iloc[0]
+        if subpos == "GK":
+            pool = _add_gk_derived(pool)
+            tmp = pd.DataFrame([player_row])
+            tmp = _add_gk_derived(tmp)
+            player_row = tmp.iloc[0]
 
-    pool_size = len(pool)
+        pool_size = len(pool)
+        # Construir stats inline
+        _stats = {}
+        all_metrics = set()
+        for _, metrics, _ in dims_def:
+            all_metrics.update(metrics)
+        for col in all_metrics:
+            if col not in pool.columns:
+                continue
+            series = pd.to_numeric(pool[col], errors="coerce").dropna()
+            if len(series) >= 10:
+                _stats[col] = (float(series.mean()), float(series.std()), len(series))
 
     # Role_type → pesos adaptativos
     role_weight_override = REND_DIMS_BY_ROLE.get(role_type, {}) if role_type else {}
 
     def _z_to_score(col: str, val: float) -> float | None:
         """Convierte valor bruto a score 0-100 via z-score contra pool global."""
-        if col not in pool.columns:
+        if col not in _stats:
             return None
-        series = pd.to_numeric(pool[col], errors="coerce").dropna()
-        if len(series) < 10:
-            return None
-        mean = series.mean()
-        std = series.std()
-        if std < 1e-9:
+        mean, std, n = _stats[col]
+        if n < 10 or std < 1e-9:
             return 50.0
         z = (val - mean) / std
-        # Escala: z=0 → 50, z=+2 → 80, z=-2 → 20. Clip [3, 97].
         score = 50.0 + z * 15.0
         return max(3.0, min(97.0, score))
 

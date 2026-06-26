@@ -795,7 +795,7 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
         if "contract_years_remaining" in rk.columns:
             rk = rk[(rk["contract_years_remaining"].isna()) |
                     (rk["contract_years_remaining"] <= max_contract)]
-    rk = rk.head(50)  # pool amplio antes de reordenar por Fit Rayo
+    rk = rk.head(30)  # top 30 candidatos para Fit Rayo
     if rk.empty:
         return html.P("Sin candidatos con esos filtros.", style={"fontSize": "12px", "color": "#9CA3AF"})
 
@@ -803,10 +803,10 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
     names_list = list(rk["name"].dropna())
     fit_map = _fit_scores_for(names_list)
 
-    # Reordenar por Fit Rayo desc, mostrar top 25
+    # Reordenar por Fit Rayo desc, mostrar top 20
     rk = rk.copy()
     rk["_fit_rayo"] = rk["name"].map(lambda n: fit_map.get(n, -1))
-    rk = rk.sort_values("_fit_rayo", ascending=False).head(25).reset_index(drop=True)
+    rk = rk.sort_values("_fit_rayo", ascending=False).head(20).reset_index(drop=True)
 
     cols_h = ["#", "Jugador", "Pos.", "Equipo", "Liga", "Edad", "Min", "Valor", "Sal. est.", "Contrato", "Fit Rayo"]
     head = html.Tr([html.Th(h, style={"fontSize": "10px", "color": "#9CA3AF", "padding": "5px 10px",
