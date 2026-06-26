@@ -1024,69 +1024,79 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
     except Exception as e:
         return f"Error actualizando entity_map: {e}", no_update
 
-    # 2. Obtener datos: primero buscar en market_values.csv local, sino intentar TM web
+    # 2. Obtener datos desde la API oficial de TransferMarkt
     mv = con = foot = h = photo = rc = age = pos = None
     data_source = None
 
     try:
-        import pandas as pd
-        mv_path = PROC.parent / "config" / "market_values.csv"
-        if mv_path.exists():
-            _mv_df = pd.read_csv(mv_path)
-            _tm_match = _mv_df[_mv_df["tm_id"].astype(str).str.replace(".0","",regex=False) == tm_id]
-            if _tm_match.empty:
-                _tm_match = _mv_df[_mv_df["name"].apply(_norm) == _norm(name)]
-            if not _tm_match.empty:
-                _row = _tm_match.iloc[0]
-                mv = float(_row["market_value_eur"]) if pd.notna(_row.get("market_value_eur")) else None
-                con = str(_row["contract_until"])[:10] if pd.notna(_row.get("contract_until")) else None
-                foot = str(_row["foot"]) if pd.notna(_row.get("foot")) else None
-                h = float(_row["height"]) if pd.notna(_row.get("height")) else None
-                photo = str(_row["tm_photo_url"]) if pd.notna(_row.get("tm_photo_url")) else None
-                age = int(float(_row["age"])) if pd.notna(_row.get("age")) else None
-                pos = str(_row["position"]) if pd.notna(_row.get("position")) else None
-                data_source = "local"
+        import requests
+        api_url = "https://tmapi-alpha.transfermarkt.technology/player/{}".format(tm_id)
+        try:
+            resp = requests.get(api_url, timeout=15)
+        except requests.exceptions.SSLError:
+            # Proxy corporativo con cert autofirmado — reintentar sin verificar
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            resp = requests.get(api_url, timeout=15, verify=False)
+        if resp.status_code == 200:
+            payload = resp.json()
+            if payload.get("success") and payload.get("data"):
+                d = payload["data"]
+                # Valor de mercado
+                mvd = d.get("marketValueDetails", {}).get("current", {})
+                if mvd.get("value"):
+                    mv = int(mvd["value"])
+                # Contrato
+                attrs = d.get("attributes", {})
+                if attrs.get("contractUntil"):
+                    con = str(attrs["contractUntil"])[:10]
+                # Pie preferido
+                pf = attrs.get("preferredFoot", {})
+                if pf.get("name"):
+                    foot = pf["name"]
+                # Altura
+                if attrs.get("height"):
+                    h = float(attrs["height"])
+                # Foto
+                if d.get("portraitUrl"):
+                    photo = d["portraitUrl"]
+                # Edad
+                ld = d.get("lifeDates", {})
+                if ld.get("age"):
+                    age = int(ld["age"])
+                # Posición
+                position = attrs.get("position", {})
+                if position.get("name"):
+                    pos = position["name"]
+                data_source = "api"
     except Exception:
         pass
 
-    # Si no hay datos locales, intentar scraping (puede fallar por proxy corporativo)
+    # Fallback: CSV local si la API no respondió
     if not data_source:
         try:
-            import requests, re
-            profile_url = "https://www.transfermarkt.es/x/profil/spieler/{}".format(tm_id)
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                "Accept": "text/html",
-            }
-            r = requests.get(profile_url, headers=headers, timeout=10, allow_redirects=True)
-            if r.status_code == 200:
-                html_text = r.text
-                import re
-                # Valor de mercado
-                m_full = re.search(r'€([\d.,]+)\s*(k|mil\.|M|mill\.)', html_text)
-                if m_full:
-                    num = float(m_full.group(1).replace(",", "."))
-                    unit = m_full.group(2)
-                    mv = int(num * 1_000_000) if unit in ("M", "mill.") else int(num * 1000)
-                # Contrato
-                con_m = re.search(r'(\d{2}/\d{2}/\d{4})', html_text)
-                if con_m:
-                    parts = con_m.group(1).split("/")
-                    con = f"{parts[2]}-{parts[1]}-{parts[0]}"
-                # Edad
-                age_m = re.search(r'\((\d+)\)', html_text)
-                if age_m:
-                    age = int(age_m.group(1))
-                # Foto
-                photo_m = re.search(r'"(https://img\.a\.transfermarkt\.technology/portrait/big/[^"]+)"', html_text)
-                if photo_m:
-                    photo = photo_m.group(1)
-                data_source = "web"
+            import pandas as pd
+            mv_path = PROC.parent / "config" / "market_values.csv"
+            if mv_path.exists():
+                _mv_df = pd.read_csv(mv_path)
+                _tm_match = _mv_df[_mv_df["tm_id"].astype(str).str.replace(".0","",regex=False) == tm_id]
+                if _tm_match.empty:
+                    _tm_match = _mv_df[_mv_df["name"].apply(_norm) == _norm(name)]
+                if not _tm_match.empty:
+                    _row = _tm_match.iloc[0]
+                    mv = float(_row["market_value_eur"]) if pd.notna(_row.get("market_value_eur")) else None
+                    con = str(_row["contract_until"])[:10] if pd.notna(_row.get("contract_until")) else None
+                    foot = str(_row["foot"]) if pd.notna(_row.get("foot")) else None
+                    h = float(_row["height"]) if pd.notna(_row.get("height")) else None
+                    photo = str(_row["tm_photo_url"]) if pd.notna(_row.get("tm_photo_url")) else None
+                    age = int(float(_row["age"])) if pd.notna(_row.get("age")) else None
+                    pos = str(_row["position"]) if pd.notna(_row.get("position")) else None
+                    data_source = "local"
         except Exception:
-            pass  # Red corporativa bloquea — usar solo datos locales
+            pass
 
     if not data_source and not mv and not con:
-        return "tm_id guardado. No se pudo obtener datos (red bloqueada y sin datos locales para este ID).", no_update
+        return "tm_id guardado. No se pudo conectar con la API de TM ni encontrar datos locales.", no_update
 
     # 4. Actualizar overrides
     ov = _load_overrides()
@@ -1135,10 +1145,11 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
         pass
 
     parts = []
-    if mv:    parts.append("Valor: {:.1f}M€".format(mv / 1e6))
+    if mv:    parts.append("Valor: {:.1f}M€".format(mv / 1e6) if mv >= 1_000_000 else "Valor: {}K€".format(int(mv / 1000)))
     if con:   parts.append("Contrato: {}".format(con))
     if photo: parts.append("Foto OK")
-    src = "(datos locales)" if data_source == "local" else "(datos web)"
+    if foot:  parts.append("Pie: {}".format(foot))
+    src = "(API TM)" if data_source == "api" else "(datos locales)"
     msg = " · ".join(parts) if parts else "tm_id guardado"
     return "✓ {} {}".format(msg, src), 1
 
