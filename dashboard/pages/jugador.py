@@ -1006,18 +1006,18 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
         entity_map_path = PROC / "player_entity_map.csv"
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
         if entity_map_path.exists():
-            em = pd.read_csv(entity_map_path)
+            em = pd.read_csv(entity_map_path, dtype={"tm_id": str, "opta_id": str})
         else:
             em = pd.DataFrame(columns=["opta_id", "tm_id", "match_type", "match_confidence", "updated_at"])
         if opta_id:
             mask = em["opta_id"].astype(str) == str(opta_id)
             if mask.any():
-                em.loc[mask, "tm_id"] = tm_id
+                em.loc[mask, "tm_id"] = str(tm_id)
                 em.loc[mask, "match_type"] = "manual"
                 em.loc[mask, "updated_at"] = now
             else:
                 em = pd.concat([em, pd.DataFrame([{
-                    "opta_id": opta_id, "tm_id": tm_id,
+                    "opta_id": str(opta_id), "tm_id": str(tm_id),
                     "match_type": "manual", "match_confidence": 1.0, "updated_at": now,
                 }])], ignore_index=True)
             em.to_csv(entity_map_path, index=False)
