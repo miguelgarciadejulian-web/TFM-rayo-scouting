@@ -352,7 +352,7 @@ def _rendimiento_card(rd: dict) -> html.Div:
     dim_scores = rd.get("dims", [])
     subpos_lbl = rd.get("subpos_label", "—")
     pool_size  = rd.get("pool_size", 0)
-    ld         = rd.get("league_diff", 1.0)
+    ld         = rd.get("league_coef", 1.0)
 
     overall_color = _col(overall)
     grade_lbl     = _grade(overall)
@@ -621,7 +621,7 @@ def build_detail(name, team=None, league=None, age=None,
                                   role_type=_role_type_key)
     except Exception as _exc:
         _rd = {"score": None, "dims": [], "subpos_label": "—",
-               "pool_size": 0, "league_diff": 1.0, "error": str(_exc)}
+               "pool_size": 0, "league_coef": 1.0, "error": str(_exc)}
     rend_card = _rendimiento_card(_rd)
 
     metric_cols = []

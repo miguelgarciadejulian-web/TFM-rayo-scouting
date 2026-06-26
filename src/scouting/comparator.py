@@ -531,10 +531,8 @@ class FitRayoScorer:
                                      lateral_pos=_lat_code, role_type=_role_type)
             rd = compute_rendimiento(enr_row, self.enriched, subpos=subpos,
                                      role_type=_role_type)
-            # Aplicar coeficiente de dificultad de liga
-            raw = rd["score"]
-            diff = rd.get("league_diff", 1.0)
-            return round(raw * diff, 1)
+            # El score ya incorpora el coeficiente de liga internamente
+            return round(rd["score"], 1)
         except Exception:
             mins = self._sf(row.get("minutes"))
             if mins <= 0:
@@ -558,7 +556,7 @@ class FitRayoScorer:
             subpos = get_subposition(name, overrides=_ov, mv_df=_mv, position_group=pos_grp)
             return compute_rendimiento(enr_row, self.enriched, subpos=subpos)
         except Exception as exc:
-            return {"score": 10.0, "subpos": "—", "dims": [], "league_diff": 1.0,
+            return {"score": 10.0, "subpos": "—", "dims": [], "league_coef": 0.85,
                     "league": str(row.get("league", "") or ""), "error": str(exc)}
 
     def _load_overrides_cached(self) -> dict:

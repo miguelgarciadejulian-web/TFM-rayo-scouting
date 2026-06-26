@@ -572,9 +572,9 @@ def _fit_rayo_card(name: str) -> html.Div:
     if rend_bd and rend_bd.get("dims"):
         _subpos_lbl  = rend_bd.get("subpos_label", rend_bd.get("pos_grp", "—"))
         _pool_n      = rend_bd.get("pool_size", 0)
-        _ld          = rend_bd.get("league_diff", 1.0)
+        _ld          = rend_bd.get("league_coef", 1.0)
         _raw         = rend_bd.get("raw_score", 0)
-        _ld_note     = f" · dif. liga ×{_ld:.2f}" if _ld != 1.0 else ""
+        _ld_note     = f" · coef. liga ×{_ld:.2f}" if abs(_ld - 1.0) > 0.01 else ""
         rend_items = [
             html.Div(
                 f"{_subpos_lbl}  ·  {_pool_n} jugadores ≥450 min{_ld_note}",

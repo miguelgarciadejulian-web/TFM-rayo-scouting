@@ -232,14 +232,14 @@ REND_DIMS_BY_ROLE: dict[str, dict[str, float]] = {
 
 # ── Texto metodológico (para criterios.py) ───────────────────────────────────
 REND_METHODOLOGY: dict[str, str] = {
-    "GK":  "Paradas/90 + big chances salvadas (45%) · Limpiezas + goles encajados invertido (30%) · Juego con balón (15%) · Duelos aéreos (10%) — comparado dentro de su liga",
-    "CB":  "Acciones defensivas/90 (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción de juego (15%) — comparado vs centrales de su liga",
-    "FB":  "Defensiva (30%) · Proyección ofensiva (30%) · Duelos (20%) · Contribución en ataque (20%) — comparado vs laterales de su liga",
-    "DM":  "Recuperación de balón (40%) · Pase (30%) · Presión y duelos (20%) · Contribución ofensiva (10%) — comparado vs pivotes de su liga",
-    "CM":  "Pase (30%) · Recuperación (30%) · Creación (25%) · Contribución gol/asist (15%) — comparado vs centrocampistas de su liga",
-    "AM":  "Creación (35%) · Gol/Remate (30%) · Pase en profundidad (20%) · Pressing (15%) — comparado vs mediapuntas de su liga",
-    "WG":  "Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%) — comparado vs extremos de su liga",
-    "ST":  "Gol/Remate (45%) · Juego de área (20%) · Creación (20%) · Pressing (15%) — comparado vs delanteros de su liga",
+    "GK":  "Paradas/90 + big chances salvadas (45%) · Limpieza (30%) · Juego con balón (15%) · Área (10%) — z-score global × coef. liga",
+    "CB":  "Defensiva (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción (15%) — z-score global × coef. liga",
+    "FB":  "Defensiva (30%) · Proyección (30%) · Duelos (20%) · Ataque (20%) — z-score global × coef. liga",
+    "DM":  "Recuperación (40%) · Pase (30%) · Presión (20%) · Contribución ofensiva (10%) — z-score global × coef. liga",
+    "CM":  "Pase (30%) · Recuperación (30%) · Creación (25%) · Contribución (15%) — z-score global × coef. liga",
+    "AM":  "Creación (35%) · Gol (30%) · Pase en profundidad (20%) · Pressing (15%) — z-score global × coef. liga",
+    "WG":  "Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%) — z-score global × coef. liga",
+    "ST":  "Gol/Remate (45%) · Juego de área (20%) · Creación (20%) · Pressing (15%) — z-score global × coef. liga",
 }
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -324,6 +324,29 @@ def _add_gk_derived(pool: pd.DataFrame) -> pd.DataFrame:
     return pool
 
 
+# ── Coeficientes de calidad de liga ───────────────────────────────────────────
+# Reflejan la dificultad competitiva real. Un mismo valor bruto p90 en una liga
+# top vale más que en una liga inferior. Centrado en 1.0 aprox.
+LEAGUE_QUALITY: dict[str, float] = {
+    "England_Premier_League":       1.07,
+    "Spain_Primera_Division":       1.05,
+    "Germany_Bundesliga":           1.03,
+    "Italy_Serie_A":                1.03,
+    "France_Ligue_1":               0.98,
+    "Netherlands_Eredivisie":       0.92,
+    "Portugal_Primeira_Liga":       0.92,
+    "Belgium_First_Division_A":     0.88,
+    "Türkiye_Süper_Lig":            0.87,
+    "England_Championship":         0.86,
+    "Denmark_Superliga":            0.84,
+    "Spain_Segunda_Division":       0.83,
+    "France_Ligue_2":               0.81,
+    "Germany_2_Bundesliga":         0.84,
+    "Mexico_Liga_MX":               0.82,
+    "Argentina_Liga_Profesional":   0.80,
+}
+
+
 def compute_rendimiento(
     player_row: pd.Series,
     enriched_df: pd.DataFrame,
@@ -332,20 +355,26 @@ def compute_rendimiento(
     role_type: str | None = None,
 ) -> dict:
     """
-    Calcula el score de Rendimiento para un jugador.
+    Calcula el score de Rendimiento basado en datos brutos p90.
+
+    Método:
+      1. Pool GLOBAL (todas las ligas, mismo grupo posicional, ≥ min_minutes)
+      2. Para cada métrica: z-score vs pool global → escala 0-100
+      3. Media ponderada de dimensiones (pesos según role_type)
+      4. Coeficiente de liga multiplicativo (Premier/Liga > Segunda/Ligue2)
 
     Devuelve:
         {
-          "score":      float 0-100,
-          "raw_score":  float (sin ajuste de liga),
-          "subpos":     str  (p.ej. "WG"),
-          "subpos_label": str (p.ej. "Extremo"),
-          "pool_grp":   str  (p.ej. "FWD"),
-          "pool_size":  int,
-          "dims":       [{"label":..., "score":..., "weight":...}, ...],
-          "league_diff": float,
-          "league":     str,
-          "role_type":  str | None,
+          "score":        float 0-100 (ajustado por liga),
+          "raw_score":    float 0-100 (antes de ajuste de liga),
+          "subpos":       str,
+          "subpos_label": str,
+          "pool_grp":     str,
+          "pool_size":    int,
+          "dims":         [{"label":..., "score":..., "weight":...}, ...],
+          "league_coef":  float,
+          "league":       str,
+          "role_type":    str | None,
         }
     """
     if subpos is None:
@@ -356,90 +385,82 @@ def compute_rendimiento(
     dims_def  = REND_DIMS.get(subpos, REND_DIMS["CM"])
     mins_val  = float(player_row.get("minutes") or 0)
 
+    player_league = str(player_row.get("league") or "")
+    league_coef = LEAGUE_QUALITY.get(player_league, 0.85)
+
     if mins_val < 90:
         return {
-            "score": 10.0, "raw_score": 10.0, "subpos": subpos,
+            "score": 5.0, "raw_score": 5.0, "subpos": subpos,
             "subpos_label": SUBPOS_LABELS.get(subpos, subpos),
             "pool_grp": pool_grp, "pool_size": 0, "dims": [],
-            "league_diff": 1.0, "league": str(player_row.get("league") or ""),
+            "league_coef": league_coef, "league": player_league,
+            "role_type": role_type,
         }
 
-    # Pool: misma grupo posicional, ≥ min_minutes, SIEMPRE dentro de la misma liga
-    # El rendimiento mide cómo rinde el jugador vs. sus pares directos en su liga.
-    # La dificultad de liga se aplica SOLO para el Fit Rayo (fuera de esta función).
-    pool_all = enriched_df[
+    # ── Pool GLOBAL: todos los jugadores del mismo grupo posicional ───────────
+    pool = enriched_df[
         enriched_df["position_group"].str.upper() == pool_grp
     ].copy()
-    pool_all = pool_all[pd.to_numeric(pool_all["minutes"], errors="coerce").fillna(0) >= min_minutes]
-
-    player_league = str(player_row.get("league") or "")
-    if player_league:
-        pool_liga = pool_all[pool_all["league"] == player_league]
-        # Usar pool de liga siempre que haya al menos 10 jugadores; si no, fallback a global
-        pool = pool_liga if len(pool_liga) >= 10 else pool_all
-    else:
-        pool = pool_all
+    pool = pool[pd.to_numeric(pool["minutes"], errors="coerce").fillna(0) >= min_minutes]
 
     if subpos == "GK":
         pool = _add_gk_derived(pool)
-        # Añadir métricas derivadas para la fila del jugador también
         tmp = pd.DataFrame([player_row])
         tmp = _add_gk_derived(tmp)
         player_row = tmp.iloc[0]
 
     pool_size = len(pool)
 
-    # Si tenemos role_type, usar pesos adaptativos sobre las mismas métricas base
+    # Role_type → pesos adaptativos
     role_weight_override = REND_DIMS_BY_ROLE.get(role_type, {}) if role_type else {}
 
-    def _pct(col: str, val: float) -> float | None:
+    def _z_to_score(col: str, val: float) -> float | None:
+        """Convierte valor bruto a score 0-100 via z-score contra pool global."""
         if col not in pool.columns:
             return None
         series = pd.to_numeric(pool[col], errors="coerce").dropna()
-        if len(series) < 5:
+        if len(series) < 10:
             return None
-        return float((series < val).sum() / len(series) * 100)
+        mean = series.mean()
+        std = series.std()
+        if std < 1e-9:
+            return 50.0
+        z = (val - mean) / std
+        # Escala: z=0 → 50, z=+2 → 80, z=-2 → 20. Clip [3, 97].
+        score = 50.0 + z * 15.0
+        return max(3.0, min(97.0, score))
 
     dim_results, total_w, total_ws = [], 0.0, 0.0
     for label, metrics, base_weight in dims_def:
-        # Usar peso del role_type si existe; si no, peso base de la sub-posición
         weight = role_weight_override.get(label, base_weight)
         scores = []
         for m in metrics:
             val = float(player_row.get(m) or 0)
-            pct = _pct(m, val)
-            if pct is not None:
-                scores.append(pct)
+            s = _z_to_score(m, val)
+            if s is not None:
+                scores.append(s)
         if scores:
             ds = round(sum(scores) / len(scores), 1)
             dim_results.append({"label": label, "score": ds, "weight": weight})
             total_ws += weight * ds
             total_w  += weight
 
-    raw = round(total_ws / total_w, 1) if total_w > 0 else 10.0
+    raw = round(total_ws / total_w, 1) if total_w > 0 else 5.0
 
-    # Calibración: el percentil puro (0-100) penaliza a jugadores de equipos medios.
-    # Aplicamos curva generosa: score = 30 + percentil * 0.70
-    # Esto da: percentil 0→30, 50→65, 100→100.
-    calibrated = round(min(100.0, 30.0 + raw * 0.70), 1)
-
-    # league_diff se calcula pero NO se aplica al score de rendimiento.
-    # Solo se usa externamente (Fit Rayo) para ponderar la dificultad de la liga.
-    try:
-        from src.scouting.comparator import _league_difficulty
-        diff = _league_difficulty(player_row.get("league"))
-    except Exception:
-        diff = 1.0
+    # ── Aplicar coeficiente de liga ───────────────────────────────────────────
+    # El raw_score refleja el nivel bruto. El score final incorpora la calidad
+    # de la liga: rendir igual en Primera vale más que en Segunda.
+    adjusted = round(min(99.0, max(5.0, raw * league_coef)), 1)
 
     return {
-        "score":       calibrated,
-        "raw_score":   raw,
-        "subpos":      subpos,
+        "score":        adjusted,
+        "raw_score":    raw,
+        "subpos":       subpos,
         "subpos_label": SUBPOS_LABELS.get(subpos, subpos),
-        "pool_grp":    pool_grp,
-        "pool_size":   pool_size,
-        "dims":        dim_results,
-        "league_diff": diff,
-        "league":      str(player_row.get("league") or ""),
-        "role_type":   role_type,
+        "pool_grp":     pool_grp,
+        "pool_size":    pool_size,
+        "dims":         dim_results,
+        "league_coef":  league_coef,
+        "league":       player_league,
+        "role_type":    role_type,
     }
