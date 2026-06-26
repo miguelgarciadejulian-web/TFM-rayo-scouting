@@ -58,6 +58,23 @@ OPTA_GRP_TO_SUBPOS: dict[str, str] = {
     "GK": "GK", "DEF": "CB", "MID": "CM", "FWD": "ST",
 }
 
+# Mapeo lateral_pos → sub-posición (inferida de build_lateral_map — más preciso que el grupo OPTA)
+LATERAL_TO_SUBPOS: dict[str, str] = {
+    "PO": "GK",
+    "DC": "CB",
+    "LI": "FB", "LD": "FB",
+    "MC": "CM", "MI": "CM", "MD": "CM",
+    "EI": "WG", "ED": "WG",
+    "DL": "ST",
+}
+
+# Refinamiento de centrocampistas por tipología de rol
+ROLE_TYPE_TO_SUBPOS: dict[str, str] = {
+    "mediocentro_recuperador": "DM",
+    "mediocentro_organizador": "CM",
+    "interior_llegador":       "AM",
+}
+
 # ── Descripción legible ───────────────────────────────────────────────────────
 SUBPOS_LABELS: dict[str, str] = {
     "GK": "Portero",
@@ -189,12 +206,15 @@ def get_subposition(
     overrides: dict | None = None,
     mv_df: pd.DataFrame | None = None,
     position_group: str | None = None,
+    lateral_pos: str | None = None,
+    role_type: str | None = None,
 ) -> str:
     """
     Determina la sub-posición de un jugador con cascada de fuentes:
     1. player_overrides.json  →  campo 'position'
     2. market_values.csv      →  campo 'position'
-    3. enriched position_group (fallback)
+    3. lateral_pos + role_type (de build_lateral_map — más fino que el grupo OPTA)
+    4. enriched position_group (fallback)
     """
     if overrides:
         ov = overrides.get(_n(name), {})
@@ -212,7 +232,15 @@ def get_subposition(
             if tm_pos in TM_TO_SUBPOS:
                 return TM_TO_SUBPOS[tm_pos]
 
-    # Fallback
+    # Fallback desde lateral_pos + role_type (inferidos de build_lateral_map)
+    if lateral_pos and lateral_pos in LATERAL_TO_SUBPOS:
+        subpos = LATERAL_TO_SUBPOS[lateral_pos]
+        # Refinar centrocampistas según su tipología específica de rol
+        if subpos == "CM" and role_type and role_type in ROLE_TYPE_TO_SUBPOS:
+            return ROLE_TYPE_TO_SUBPOS[role_type]
+        return subpos
+
+    # Fallback final: grupo OPTA
     grp = str(position_group or "MID").upper()
     return OPTA_GRP_TO_SUBPOS.get(grp, "CM")
 

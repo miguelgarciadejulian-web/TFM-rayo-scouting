@@ -535,7 +535,8 @@ def build_detail(name, team=None, league=None, age=None,
             ], style={"marginBottom": "6px"}),
             # Badges de posición y rol
             html.Div([
-                html.Span(role_lbl, style={"fontSize": "12px", "fontWeight": "700", "color": "#0D0D0D",
+                html.Span(_role_type_label if _role_type_key else role_lbl,
+                    style={"fontSize": "12px", "fontWeight": "700", "color": "#0D0D0D",
                     "background": "#FFD600", "borderRadius": "99px", "padding": "3px 12px",
                     "marginRight": "6px"}),
                 *([ html.Span(_lat_label, style={
@@ -543,11 +544,6 @@ def build_detail(name, team=None, league=None, age=None,
                         "background": "#111827", "borderRadius": "99px",
                         "padding": "3px 10px", "marginRight": "6px",
                     }) ] if _lat_label else []),
-                *([ html.Span(_role_type_label, style={
-                        "fontSize": "11px", "color": "#374151",
-                        "background": "#F3F4F6", "borderRadius": "99px",
-                        "padding": "2px 9px", "marginRight": "6px",
-                    }) ] if _role_type_key and _role_type_key != "portero" else []),
                 *([ html.Span(
                         f"Pie: {_foot_val}", style={
                             "fontSize": "11px", "color": "#1D4ED8",
@@ -617,7 +613,8 @@ def build_detail(name, team=None, league=None, age=None,
         _cfg = _proc.parents[1] / "config" / "market_values.csv"
         _mv = _pd_rend.read_csv(_cfg) if _cfg.exists() else None
         _subpos = get_subposition(latest["name"], overrides=_ov, mv_df=_mv,
-                                   position_group=latest.get("position_group"))
+                                   position_group=latest.get("position_group"),
+                                   lateral_pos=_lat_code, role_type=_role_type_key)
         _rd = compute_rendimiento(latest, enriched(), subpos=_subpos)
     except Exception as _exc:
         _rd = {"score": None, "dims": [], "subpos_label": "—",

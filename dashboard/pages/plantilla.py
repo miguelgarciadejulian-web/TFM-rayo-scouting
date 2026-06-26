@@ -369,7 +369,7 @@ _POS_TARGETS: dict[str, dict[str, int]] = {
 
 
 def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
-    """Panel de transparencia: formación → objetivo por posición → actual."""
+    """Panel de necesidades rediseñado: lista visual compacta por posición."""
     from datetime import date as _date
     today = _date.today()
 
@@ -377,7 +377,6 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
     formation = str(formation).strip().replace(" ", "-")
     target = _POS_TARGETS.get(formation, _POS_TARGETS["4-2-3-1"])
 
-    # Contar jugadores actuales por posición y agrupar para alertas de contrato
     counts: dict[str, int] = {}
     pos_players: dict[str, list] = {}
     for p in players_all:
@@ -386,21 +385,26 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
             counts[pos] = counts.get(pos, 0) + 1
             pos_players.setdefault(pos, []).append(p)
 
-    rows = []
-    for pos, needed in sorted(target.items(), key=lambda x: list(target.keys()).index(x[0])):
-        if needed == 0:
-            continue
+    # Resumen global
+    n_cubierto = sum(1 for pos, n in target.items() if n > 0 and counts.get(pos, 0) >= n)
+    n_reforzar = sum(1 for pos, n in target.items() if n > 0 and counts.get(pos, 0) == n - 1)
+    n_falta    = sum(1 for pos, n in target.items() if n > 0 and counts.get(pos, 0) < n - 1)
+
+    def _pos_row(pos, needed):
         have  = counts.get(pos, 0)
         delta = have - needed
-
         if delta >= 0:
-            status_color = "#166534"
-            status_bg    = "#F0FDF4"
-            status_txt   = "✓ Cubierto"
-            # Alerta de contratos en posiciones cubiertas
-            plist = pos_players.get(pos, [])
+            st_color, st_bg, st_icon = "#166534", "#DCFCE7", "✓"
+        elif delta == -1:
+            st_color, st_bg, st_icon = "#92400E", "#FEF9C3", "⚠"
+        else:
+            st_color, st_bg, st_icon = "#991B1B", "#FEE2E2", "✗"
+
+        # Chip de contratos urgentes solo si la posición está cubierta
+        contract_chip = None
+        if delta >= 0:
             _years = []
-            for _p in plist:
+            for _p in pos_players.get(pos, []):
                 try:
                     _years.append(int(str(_p.get("contract_end", "9999"))[:4]))
                 except (ValueError, TypeError):
@@ -409,103 +413,131 @@ def _needs_panel(cp: dict, players_all: list[dict]) -> html.Div:
             warn   = sum(1 for y in _years if today.year < y <= today.year + 1)
             if urgent > 0:
                 contract_chip = html.Span(
-                    f"⚠ {urgent} expira{'n' if urgent > 1 else ''} en {today.year}",
-                    title="Posición cubierta pero con contratos urgentes",
-                    style={"fontSize": "9px", "fontWeight": "600", "color": "#991B1B",
-                           "background": "#FEE2E2", "borderRadius": "4px",
-                           "padding": "1px 6px", "marginLeft": "5px",
-                           },
+                    f"⚡{urgent}",
+                    title=f"{urgent} contrato(s) expiran en {today.year}",
+                    style={"fontSize": "9px", "fontWeight": "700", "color": "#991B1B",
+                           "background": "#FEE2E2", "borderRadius": "99px",
+                           "padding": "1px 5px", "marginLeft": "3px"},
                 )
             elif warn > 0:
                 contract_chip = html.Span(
-                    f"~ {warn} expira{'n' if warn > 1 else ''} {today.year + 2}",
-                    title="Posición cubierta pero hay contratos por vigilar",
-                    style={"fontSize": "9px", "fontWeight": "600", "color": "#92400E",
-                           "background": "#FEF3C7", "borderRadius": "4px",
-                           "padding": "1px 6px", "marginLeft": "5px",
-                           },
+                    f"~{warn}",
+                    title=f"{warn} contrato(s) vencen pronto",
+                    style={"fontSize": "9px", "fontWeight": "700", "color": "#92400E",
+                           "background": "#FEF9C3", "borderRadius": "99px",
+                           "padding": "1px 5px", "marginLeft": "3px"},
                 )
-            else:
-                contract_chip = html.Span()
-        elif delta == -1:
-            status_color  = "#92400E"
-            status_bg     = "#FFFBEB"
-            status_txt    = "⚠ Reforzar"
-            contract_chip = html.Span()
-        else:
-            status_color  = "#991B1B"
-            status_bg     = "#FFF1F2"
-            status_txt    = "✗ Falta"
-            contract_chip = html.Span()
 
-        rows.append(html.Tr([
-            html.Td(html.Span(pos, style={
-                "background": POS_COLOR.get(pos, ("#F3F4F6", "#374151"))[0],
-                "color": POS_COLOR.get(pos, ("#F3F4F6", "#374151"))[1],
-                "padding": "2px 8px", "borderRadius": "99px",
-                "fontSize": "10px", "fontWeight": "700",
-            })),
-            html.Td(_POS_LABEL.get(pos, pos), style={"fontSize": "11px", "color": "#374151", "padding": "5px 8px"}),
-            html.Td(str(needed), style={"fontSize": "11px", "textAlign": "center",
-                                        "color": "#6B7280", "padding": "5px 8px"}),
-            html.Td(str(have), style={"fontSize": "11px", "textAlign": "center",
-                                      "fontWeight": "700", "color": "#1A1A2E", "padding": "5px 8px"}),
-            html.Td(html.Div([
-                html.Span(status_txt, style={
-                    "fontSize": "10px", "fontWeight": "600", "color": status_color,
-                    "background": status_bg, "padding": "2px 8px", "borderRadius": "99px",
+        bg, fg = POS_COLOR.get(pos, ("#F3F4F6", "#374151"))
+        return html.Div([
+            # Pos badge + nombre
+            html.Div([
+                html.Span(pos, style={
+                    "background": bg, "color": fg,
+                    "padding": "2px 7px", "borderRadius": "99px",
+                    "fontSize": "10px", "fontWeight": "700",
+                    "flexShrink": "0", "minWidth": "34px", "textAlign": "center",
                 }),
-                contract_chip,
-            ], style={"display": "flex", "alignItems": "center", "flexWrap": "wrap", "gap": "4px"}),
-            style={"padding": "5px 8px"}),
-        ], style={"borderBottom": "1px solid #F3F4F6"}))
+                html.Span(_POS_LABEL.get(pos, pos), style={
+                    "fontSize": "11px", "color": "#374151",
+                    "marginLeft": "7px", "whiteSpace": "nowrap",
+                    "overflow": "hidden", "textOverflow": "ellipsis",
+                }),
+            ], style={"display": "flex", "alignItems": "center",
+                      "flex": "1", "minWidth": "0", "overflow": "hidden"}),
+            # Contador + estado + chip
+            html.Div([
+                html.Span(str(have), style={
+                    "fontSize": "15px", "fontWeight": "800",
+                    "color": st_color, "lineHeight": "1",
+                }),
+                html.Span(f"/{needed}", style={
+                    "fontSize": "10px", "color": "#9CA3AF", "marginRight": "6px",
+                }),
+                html.Span(st_icon, style={
+                    "fontSize": "11px", "fontWeight": "700",
+                    "color": st_color, "background": st_bg,
+                    "borderRadius": "99px", "padding": "2px 7px",
+                }),
+                *([contract_chip] if contract_chip else []),
+            ], style={"display": "flex", "alignItems": "center",
+                      "gap": "2px", "flexShrink": "0"}),
+        ], style={
+            "display": "flex", "alignItems": "center",
+            "justifyContent": "space-between",
+            "padding": "5px 2px", "borderBottom": "1px solid #F3F4F6",
+        })
+
+    _GROUPS = [
+        ("Portería",    ["GK"]),
+        ("Defensa",     ["CB", "RB", "LB"]),
+        ("Centrocampo", ["DM", "CM", "AM"]),
+        ("Ataque",      ["RW", "LW", "ST"]),
+    ]
+
+    sections = []
+    for grp_name, positions in _GROUPS:
+        items = [_pos_row(pos, target[pos])
+                 for pos in positions if target.get(pos, 0) > 0]
+        if not items:
+            continue
+        sections.append(html.Div([
+            html.Div(grp_name, style={
+                "fontSize": "9px", "fontWeight": "700", "color": "#9CA3AF",
+                "textTransform": "uppercase", "letterSpacing": ".08em",
+                "padding": "6px 2px 3px",
+            }),
+            *items,
+        ]))
 
     return html.Div([
+        # Cabecera
         html.Div([
-            html.I(className="ti ti-layout-list", style={"color": _ROJO, "marginRight": "6px"}),
-            html.Span("Necesidades 2026/27", style={
-                "fontSize": "10px", "fontWeight": "700", "color": "#9CA3AF",
-                "textTransform": "uppercase", "letterSpacing": ".06em",
+            html.Div([
+                html.I(className="ti ti-layout-list",
+                       style={"color": _ROJO, "fontSize": "14px", "marginRight": "7px"}),
+                html.Span("Necesidades 2026/27", style={
+                    "fontSize": "12px", "fontWeight": "700", "color": _AZUL,
+                }),
+            ], style={"display": "flex", "alignItems": "center"}),
+            html.Span(formation, style={
+                "fontSize": "10px", "fontWeight": "700", "color": "#fff",
+                "background": _AZUL, "borderRadius": "6px", "padding": "2px 9px",
             }),
-        ], style={"marginBottom": "8px"}),
+        ], style={"display": "flex", "alignItems": "center",
+                  "justifyContent": "space-between", "marginBottom": "10px"}),
+
+        # Resumen de cobertura
         html.Div([
-            html.Span("Formación base: ", style={"fontSize": "10px", "color": "#9CA3AF"}),
-            html.Span(formation, style={"fontSize": "10px", "fontWeight": "700",
-                                        "color": _AZUL, "marginRight": "8px"}),
-            html.Span("(desde club_profile.yaml → tactics.base_formation)",
-                      style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic"}),
-        ], style={"marginBottom": "8px"}),
-        html.Table([
-            html.Thead(html.Tr([
-                html.Th("Pos.", style={"fontSize": "9px", "color": "#9CA3AF",
-                                       "textTransform": "uppercase", "padding": "4px 8px",
-                                       "borderBottom": f"2px solid {_ROJO}"}),
-                html.Th("Rol", style={"fontSize": "9px", "color": "#9CA3AF",
-                                      "textTransform": "uppercase", "padding": "4px 8px",
-                                      "borderBottom": f"2px solid {_ROJO}"}),
-                html.Th("Objetivo", style={"fontSize": "9px", "color": "#9CA3AF",
-                                           "textTransform": "uppercase", "padding": "4px 8px",
-                                           "textAlign": "center",
-                                           "borderBottom": f"2px solid {_ROJO}"}),
-                html.Th("Actual", style={"fontSize": "9px", "color": "#9CA3AF",
-                                         "textTransform": "uppercase", "padding": "4px 8px",
-                                         "textAlign": "center",
-                                         "borderBottom": f"2px solid {_ROJO}"}),
-                html.Th("Estado", style={"fontSize": "9px", "color": "#9CA3AF",
-                                          "textTransform": "uppercase", "padding": "4px 8px",
-                                          "borderBottom": f"2px solid {_ROJO}"}),
-            ])),
-            html.Tbody(rows),
-        ], style={"width": "100%", "borderCollapse": "collapse", "marginBottom": "10px"}),
-        html.Div([
-            html.Span("Metodología: ", style={"fontSize": "9px", "fontWeight": "700", "color": "#6B7280"}),
-            html.Span(
-                "Los objetivos por posición se calculan automáticamente desde la formación base. "
-                "El recuento actual usa las posiciones del YAML (name, position) — "
-                "no valores estáticos definidos a mano.",
-                style={"fontSize": "9px", "color": "#9CA3AF", "fontStyle": "italic"},
-            ),
-        ]),
+            html.Div([
+                html.Div(str(n_cubierto), style={"fontSize": "18px", "fontWeight": "800",
+                                                  "color": "#166534", "lineHeight": "1"}),
+                html.Div("cubiertas", style={"fontSize": "9px", "color": "#6B7280",
+                                             "marginTop": "1px"}),
+            ], style={"textAlign": "center", "background": "#DCFCE7", "borderRadius": "8px",
+                      "padding": "7px 0", "flex": "1"}),
+            html.Div([
+                html.Div(str(n_reforzar), style={"fontSize": "18px", "fontWeight": "800",
+                                                  "color": "#92400E", "lineHeight": "1"}),
+                html.Div("reforzar", style={"fontSize": "9px", "color": "#6B7280",
+                                            "marginTop": "1px"}),
+            ], style={"textAlign": "center", "background": "#FEF9C3", "borderRadius": "8px",
+                      "padding": "7px 0", "flex": "1"}),
+            html.Div([
+                html.Div(str(n_falta), style={"fontSize": "18px", "fontWeight": "800",
+                                               "color": "#991B1B", "lineHeight": "1"}),
+                html.Div("faltan", style={"fontSize": "9px", "color": "#6B7280",
+                                          "marginTop": "1px"}),
+            ], style={"textAlign": "center", "background": "#FEE2E2", "borderRadius": "8px",
+                      "padding": "7px 0", "flex": "1"}),
+        ], style={"display": "flex", "gap": "8px", "marginBottom": "10px"}),
+
+        # Lista por posición agrupada
+        *sections,
+
+        html.Div("Calculado desde la formación base del YAML",
+                 style={"fontSize": "9px", "color": "#9CA3AF",
+                        "fontStyle": "italic", "marginTop": "10px"}),
     ], className="card-flat")
 
 
