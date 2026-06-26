@@ -58,14 +58,16 @@ def _get_fit_scorer():
     return _FIT_SCORER_CACHE.get("scorer")
 
 
-def _fit_scores_for(names: list[str]) -> dict[str, float]:
-    """Fit Rayo completo (rendimiento + economico + edad + disponibilidad)."""
+def _fit_scores_for(names: list[str]) -> dict[str, dict]:
+    """Fit Rayo completo — devuelve {name: {fit, rend, adn}} para cada jugador."""
     scorer = _get_fit_scorer()
     if not scorer or not names:
         return {}
     try:
         results = scorer.compare(names)
-        return {r.name: r.fit_score for r in results}
+        return {r.name: {"fit": r.fit_score,
+                         "rend": r.score_rendimiento,
+                         "adn": r.score_adn_tactico} for r in results}
     except Exception:
         return {}
 
@@ -218,11 +220,14 @@ def _candidate_chips(cands, fit_map: dict | None = None):
     if not cands:
         return html.Span()
     if fit_map:
-        cands = sorted(cands, key=lambda c: fit_map.get(c["name"], 0), reverse=True)
+        cands = sorted(cands, key=lambda c: (fit_map.get(c["name"], {}).get("fit", 0)
+                                             if isinstance(fit_map.get(c["name"]), dict)
+                                             else fit_map.get(c["name"], 0)), reverse=True)
     chips = []
     for c in cands[:6]:
         name = c["name"]
-        fit_val = fit_map.get(name) if fit_map else None
+        fm = fit_map.get(name) if fit_map else None
+        fit_val = fm["fit"] if isinstance(fm, dict) else fm
         score_str = f"{fit_val:.0f}" if fit_val is not None else f"{c.get('role_score', 0):.0f}"
         chips.append(html.Span(
             f"{name} ({score_str})",
@@ -242,7 +247,9 @@ def _fichar_row(it, shortlists):
     names = [c["name"] for c in cands] if cands else []
     fit_map = _fit_scores_for(names) if names else {}
 
-    cands_sorted = sorted(cands, key=lambda c: fit_map.get(c["name"], 0), reverse=True)
+    cands_sorted = sorted(cands, key=lambda c: (fit_map.get(c["name"], {}).get("fit", 0)
+                                                if isinstance(fit_map.get(c["name"]), dict)
+                                                else fit_map.get(c["name"], 0)), reverse=True)
 
     return html.Div([
         html.Div([
@@ -465,6 +472,15 @@ def layout(**_params):
                         options=_pos_filter_options(),
                         value="", id="exp-pos", clearable=False,
                     )], md=4),
+                dbc.Col([html.Span("Ordenar por", className="filter-label"),
+                    dcc.Dropdown(
+                        options=[
+                            {"label": "Fit Rayo", "value": "fit"},
+                            {"label": "Rendimiento", "value": "rend"},
+                            {"label": "ADN Táctico", "value": "adn"},
+                        ],
+                        value="fit", id="exp-sort", clearable=False,
+                    )], md=3),
             ], className="g-2", style={"marginTop": "4px"}),
 
             html.Div(id="exp-results", style={"marginTop": "12px"}),
@@ -745,7 +761,7 @@ clientside_callback(
     Input("exp-role", "value"), Input("exp-leagues", "value"), Input("exp-min", "value"),
     Input("exp-maxval", "value"), Input("exp-flags", "value"),
     Input("exp-maxage", "value"), Input("exp-maxcontract", "value"),
-    Input("exp-pos", "value"),
+    Input("exp-pos", "value"), Input("exp-sort", "value"),
     prevent_initial_call=True,
 )
 
@@ -754,8 +770,8 @@ clientside_callback(
           Input("exp-role", "value"), Input("exp-leagues", "value"), Input("exp-min", "value"),
           Input("exp-maxval", "value"), Input("exp-flags", "value"),
           Input("exp-maxage", "value"), Input("exp-maxcontract", "value"),
-          Input("exp-pos", "value"))
-def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_filter):
+          Input("exp-pos", "value"), Input("exp-sort", "value"))
+def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_filter, sort_by):
     enr = _enriched()
     if enr.empty:
         return html.P("Sin datos enriquecidos.", style={"fontSize": "12px", "color": "#9CA3AF"})
@@ -803,25 +819,49 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
     names_list = list(rk["name"].dropna())
     fit_map = _fit_scores_for(names_list)
 
-    # Reordenar por Fit Rayo desc, mostrar top 20
+    # Reordenar según criterio seleccionado, mostrar top 20
+    sort_by = sort_by or "fit"
     rk = rk.copy()
-    rk["_fit_rayo"] = rk["name"].map(lambda n: fit_map.get(n, -1))
-    rk = rk.sort_values("_fit_rayo", ascending=False).head(20).reset_index(drop=True)
+    rk["_fit_rayo"] = rk["name"].map(lambda n: fit_map.get(n, {}).get("fit", -1))
+    rk["_rend"]     = rk["name"].map(lambda n: fit_map.get(n, {}).get("rend", -1))
+    rk["_adn"]      = rk["name"].map(lambda n: fit_map.get(n, {}).get("adn", -1))
+    _sort_col = {"fit": "_fit_rayo", "rend": "_rend", "adn": "_adn"}.get(sort_by, "_fit_rayo")
+    rk = rk.sort_values(_sort_col, ascending=False).head(20).reset_index(drop=True)
 
-    cols_h = ["#", "Jugador", "Pos.", "Equipo", "Liga", "Edad", "Min", "Valor", "Sal. est.", "Contrato", "Fit Rayo"]
+    cols_h = ["#", "Jugador", "Pos.", "Equipo", "Liga", "Edad", "Min", "Valor", "Sal. est.",
+              "Contrato", "Rend.", "ADN", "Fit Rayo"]
     head = html.Tr([html.Th(h, style={"fontSize": "10px", "color": "#9CA3AF", "padding": "5px 10px",
                     "textAlign": "left"}) for h in cols_h])
     body = []
     for i, r in enumerate(rk.itertuples(), 1):
         contract = getattr(r, "contract_until", None)
         exp = getattr(r, "expiring_2026", False)
-        fit_val = fit_map.get(r.name)
-        fit_color = "#166534" if (fit_val or 0) >= 70 else "#92400E" if (fit_val or 0) >= 50 else "#991B1B"
+        _scores = fit_map.get(r.name, {})
+        fit_val  = _scores.get("fit") if _scores else None
+        rend_val = _scores.get("rend") if _scores else None
+        adn_val  = _scores.get("adn") if _scores else None
+
+        def _score_color(v):
+            if v is None: return "#9CA3AF"
+            return "#166534" if v >= 70 else "#92400E" if v >= 50 else "#991B1B"
+
         fit_cell = html.Td(
             f"{fit_val:.0f}" if fit_val is not None else f"{r.role_score:.0f}*",
             title="*Rendimiento (Fit Rayo no disponible)" if fit_val is None else f"Fit Rayo: {fit_val:.1f}/100",
             style={"fontSize": "13px", "padding": "5px 10px",
-                   "fontWeight": "700", "color": fit_color},
+                   "fontWeight": "700", "color": _score_color(fit_val)},
+        )
+        rend_cell = html.Td(
+            f"{rend_val:.0f}" if rend_val is not None else "—",
+            title=f"Rendimiento: {rend_val:.1f}/100" if rend_val is not None else "",
+            style={"fontSize": "12px", "padding": "5px 10px",
+                   "fontWeight": "600", "color": _score_color(rend_val)},
+        )
+        adn_cell = html.Td(
+            f"{adn_val:.0f}" if adn_val is not None else "—",
+            title=f"ADN Táctico: {adn_val:.1f}/100" if adn_val is not None else "",
+            style={"fontSize": "12px", "padding": "5px 10px",
+                   "fontWeight": "600", "color": _score_color(adn_val)},
         )
         _pos_label = _lat_dict.get(r.name, "—")
         body.append(html.Tr([
@@ -856,6 +896,8 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
                     style={"fontWeight": "700" if exp else "400",
                            "color": "#DC2626" if exp else "#6B7280"}),
                     style={"fontSize": "11px", "padding": "5px 10px"}),
+            rend_cell,
+            adn_cell,
             fit_cell,
         ], style={"borderTop": "1px solid #F3F4F6"}))
     # Data freshness: check when player_economic.parquet was last modified
