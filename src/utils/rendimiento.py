@@ -485,7 +485,7 @@ def compute_rendimiento(
         if n < 10 or std < 1e-9:
             return 50.0
         z = (val - mean) / std
-        score = 50.0 + z * 15.0
+        score = 50.0 + z * 17.0
         return max(3.0, min(97.0, score))
 
     dim_results, total_w, total_ws = [], 0.0, 0.0
@@ -505,10 +505,16 @@ def compute_rendimiento(
 
     raw = round(total_ws / total_w, 1) if total_w > 0 else 5.0
 
-    # ── Aplicar coeficiente de liga ───────────────────────────────────────────
-    # El raw_score refleja el nivel bruto. El score final incorpora la calidad
-    # de la liga: rendir igual en Primera vale más que en Segunda.
-    adjusted = round(min(99.0, max(5.0, raw * league_coef)), 1)
+    # ── Aplicar coeficiente de liga (suavizado asimétrico) ──────────────────
+    # Ligas fuertes (coef >= 1.0): se aplica el bonus completo.
+    # Ligas más débiles (coef < 1.0): se suaviza la penalización con damping=0.55
+    # para que un buen jugador de Segunda pueda aspirar a 60-65 (no aplastado a 45).
+    # Ej: Primera 1.05 → 1.05, Segunda 0.83 → 0.907, Ligue 1 0.98 → 0.989
+    if league_coef >= 1.0:
+        effective_coef = league_coef
+    else:
+        effective_coef = 1.0 + (league_coef - 1.0) * 0.55
+    adjusted = round(min(99.0, max(5.0, raw * effective_coef)), 1)
 
     return {
         "score":        adjusted,
