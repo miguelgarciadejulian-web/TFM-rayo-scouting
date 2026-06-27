@@ -1161,10 +1161,10 @@ def _get_role_info(name: str) -> dict:
         return {"lat_code": None, "role_code": None, "lat_label": "", "role_label": ""}
 
 
-def _get_rayo_overlap(lat_code: str | None, role_code: str | None) -> list[dict]:
+def _get_rayo_overlap(lat_code: str | None, role_code: str | None) -> dict:
     """Jugadores del Rayo con la misma posición lateral y/o tipo de rol."""
     if not lat_code and not role_code:
-        return []
+        return {"by_position": [], "by_profile": []}
     try:
         from src.utils.lateral_position import (
             build_lateral_map, LATERAL_LABELS, role_type_label
@@ -2189,4 +2189,389 @@ def _fich_buy_card(player_name):
     ) if mv else html.Div()
 
     role_info  = _get_role_info(player_name)
-    lat_label
+    lat_label  = role_info["lat_label"]
+    role_label = role_info["role_label"]
+    lat_code   = role_info["lat_code"]
+    role_code  = role_info["role_code"]
+    overlap    = _get_rayo_overlap(lat_code, role_code)
+    n_pos      = len(overlap["by_position"])
+    n_prof     = len(overlap["by_profile"])
+
+    profile_badges = []
+    if lat_label:
+        profile_badges.append(_role_badge(lat_label, "#3B82F6"))
+    if role_label:
+        profile_badges.append(_role_badge(role_label, "#8B5CF6"))
+
+    def _player_row(p):
+        parts = [html.Span(p["name"], style={"fontSize":"11px","color":"#374151","marginRight":"5px"})]
+        if p.get("role_label"):
+            parts.append(_role_badge(p["role_label"], "#8B5CF6"))
+        return html.Div(parts, style={"display":"flex","alignItems":"center","marginBottom":"1px"})
+
+    # Desglose por posicion
+    if n_pos > 0:
+        pos_bg, pos_border = ("#F0FDF4","#A7F3D0") if n_pos >= 2 else ("#FFFBEB","#FDE68A")
+        pos_lbl_color = "#166534" if n_pos >= 2 else "#92400E"
+        pos_section = html.Div([
+            html.Div([
+                html.Span(f"Posicion {lat_label or '?'}: ", style={"fontSize":"10px","color":pos_lbl_color,"marginRight":"4px","fontWeight":"600"}),
+                html.Span(f"{n_pos} jugador{'es' if n_pos!=1 else ''} del Rayo",
+                          style={"fontSize":"10px","color":pos_lbl_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"3px"}),
+            *[_player_row(p) for p in overlap["by_position"]],
+        ], style={"background":pos_bg,"borderRadius":"6px","padding":"5px 8px",
+                  "border":f"1px solid {pos_border}","marginTop":"5px"})
+    else:
+        pos_section = html.Div([
+            html.Span(f"Posicion {lat_label or '?'}: ", style={"fontSize":"10px","color":"#6366F1","fontWeight":"600","marginRight":"4px"}),
+            html.Span("sin cobertura en el Rayo", style={"fontSize":"10px","color":"#6366F1"}),
+        ], style={"display":"flex","alignItems":"center","marginTop":"5px",
+                  "background":"#EEF2FF","borderRadius":"6px","padding":"5px 8px","border":"1px solid #C7D2FE"})
+
+    # Desglose por perfil exacto
+    if n_prof > 0:
+        prof_bg, prof_border = ("#FFF7ED","#FED7AA") if n_prof == 1 else ("#FEF3C7","#FDE68A")
+        prof_lbl_color = "#92400E"
+        prof_section = html.Div([
+            html.Div([
+                html.Span(f"Perfil exacto ({lat_label}+{role_label}): ", style={"fontSize":"10px","color":prof_lbl_color,"fontWeight":"600","marginRight":"4px"}),
+                html.Span(f"{n_prof} jugador{'es' if n_prof!=1 else ''} similar{'es' if n_prof!=1 else ''}",
+                          style={"fontSize":"10px","color":prof_lbl_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"3px"}),
+            *[_player_row(p) for p in overlap["by_profile"]],
+        ], style={"background":prof_bg,"borderRadius":"6px","padding":"5px 8px",
+                  "border":f"1px solid {prof_border}","marginTop":"4px"})
+    elif lat_code or role_code:
+        prof_section = html.Div([
+            html.I(className="ti ti-alert-triangle",
+                   style={"color":"#DC2626","fontSize":"12px","marginRight":"5px"}),
+            html.Span(f"Perfil exacto ({lat_label}+{role_label}): UNICO en la plantilla",
+                      style={"fontSize":"10px","color":"#9F1239","fontWeight":"600"}),
+        ], style={"display":"flex","alignItems":"center","marginTop":"4px",
+                  "background":"#FFF1F2","borderRadius":"6px","padding":"5px 8px","border":"1px solid #FECACA"})
+    else:
+        prof_section = html.Div()
+
+    header_row = html.Div([
+        html.Span(player_name, style={"fontSize":"12px","fontWeight":"700","color":"#1A1A2E","marginRight":"8px"}),
+        html.Span(stats.get("position") or "?",
+                  style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px",
+                         "borderRadius":"99px","background":"#F3F4F6","color":"#374151"}),
+        *([html.Span(" → ", style={"color":"#9CA3AF","margin":"0 4px"})] + profile_badges if profile_badges else []),
+    ], style={"display":"flex","alignItems":"center"})
+
+    card = html.Div([header_row, pos_section, prof_section],
+                    style={"background":"#F9FAFB","border":"1px solid #E5E7EB",
+                           "borderRadius":"7px","padding":"8px 10px"})
+    return card, hint
+
+
+# ── Callback: Analizar operación de fichaje ─────────────────────────────────
+@callback(
+    Output("fich-result", "children"),
+    Input("fich-analyze-btn", "n_clicks"),
+    State("fich-sell-player", "value"),
+    State("fich-sell-price", "value"),
+    State("fich-buy-player", "value"),
+    State("fich-buy-fee", "value"),
+    prevent_initial_call=True,
+)
+def _fich_analyze(n_clicks, sell_player, sell_price_m, buy_player, buy_fee_m):
+    """Analiza la operación de venta y/o compra y genera un score 0-100."""
+    if not sell_player and not buy_player:
+        return html.Div([
+            html.I(className="ti ti-alert-circle", style={"color":"#F59E0B","marginRight":"8px"}),
+            html.Span("Selecciona al menos un jugador (venta o compra) para analizar.",
+                      style={"fontSize":"12px","color":"#92400E"}),
+        ], style={"display":"flex","alignItems":"center","background":"#FFFBEB",
+                  "border":"1px solid #FDE68A","borderRadius":"10px","padding":"12px 16px"})
+
+    results = []
+    sell_score = 0
+    buy_score = 0
+
+    # ── Análisis de VENTA ────────────────────────────────────────────────────
+    if sell_player:
+        sell_price = float(sell_price_m or 0) * 1_000_000
+        stats = _get_player_stats(sell_player)
+        mv = stats["mv"] or 0
+        age = stats["age"] or 28
+        mins = stats["minutes"] or 0
+        role_info = _get_role_info(sell_player)
+        overlap = _get_rayo_overlap(role_info["lat_code"], role_info["role_code"])
+        n_pos = len(overlap.get("by_position", []))
+
+        # 1. Precio vs valor de mercado (40%)
+        if mv > 0 and sell_price > 0:
+            ratio = sell_price / mv
+            if ratio >= 1.5:
+                s_price = 95
+            elif ratio >= 1.2:
+                s_price = 85
+            elif ratio >= 1.0:
+                s_price = 70
+            elif ratio >= 0.8:
+                s_price = 50
+            elif ratio >= 0.6:
+                s_price = 30
+            else:
+                s_price = 15
+        elif sell_price > 0:
+            s_price = 55
+        else:
+            s_price = 20
+
+        # 2. Edad (25%)
+        if age >= 32:
+            s_age = 90
+        elif age >= 30:
+            s_age = 75
+        elif age >= 28:
+            s_age = 55
+        elif age >= 26:
+            s_age = 35
+        else:
+            s_age = 20
+
+        # 3. Cobertura en plantilla (35%)
+        if n_pos >= 3:
+            s_cover = 85
+        elif n_pos >= 2:
+            s_cover = 65
+        elif n_pos >= 1:
+            s_cover = 40
+        else:
+            s_cover = 20
+
+        sell_score = round(s_price * 0.40 + s_age * 0.25 + s_cover * 0.35)
+        sell_score = max(0, min(100, sell_score))
+
+        reasons_sell = []
+        if mv > 0 and sell_price > 0:
+            ratio_pct = round((sell_price / mv - 1) * 100)
+            if ratio_pct >= 0:
+                reasons_sell.append(f"Ingreso +{ratio_pct}% sobre valor TM ({_fmt(mv)})")
+            else:
+                reasons_sell.append(f"Ingreso {ratio_pct}% bajo valor TM ({_fmt(mv)})")
+        reasons_sell.append(f"Edad: {age} años — {'perfil de salida' if age >= 30 else 'aún en edad productiva'}")
+        reasons_sell.append(f"Cobertura: {n_pos} jugador{'es' if n_pos != 1 else ''} en misma posición")
+
+        sc_color = "#166534" if sell_score >= 65 else ("#92400E" if sell_score >= 40 else "#9F1239")
+        sc_bg = "#F0FDF4" if sell_score >= 65 else ("#FFFBEB" if sell_score >= 40 else "#FFF1F2")
+
+        results.append(html.Div([
+            html.Div([
+                html.I(className="ti ti-arrow-up-right", style={"color":"#B8960C","marginRight":"10px","fontSize":"18px"}),
+                html.Span(f"Venta: {sell_player}", style={"fontSize":"14px","fontWeight":"700","color":"#1A1A2E","flex":"1"}),
+                html.Span(f"{sell_score}/100", style={"fontSize":"20px","fontWeight":"900","color":sc_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"10px"}),
+            *[html.Div([
+                html.Span("•", style={"color":sc_color,"marginRight":"8px","fontWeight":"700"}),
+                html.Span(r, style={"fontSize":"12px","color":"#374151"}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"4px"}) for r in reasons_sell],
+            html.Div([
+                html.Span("Veredicto: ", style={"fontSize":"12px","fontWeight":"700","color":"#6B7280"}),
+                html.Span(
+                    "Buena operación" if sell_score >= 65 else
+                    ("Aceptable con reservas" if sell_score >= 40 else "Operación arriesgada"),
+                    style={"fontSize":"12px","fontWeight":"700","color":sc_color}),
+            ], style={"marginTop":"8px","paddingTop":"8px","borderTop":"1px solid #E5E7EB"}),
+        ], style={"background":sc_bg,"border":f"1px solid {'#A7F3D0' if sell_score>=65 else ('#FDE68A' if sell_score>=40 else '#FECACA')}",
+                  "borderRadius":"10px","padding":"14px 16px","marginBottom":"12px"}))
+
+    # ── Análisis de COMPRA ───────────────────────────────────────────────────
+    if buy_player:
+        buy_fee = float(buy_fee_m or 0) * 1_000_000
+        stats = _get_player_stats(buy_player)
+        mv = stats["mv"] or 0
+        age = stats["age"] or 25
+        mins = stats["minutes"] or 0
+        goals = stats["goals"] or 0
+        assists = stats["assists"] or 0
+        role_info = _get_role_info(buy_player)
+        overlap = _get_rayo_overlap(role_info["lat_code"], role_info["role_code"])
+        n_pos = len(overlap.get("by_position", []))
+
+        # 1. Fee vs valor de mercado (30%)
+        if mv > 0 and buy_fee > 0:
+            ratio = buy_fee / mv
+            if ratio <= 0.5:
+                s_fee = 95
+            elif ratio <= 0.8:
+                s_fee = 80
+            elif ratio <= 1.0:
+                s_fee = 65
+            elif ratio <= 1.3:
+                s_fee = 45
+            elif ratio <= 1.5:
+                s_fee = 30
+            else:
+                s_fee = 15
+        elif buy_fee == 0:
+            s_fee = 95
+        elif mv == 0:
+            s_fee = 50
+        else:
+            s_fee = 50
+
+        # 2. Edad y proyección (20%)
+        if age <= 23:
+            s_age = 90
+        elif age <= 26:
+            s_age = 80
+        elif age <= 29:
+            s_age = 60
+        elif age <= 31:
+            s_age = 40
+        else:
+            s_age = 25
+
+        # 3. Rendimiento (25%)
+        g90 = (goals + assists) / (mins / 90) if mins > 90 else 0
+        if mins >= 1500 and g90 >= 0.4:
+            s_perf = 90
+        elif mins >= 1000 and g90 >= 0.2:
+            s_perf = 70
+        elif mins >= 500:
+            s_perf = 50
+        else:
+            s_perf = 30
+
+        # 4. Necesidad de plantilla (25%)
+        if n_pos == 0:
+            s_need = 95
+        elif n_pos == 1:
+            s_need = 75
+        elif n_pos == 2:
+            s_need = 50
+        else:
+            s_need = 30
+
+        buy_score = round(s_fee * 0.30 + s_age * 0.20 + s_perf * 0.25 + s_need * 0.25)
+        buy_score = max(0, min(100, buy_score))
+
+        reasons_buy = []
+        if buy_fee == 0:
+            reasons_buy.append("Fichaje libre — sin coste de traspaso")
+        elif mv > 0:
+            ratio_pct = round((buy_fee / mv - 1) * 100)
+            if ratio_pct <= 0:
+                reasons_buy.append(f"Fee {abs(ratio_pct)}% bajo valor TM ({_fmt(mv)}) — buen precio")
+            else:
+                reasons_buy.append(f"Fee +{ratio_pct}% sobre valor TM ({_fmt(mv)}) — prima elevada")
+        reasons_buy.append(f"Edad: {age} años — {'gran proyección' if age <= 23 else ('plenitud' if age <= 29 else 'veterano')}")
+        if mins > 0:
+            reasons_buy.append(f"Producción: {goals}G+{assists}A en {mins} min ({g90:.2f}/90)")
+        if n_pos == 0:
+            reasons_buy.append(f"Cubre posición sin cobertura en la plantilla ({role_info['lat_label'] or '?'})")
+        else:
+            reasons_buy.append(f"{n_pos} jugador{'es' if n_pos!=1 else ''} ya en esa demarcación")
+
+        bc_color = "#166534" if buy_score >= 65 else ("#92400E" if buy_score >= 40 else "#9F1239")
+        bc_bg = "#F0FDF4" if buy_score >= 65 else ("#FFFBEB" if buy_score >= 40 else "#FFF1F2")
+
+        results.append(html.Div([
+            html.Div([
+                html.I(className="ti ti-arrow-down-left", style={"color":"#10B981","marginRight":"10px","fontSize":"18px"}),
+                html.Span(f"Compra: {buy_player}", style={"fontSize":"14px","fontWeight":"700","color":"#1A1A2E","flex":"1"}),
+                html.Span(f"{buy_score}/100", style={"fontSize":"20px","fontWeight":"900","color":bc_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"10px"}),
+            *[html.Div([
+                html.Span("•", style={"color":bc_color,"marginRight":"8px","fontWeight":"700"}),
+                html.Span(r, style={"fontSize":"12px","color":"#374151"}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"4px"}) for r in reasons_buy],
+            html.Div([
+                html.Span("Veredicto: ", style={"fontSize":"12px","fontWeight":"700","color":"#6B7280"}),
+                html.Span(
+                    "Fichaje recomendable" if buy_score >= 65 else
+                    ("Aceptable con condiciones" if buy_score >= 40 else "Operación desaconsejada"),
+                    style={"fontSize":"12px","fontWeight":"700","color":bc_color}),
+            ], style={"marginTop":"8px","paddingTop":"8px","borderTop":"1px solid #E5E7EB"}),
+        ], style={"background":bc_bg,"border":f"1px solid {'#A7F3D0' if buy_score>=65 else ('#FDE68A' if buy_score>=40 else '#FECACA')}",
+                  "borderRadius":"10px","padding":"14px 16px","marginBottom":"12px"}))
+
+    # ── Resultado combinado ──────────────────────────────────────────────────
+    if sell_player and buy_player:
+        combined = round((sell_score + buy_score) / 2)
+        cc_color = "#166534" if combined >= 65 else ("#92400E" if combined >= 40 else "#9F1239")
+        results.append(html.Div([
+            html.I(className="ti ti-refresh", style={"color":"#7C3AED","marginRight":"10px","fontSize":"16px"}),
+            html.Span("Operación combinada: ", style={"fontSize":"13px","fontWeight":"600","color":"#374151"}),
+            html.Span(f"{combined}/100", style={"fontSize":"16px","fontWeight":"900","color":cc_color,"marginLeft":"6px"}),
+        ], style={"display":"flex","alignItems":"center","background":"#F5F3FF",
+                  "border":"1px solid #DDD6FE","borderRadius":"10px","padding":"12px 16px"}))
+
+    return html.Div(results)
+    overlap    = _get_rayo_overlap(lat_code, role_code)
+    n_pos      = len(overlap["by_position"])
+    n_prof     = len(overlap["by_profile"])
+
+    profile_badges = []
+    if lat_label:
+        profile_badges.append(_role_badge(lat_label, "#3B82F6"))
+    if role_label:
+        profile_badges.append(_role_badge(role_label, "#8B5CF6"))
+
+    def _player_row(p):
+        parts = [html.Span(p["name"], style={"fontSize":"11px","color":"#374151","marginRight":"5px"})]
+        if p.get("role_label"):
+            parts.append(_role_badge(p["role_label"], "#8B5CF6"))
+        return html.Div(parts, style={"display":"flex","alignItems":"center","marginBottom":"1px"})
+
+    # Desglose por posicion
+    if n_pos > 0:
+        pos_bg, pos_border = ("#F0FDF4","#A7F3D0") if n_pos >= 2 else ("#FFFBEB","#FDE68A")
+        pos_lbl_color = "#166534" if n_pos >= 2 else "#92400E"
+        pos_section = html.Div([
+            html.Div([
+                html.Span(f"Posicion {lat_label or '?'}: ", style={"fontSize":"10px","color":pos_lbl_color,"marginRight":"4px","fontWeight":"600"}),
+                html.Span(f"{n_pos} jugador{'es' if n_pos!=1 else ''} del Rayo",
+                          style={"fontSize":"10px","color":pos_lbl_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"3px"}),
+            *[_player_row(p) for p in overlap["by_position"]],
+        ], style={"background":pos_bg,"borderRadius":"6px","padding":"5px 8px",
+                  "border":f"1px solid {pos_border}","marginTop":"5px"})
+    else:
+        pos_section = html.Div([
+            html.Span(f"Posicion {lat_label or '?'}: ", style={"fontSize":"10px","color":"#6366F1","fontWeight":"600","marginRight":"4px"}),
+            html.Span("sin cobertura en el Rayo", style={"fontSize":"10px","color":"#6366F1"}),
+        ], style={"display":"flex","alignItems":"center","marginTop":"5px",
+                  "background":"#EEF2FF","borderRadius":"6px","padding":"5px 8px","border":"1px solid #C7D2FE"})
+
+    # Desglose por perfil exacto
+    if n_prof > 0:
+        prof_bg, prof_border = ("#FFF7ED","#FED7AA") if n_prof == 1 else ("#FEF3C7","#FDE68A")
+        prof_lbl_color = "#92400E"
+        prof_section = html.Div([
+            html.Div([
+                html.Span(f"Perfil exacto ({lat_label}+{role_label}): ", style={"fontSize":"10px","color":prof_lbl_color,"fontWeight":"600","marginRight":"4px"}),
+                html.Span(f"{n_prof} jugador{'es' if n_prof!=1 else ''} similar{'es' if n_prof!=1 else ''}",
+                          style={"fontSize":"10px","color":prof_lbl_color}),
+            ], style={"display":"flex","alignItems":"center","marginBottom":"3px"}),
+            *[_player_row(p) for p in overlap["by_profile"]],
+        ], style={"background":prof_bg,"borderRadius":"6px","padding":"5px 8px",
+                  "border":f"1px solid {prof_border}","marginTop":"4px"})
+    elif lat_code or role_code:
+        prof_section = html.Div([
+            html.I(className="ti ti-alert-triangle",
+                   style={"color":"#DC2626","fontSize":"12px","marginRight":"5px"}),
+            html.Span(f"Perfil exacto ({lat_label}+{role_label}): UNICO en la plantilla",
+                      style={"fontSize":"10px","color":"#9F1239","fontWeight":"600"}),
+        ], style={"display":"flex","alignItems":"center","marginTop":"4px",
+                  "background":"#FFF1F2","borderRadius":"6px","padding":"5px 8px","border":"1px solid #FECACA"})
+    else:
+        prof_section = html.Div()
+
+    header_row = html.Div([
+        html.Span(player_name, style={"fontSize":"12px","fontWeight":"700","color":"#1A1A2E","marginRight":"8px"}),
+        html.Span(stats.get("position") or "?",
+                  style={"fontSize":"9px","fontWeight":"700","padding":"1px 6px",
+                         "borderRadius":"99px","background":"#F3F4F6","color":"#374151"}),
+        *([html.Span(" → ", style={"color":"#9CA3AF","margin":"0 4px"})] + profile_badges if profile_badges else []),
+    ], style={"display":"flex","alignItems":"center"})
+
+    card = html.Div([header_row, pos_section, prof_section],
+                    style={"background":"#F9FAFB","border":"1px solid #E5E7EB",
+                           "borderRadius":"7px","padding":"8px 10px"})
+    return card, hint

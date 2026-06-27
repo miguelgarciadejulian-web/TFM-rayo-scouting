@@ -1,1 +1,12 @@
-[]
+[
+ {
+  "concepto": "venta balliu",
+  "tipo": "ingreso",
+  "importe_eur": 2000000.0
+ },
+ {
+  "concepto": "compra beltran",
+  "tipo": "gasto",
+  "importe_eur": 1000000.0
+ }
+]
