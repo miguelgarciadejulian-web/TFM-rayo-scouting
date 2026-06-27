@@ -514,13 +514,16 @@ class FitRayoScorer:
             team_rows = rows[rows["team"].str.lower() == team.strip().lower()]
             if not team_rows.empty:
                 rows = team_rows
-        ORDER = {"2025-2026":6,"2025":5,"2024-2025":4,"2023-2024":3,"2022-2023":2,"2021-2022":1}
+        ORDER = {"2025-2026":6,"2026":7,"2025":5,"2024-2025":4,"2024":3.5,
+                 "2023-2024":3,"2023":2.5,"2022-2023":2,"2022":1.5,"2021-2022":1,"2021":0.5}
         rows = rows.copy()
         rows["_o"] = rows["season"].map(ORDER).fillna(0)
-        # Tiebreaker: prefer rows with minutes
+        # Tiebreaker: prefer rows with meaningful minutes (≥90) over empty rows
         rows["_m"] = pd.to_numeric(rows.get("minutes"), errors="coerce").fillna(0)
-        rows["_sort"] = rows["_o"] * 100000 + rows["_m"]
-        result = rows.loc[rows["_sort"].idxmax()].drop(["_o", "_m", "_sort"])
+        # Penalise rows with <90 min so they only win if no other season exists
+        rows["_has_min"] = (rows["_m"] >= 90).astype(int)
+        rows["_sort"] = rows["_has_min"] * 1_000_000 + rows["_o"] * 100_000 + rows["_m"]
+        result = rows.loc[rows["_sort"].idxmax()].drop(["_o", "_m", "_sort", "_has_min"])
         self._enr_row_cache[cache_key] = result
         return result
 
@@ -568,9 +571,12 @@ class FitRayoScorer:
             return round(0.5*min_s + 0.3*ga_s + 0.2*duel_s, 1)
 
     def score_rendimiento_breakdown(self, row: pd.Series) -> dict:
-        """Breakdown usando fila enriched (métricas OPTA correctas)."""
+        """Breakdown usando fila enriched (métricas OPTA correctas).
+        Usa role_type y pool_stats para producir exactamente el mismo score
+        que _score_rendimiento (fuente única de verdad)."""
         try:
-            from src.utils.rendimiento import compute_rendimiento, get_subposition
+            from src.utils.rendimiento import compute_rendimiento, get_subposition, \
+                SUBPOS_TO_POOL
             name = str(row.get("name", ""))
             _team = str(row.get("team", "") or "")
             _enr = self._get_enriched_row(name, team=_team)
@@ -578,11 +584,31 @@ class FitRayoScorer:
             _ov = self._load_overrides_cached()
             _mv = self._load_mv_cached()
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "")))
-            subpos = get_subposition(name, overrides=_ov, mv_df=_mv, position_group=pos_grp)
-            return compute_rendimiento(enr_row, self.enriched, subpos=subpos)
+
+            # Obtener lateral_pos y role_type (igual que _score_rendimiento)
+            _lat_code, _role_type = None, None
+            lat_map = self._get_lateral_map_cached()
+            if lat_map is not None:
+                _player_row = lat_map[lat_map["name"] == name]
+                if not _player_row.empty:
+                    _lat_code = _player_row.iloc[0].get("lateral_pos")
+                    _role_type = _player_row.iloc[0].get("role_type")
+
+            subpos = get_subposition(name, overrides=_ov, mv_df=_mv,
+                                     position_group=pos_grp,
+                                     lateral_pos=_lat_code, role_type=_role_type)
+            pool_grp = SUBPOS_TO_POOL.get(subpos, "MID")
+            ps = self._get_pool_stats_cached(pool_grp)
+            return compute_rendimiento(enr_row, self.enriched, subpos=subpos,
+                                       role_type=_role_type, pool_stats=ps)
         except Exception as exc:
+            _league = ""
+            try:
+                _league = str(row.get("league", "") or "") if row is not None else ""
+            except Exception:
+                pass
             return {"score": 10.0, "subpos": "—", "dims": [], "league_coef": 0.85,
-                    "league": str(row.get("league", "") or ""), "error": str(exc)}
+                    "league": _league, "error": str(exc)}
 
     def _load_overrides_cached(self) -> dict:
         if not hasattr(self, "_ov_cache"):
@@ -646,7 +672,8 @@ class FitRayoScorer:
           40M – 70M      → 5→0    (prácticamente inviable)
           > 70M          → 0      (imposible para el Rayo)
         """
-        if mv <= 0:
+        import math
+        if mv is None or (isinstance(mv, float) and math.isnan(mv)) or mv <= 0:
             return 50.0
         if mv <= 500_000:
             return 95.0
@@ -666,8 +693,9 @@ class FitRayoScorer:
 
     def score_economico_breakdown(self, mv: float) -> dict:
         """Desglosa el score económico para la UI."""
+        import math
         score = self._score_economico(mv)
-        if mv <= 0:
+        if mv is None or (isinstance(mv, float) and math.isnan(mv)) or mv <= 0:
             tramo = "Desconocido (sin datos TM)"
         elif mv <= 500_000:
             tramo = "Baratísimo (≤ 500K€) — encaje perfecto"
@@ -779,52 +807,102 @@ class FitRayoScorer:
             "situacion": situacion, "bonus_rayo": bonus_rayo, "score": score,
         }
 
+    # ── ADN Táctico: pesos por grupo posicional ────────────────────────────
+    # Mismas métricas de estilo Rayo pero ponderadas según lo que se espera
+    # de cada demarcación. Un delantero encaja con el ADN si presiona más que
+    # otros delanteros, se mete en el área y regatea; un medio si recupera,
+    # entra y juega vertical; un defensa si gana duelos y juega en largo.
+    _ADN_WEIGHTS = {
+        "FWD": [
+            ("recoveries_p90",                       0.10, "Recuperaciones (pressing frontal)"),
+            ("tackles_won_p90",                       0.05, "Entradas ganadas (intensidad)"),
+            ("forward_passes_p90",                    0.10, "Pases verticales (verticalidad)"),
+            ("successful_dribbles_p90",               0.20, "Regates completados (juego directo)"),
+            ("total_touches_in_opposition_box_p90",   0.30, "Toques en área rival (presencia ofensiva)"),
+            ("shots_on_target_inc_goals_p90",         0.25, "Remates a puerta (intensidad de finalización)"),
+        ],
+        "MID": [
+            ("recoveries_p90",                       0.28, "Recuperaciones (pressing alto)"),
+            ("tackles_won_p90",                       0.22, "Entradas ganadas (intensidad)"),
+            ("forward_passes_p90",                    0.22, "Pases verticales (verticalidad)"),
+            ("successful_dribbles_p90",               0.15, "Regates completados (juego directo)"),
+            ("total_touches_in_opposition_box_p90",   0.13, "Toques en área rival (vocación ofensiva)"),
+        ],
+        "DEF": [
+            ("recoveries_p90",                       0.22, "Recuperaciones (pressing alto)"),
+            ("tackles_won_p90",                       0.28, "Entradas ganadas (intensidad)"),
+            ("forward_passes_p90",                    0.25, "Pases verticales (verticalidad)"),
+            ("successful_dribbles_p90",               0.10, "Regates completados (juego directo)"),
+            ("total_touches_in_opposition_box_p90",   0.15, "Toques en área rival (atrevimiento)"),
+        ],
+        "GK": [
+            ("recoveries_p90",                       0.50, "Recuperaciones (juego de área)"),
+            ("tackles_won_p90",                       0.10, "Entradas ganadas"),
+            ("forward_passes_p90",                    0.20, "Pases verticales (juego con pies)"),
+            ("successful_dribbles_p90",               0.05, "Regates completados"),
+            ("total_touches_in_opposition_box_p90",   0.15, "Toques en área rival"),
+        ],
+    }
+
+    def _get_adn_pool_stats(self, pool_grp: str) -> dict:
+        """ADN stats per position group (cached)."""
+        if not hasattr(self, "_adn_pool_cache"):
+            self._adn_pool_cache = {}
+        if pool_grp in self._adn_pool_cache:
+            return self._adn_pool_cache[pool_grp]
+
+        pool = self.enriched[
+            (self.enriched["position_group"].str.upper() == pool_grp)
+            & (pd.to_numeric(self.enriched["minutes"], errors="coerce").fillna(0) >= 450)
+        ]
+        stats = {}
+        # Collect ALL metrics used by this position group
+        metrics_needed = set()
+        for m, _, _ in self._ADN_WEIGHTS.get(pool_grp, self._ADN_WEIGHTS["MID"]):
+            metrics_needed.add(m)
+        for col in metrics_needed:
+            if col in pool.columns:
+                series = pd.to_numeric(pool[col], errors="coerce").dropna()
+                if len(series) >= 10:
+                    stats[col] = (float(series.mean()), float(series.std()), len(series))
+        stats["__pool_size__"] = len(pool)
+        self._adn_pool_cache[pool_grp] = stats
+        return stats
+
     def _score_adn_tactico(self, row: pd.Series, name: str) -> float:
         """
         Encaje del jugador con el ADN táctico del Rayo (0-100).
-        Basado en: pressing alto, verticalidad, intensidad sin balón.
-        Métricas que reflejan el estilo Rayo:
-          - recoveries_p90 (pressing alto, recuperar rápido)
-          - tackles_won_p90 (intensidad defensiva)
-          - forward_passes_p90 (verticalidad)
-          - successful_dribbles_p90 (juego directo)
-          - total_touches_in_opposition_box_p90 (vocación ofensiva)
+
+        Comparación POR POSICIÓN: cada métrica se mide contra jugadores del
+        mismo grupo posicional (≥450 min). Así, un delantero que presiona
+        más que otros delanteros obtiene un ADN alto, en lugar de compararse
+        contra mediocentros (que siempre recuperan más).
+
+        Los pesos se adaptan por posición: para un FWD pesan más los regates
+        y toques en área; para un MID las recuperaciones y entradas.
         """
         try:
             _team = str(row.get("team", "") or "")
             _enr = self._get_enriched_row(name, team=_team)
             enr_row = _enr if _enr is not None else row
+
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "MID"))).upper()
+            if pos_grp not in self._ADN_WEIGHTS:
+                pos_grp = "MID"
 
-            # Usar pool_stats cacheados
-            from src.utils.rendimiento import SUBPOS_TO_POOL
-            pool_grp = SUBPOS_TO_POOL.get({"GK": "GK", "DEF": "DEF", "MID": "MID", "FWD": "FWD"}.get(pos_grp, "MID"), "MID")
-            _stats = self._get_pool_stats_cached(pool_grp)
-
-            adn_metrics = [
-                ("recoveries_p90", 0.30),
-                ("tackles_won_p90", 0.25),
-                ("forward_passes_p90", 0.20),
-                ("successful_dribbles_p90", 0.15),
-                ("total_touches_in_opposition_box_p90", 0.10),
-            ]
+            _stats = self._get_adn_pool_stats(pos_grp)
+            adn_metrics = [(m, w) for m, w, _ in self._ADN_WEIGHTS[pos_grp]]
 
             total_w, total_ws = 0.0, 0.0
             for metric, weight in adn_metrics:
-                val = float(enr_row.get(metric) or 0)
-                if _stats and metric in _stats:
+                _raw = enr_row.get(metric)
+                val = float(_raw) if pd.notna(_raw) else 0.0
+                if metric in _stats:
                     mean, std, n = _stats[metric]
                     if n >= 10 and std > 1e-9:
                         z = (val - mean) / std
-                        score = max(3.0, min(97.0, 50.0 + z * 15.0))
+                        score = max(5.0, min(99.0, 55.0 + z * 22.0))
                         total_ws += weight * score
-                        total_w += weight
-                elif metric in self.enriched.columns:
-                    # Fallback: calcular directamente (solo si no hay cache)
-                    series = pd.to_numeric(self.enriched[metric], errors="coerce").dropna()
-                    if len(series) >= 10:
-                        pct = float((series < val).sum() / len(series) * 100)
-                        total_ws += weight * pct
                         total_w += weight
 
             if total_w > 0:
@@ -890,52 +968,55 @@ class FitRayoScorer:
             _enr = self._get_enriched_row(name, team=_team)
             enr_row = _enr if _enr is not None else row
 
-            pool = self.enriched
-            pos_grp = str(enr_row.get("position_group",
-                          row.get("position_primary", "MID"))).upper()
-            pool_pos = pool[pool["position_group"].str.upper() == pos_grp].copy()
-            pool_pos = pool_pos[
-                pd.to_numeric(pool_pos["minutes"], errors="coerce").fillna(0) >= 450
+            pos_grp = str(enr_row.get("position_group", row.get("position_primary", "MID"))).upper()
+            if pos_grp not in self._ADN_WEIGHTS:
+                pos_grp = "MID"
+
+            _stats = self._get_adn_pool_stats(pos_grp)
+            pool = self.enriched[
+                (self.enriched["position_group"].str.upper() == pos_grp)
+                & (pd.to_numeric(self.enriched["minutes"], errors="coerce").fillna(0) >= 450)
             ]
 
-            adn_metrics = [
-                ("recoveries_p90", 0.30, "Recuperaciones (pressing alto)"),
-                ("tackles_won_p90", 0.25, "Entradas ganadas (intensidad)"),
-                ("forward_passes_p90", 0.20, "Pases verticales (verticalidad)"),
-                ("successful_dribbles_p90", 0.15, "Regates completados (juego directo)"),
-                ("total_touches_in_opposition_box_p90", 0.10, "Toques en área rival (vocación ofensiva)"),
-            ]
+            adn_metrics = self._ADN_WEIGHTS[pos_grp]
 
             dims = []
             total_w, total_ws = 0.0, 0.0
             for metric, weight, label in adn_metrics:
-                val = float(enr_row.get(metric) or 0)
-                if metric not in pool_pos.columns:
+                _raw = enr_row.get(metric)
+                val = float(_raw) if pd.notna(_raw) else 0.0
+                if metric not in _stats:
                     continue
-                series = pd.to_numeric(pool_pos[metric], errors="coerce").dropna()
-                if len(series) < 5:
+                mean, std, n = _stats[metric]
+                if n < 10 or std < 1e-9:
                     continue
-                pct = float((series < val).sum() / len(series) * 100)
+                z = (val - mean) / std
+                score = max(5.0, min(99.0, 55.0 + z * 22.0))
+                # Percentil real contra pool posicional
+                series = pd.to_numeric(pool[metric], errors="coerce").dropna()
+                pct = float((series < val).sum() / len(series) * 100) if len(series) > 0 else 50.0
                 dims.append({
                     "label": label,
                     "metric": metric,
                     "value_p90": round(val, 2),
                     "percentile": round(pct, 1),
+                    "score": round(score, 1),
                     "weight": weight,
                 })
-                total_ws += weight * pct
+                total_ws += weight * score
                 total_w += weight
 
-            score = round(total_ws / total_w, 1) if total_w > 0 else 50.0
+            final_score = round(total_ws / total_w, 1) if total_w > 0 else 50.0
             return {
-                "score": score,
-                "pool_size": len(pool_pos),
+                "score": final_score,
+                "pool_size": len(pool),
                 "position_group": pos_grp,
                 "dims": dims,
                 "explanation": (
-                    "Mide cuánto encaja el jugador con el estilo táctico del Rayo: "
-                    "pressing alto, verticalidad, intensidad sin balón y juego directo. "
-                    "Cada métrica se compara con los jugadores de la misma posición (≥450 min)."
+                    f"Mide cuánto encaja el jugador con el estilo táctico del Rayo: "
+                    f"pressing alto, verticalidad, intensidad sin balón y juego directo. "
+                    f"Cada métrica se compara contra {pos_grp}s (≥450 min) con pesos "
+                    f"adaptados a la posición para una evaluación justa."
                 ),
             }
         except Exception as exc:

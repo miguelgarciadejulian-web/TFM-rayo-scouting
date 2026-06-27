@@ -176,13 +176,13 @@ REND_DIMS: dict[str, list] = {
     "ST": [
         ("Gol / Remate",    ["goals_p90", "total_shots_p90",
                               "shots_on_target_inc_goals_p90",
-                              "total_touches_in_opposition_box_p90"],               0.45),
+                              "total_touches_in_opposition_box_p90"],               0.55),
         ("Juego de área",   ["aerial_duels_won_p90", "ground_duels_won_p90"],       0.20),
         ("Creación",        ["key_passes_attempt_assists_p90",
                               "goal_assists_p90",
-                              "successful_dribbles_p90"],                           0.20),
+                              "successful_dribbles_p90"],                           0.15),
         ("Pressing",        ["recoveries_p90", "tackles_won_p90",
-                              "interceptions_p90"],                                 0.15),
+                              "interceptions_p90"],                                 0.10),
     ],
 }
 
@@ -232,14 +232,14 @@ REND_DIMS_BY_ROLE: dict[str, dict[str, float]] = {
 
 # ── Texto metodológico (para criterios.py) ───────────────────────────────────
 REND_METHODOLOGY: dict[str, str] = {
-    "GK":  "Paradas/90 + big chances salvadas (45%) · Limpieza (30%) · Juego con balón (15%) · Área (10%) — z-score global × coef. liga",
-    "CB":  "Defensiva (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción (15%) — z-score global × coef. liga",
-    "FB":  "Defensiva (30%) · Proyección (30%) · Duelos (20%) · Ataque (20%) — z-score global × coef. liga",
-    "DM":  "Recuperación (40%) · Pase (30%) · Presión (20%) · Contribución ofensiva (10%) — z-score global × coef. liga",
-    "CM":  "Pase (30%) · Recuperación (30%) · Creación (25%) · Contribución (15%) — z-score global × coef. liga",
-    "AM":  "Creación (35%) · Gol (30%) · Pase en profundidad (20%) · Pressing (15%) — z-score global × coef. liga",
-    "WG":  "Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%) — z-score global × coef. liga",
-    "ST":  "Gol/Remate (45%) · Juego de área (20%) · Creación (20%) · Pressing (15%) — z-score global × coef. liga",
+    "GK":  "Paradas/90 + big chances salvadas (45%) · Limpieza (30%) · Juego con balón (15%) · Área (10%) — z-score global × coef. liga + bonus especialista",
+    "CB":  "Defensiva (40%) · Duelo aéreo (25%) · Duelo 1v1 (20%) · Construcción (15%) — z-score global × coef. liga + bonus especialista",
+    "FB":  "Defensiva (30%) · Proyección (30%) · Duelos (20%) · Ataque (20%) — z-score global × coef. liga + bonus especialista",
+    "DM":  "Recuperación (40%) · Pase (30%) · Presión (20%) · Contribución ofensiva (10%) — z-score global × coef. liga + bonus especialista",
+    "CM":  "Pase (30%) · Recuperación (30%) · Creación (25%) · Contribución (15%) — z-score global × coef. liga + bonus especialista",
+    "AM":  "Creación (35%) · Gol (30%) · Pase en profundidad (20%) · Pressing (15%) — z-score global × coef. liga + bonus especialista",
+    "WG":  "Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%) — z-score global × coef. liga + bonus especialista",
+    "ST":  "Gol/Remate (55%) · Juego de área (20%) · Creación (15%) · Pressing (10%) — z-score global × coef. liga + bonus especialista",
 }
 
 # ── Helper ────────────────────────────────────────────────────────────────────
@@ -331,6 +331,7 @@ LEAGUE_QUALITY: dict[str, float] = {
     "England_Premier_League":       1.07,
     "Spain_Primera_Division":       1.05,
     "Germany_Bundesliga":           1.03,
+    "Germany_2_Bundesliga":         1.03,   # datos OPTA etiquetan Bundesliga como 2_Bundesliga
     "Italy_Serie_A":                1.03,
     "France_Ligue_1":               0.98,
     "Netherlands_Eredivisie":       0.92,
@@ -341,7 +342,6 @@ LEAGUE_QUALITY: dict[str, float] = {
     "Denmark_Superliga":            0.84,
     "Spain_Segunda_Division":       0.83,
     "France_Ligue_2":               0.81,
-    "Germany_2_Bundesliga":         0.84,
     "Mexico_Liga_MX":               0.82,
     "Argentina_Liga_Profesional":   0.80,
 }
@@ -425,7 +425,8 @@ def compute_rendimiento(
 
     pool_grp  = SUBPOS_TO_POOL.get(subpos, "MID")
     dims_def  = REND_DIMS.get(subpos, REND_DIMS["CM"])
-    mins_val  = float(player_row.get("minutes") or 0)
+    _raw_min  = player_row.get("minutes")
+    mins_val  = float(_raw_min) if pd.notna(_raw_min) else 0.0
 
     player_league = str(player_row.get("league") or "")
     league_coef = LEAGUE_QUALITY.get(player_league, 0.85)
@@ -478,22 +479,29 @@ def compute_rendimiento(
     role_weight_override = REND_DIMS_BY_ROLE.get(role_type, {}) if role_type else {}
 
     def _z_to_score(col: str, val: float) -> float | None:
-        """Convierte valor bruto a score 0-100 via z-score contra pool global."""
+        """Convierte valor bruto a score 0-100 via z-score contra pool global.
+        Centro=62, mult=18 → z=0→62, z=+1→80, z=+2→98, z=-1→44, z=-2→26."""
         if col not in _stats:
+            return None
+        import math
+        if val is None or (isinstance(val, float) and math.isnan(val)):
             return None
         mean, std, n = _stats[col]
         if n < 10 or std < 1e-9:
-            return 50.0
+            return 62.0
         z = (val - mean) / std
-        score = 50.0 + z * 17.0
-        return max(3.0, min(97.0, score))
+        if math.isnan(z):
+            return None
+        score = 62.0 + z * 18.0
+        return max(5.0, min(99.0, score))
 
     dim_results, total_w, total_ws = [], 0.0, 0.0
     for label, metrics, base_weight in dims_def:
         weight = role_weight_override.get(label, base_weight)
         scores = []
         for m in metrics:
-            val = float(player_row.get(m) or 0)
+            _raw_v = player_row.get(m)
+            val = float(_raw_v) if pd.notna(_raw_v) else 0.0
             s = _z_to_score(m, val)
             if s is not None:
                 scores.append(s)
@@ -503,7 +511,18 @@ def compute_rendimiento(
             total_ws += weight * ds
             total_w  += weight
 
-    raw = round(total_ws / total_w, 1) if total_w > 0 else 5.0
+    raw_base = round(total_ws / total_w, 1) if total_w > 0 else 5.0
+
+    # ── Specialist boost: premia al jugador que destaca en su dimensión principal.
+    # Añade un 35% de la diferencia entre su mejor dimensión y la media ponderada,
+    # para que un especialista top (e.g., goleador puro) no quede penalizado por
+    # dimensiones secundarias donde es mediocre.
+    if dim_results:
+        best_dim = max(d["score"] for d in dim_results)
+        specialist_bonus = max(0.0, (best_dim - raw_base) * 0.35)
+        raw = min(99.0, round(raw_base + specialist_bonus, 1))
+    else:
+        raw = raw_base
 
     # ── Aplicar coeficiente de liga (suavizado asimétrico) ──────────────────
     # Ligas fuertes (coef >= 1.0): se aplica el bonus completo.
@@ -515,6 +534,9 @@ def compute_rendimiento(
     else:
         effective_coef = 1.0 + (league_coef - 1.0) * 0.55
     adjusted = round(min(99.0, max(5.0, raw * effective_coef)), 1)
+    # Suelo: si es un cálculo real (con dimensiones), nunca bajar de 8
+    if dim_results:
+        adjusted = max(8.0, adjusted)
 
     return {
         "score":        adjusted,
