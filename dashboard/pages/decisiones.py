@@ -436,18 +436,20 @@ def layout(**_params):
                                  value=["Spain_Primera_Division", "Spain_Segunda_Division"],
                                  placeholder="Todas")], md=5),
                 dbc.Col([html.Span("Minutos min.", className="filter-label"),
-                    dcc.Slider(300, 2500, 100, value=900, id="exp-min",
-                               marks={300:"300",1200:"1200",2500:"2500"},
-                               tooltip={"placement":"bottom"},
-                               updatemode="mouseup")], md=3),
+                    html.Div(dcc.Slider(300, 2500, 100, value=900, id="exp-min",
+                               marks={300:"300", 900:"900", 1500:"1.5k", 2500:"2.5k"},
+                               tooltip={"placement": "bottom", "always_visible": False},
+                               updatemode="mouseup"),
+                             className="slider-modern")], md=3),
             ], className="g-2"),
             dbc.Row([
 
                 dbc.Col([html.Span("Valor max (M€) — Rayo ≤ 15M€", className="filter-label"),
-                    dcc.Slider(0,100,5, value=15, id="exp-maxval",
-                               marks={0:"0",10:"10",15:"15M",30:"30",100:"∞"},
-                               tooltip={"placement":"bottom"},
-                               updatemode="mouseup")], md=4),
+                    html.Div(dcc.Slider(0, 200, 5, value=15, id="exp-maxval",
+                               marks={0:"0", 15:"15M", 30:"30", 50:"50", 100:"100", 200:"200+"},
+                               tooltip={"placement": "bottom", "always_visible": False},
+                               updatemode="mouseup"),
+                             className="slider-modern")], md=4),
                 dbc.Col(dcc.Checklist(
                     options=[{"label": "  Excluir grandes clubes", "value": "big"},
                              {"label": "  Solo acaban contrato 2026", "value": "exp"}],
@@ -456,15 +458,17 @@ def layout(**_params):
             ], className="g-2", style={"marginTop": "4px"}),
             dbc.Row([
                 dbc.Col([html.Span("Edad max.", className="filter-label"),
-                    dcc.Slider(18, 38, 1, value=32, id="exp-maxage",
-                               marks={18:"18", 25:"25", 30:"30", 35:"35", 38:"38"},
-                               tooltip={"placement": "bottom"},
-                               updatemode="mouseup")], md=4),
+                    html.Div(dcc.Slider(18, 38, 1, value=32, id="exp-maxage",
+                               marks={18:"18", 22:"22", 25:"25", 28:"28", 30:"30", 33:"33", 38:"38"},
+                               tooltip={"placement": "bottom", "always_visible": False},
+                               updatemode="mouseup"),
+                             className="slider-modern")], md=4),
                 dbc.Col([html.Span("Contrato restante max (años)", className="filter-label"),
-                    dcc.Slider(0, 6, 1, value=6, id="exp-maxcontract",
-                               marks={0:"libre", 1:"1", 2:"2", 3:"3", 4:"4", 5:"5", 6:"sin tope"},
-                               tooltip={"placement": "bottom"},
-                               updatemode="mouseup")], md=5),
+                    html.Div(dcc.Slider(0, 6, 1, value=6, id="exp-maxcontract",
+                               marks={0:"libre", 1:"1", 2:"2", 3:"3", 4:"4", 5:"5", 6:"∞"},
+                               tooltip={"placement": "bottom", "always_visible": False},
+                               updatemode="mouseup"),
+                             className="slider-modern")], md=5),
             ], className="g-2", style={"marginTop": "4px"}),
             dbc.Row([
                 dbc.Col([html.Span("Posición", className="filter-label"),
@@ -776,7 +780,7 @@ def _explore(role, leagues, min_min, maxval, flags, max_age, max_contract, pos_f
     if enr.empty:
         return html.P("Sin datos enriquecidos.", style={"fontSize": "12px", "color": "#9CA3AF"})
     flags = flags or []
-    max_value_eur = None if (maxval is None or maxval >= 100) else maxval * 1e6
+    max_value_eur = None if (maxval is None or maxval >= 200) else maxval * 1e6
     seasons_filter = CURRENT_SEASONS  # 2026 + 2025-2026: todas las ligas actuales
     # Lateral filter: passed to rank_players_for_role for DEF (LI/LD/DC);
     # for MID/FWD/GK positions lateral_filter is ignored by rank_players_for_role
