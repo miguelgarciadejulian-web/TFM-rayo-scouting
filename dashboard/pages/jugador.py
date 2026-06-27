@@ -1183,8 +1183,9 @@ def fetch_from_tm(n, tm_id_raw, key, opta_id):
 def save_lateral(n_clicks, lateral_pos, role_type, key):
     if not key:
         return "Sin jugador cargado"
+    name = key.split("|")[0]
     ov = _load_overrides()
-    entry = ov.get(_norm(key), {})
+    entry = ov.get(_norm(name), {})
     if lateral_pos is not None:
         entry["lateral_pos"] = lateral_pos
     elif "lateral_pos" in entry:
@@ -1193,3 +1194,11 @@ def save_lateral(n_clicks, lateral_pos, role_type, key):
         entry["role_type"] = role_type
     elif "role_type" in entry:
         del entry["role_type"]
+    ov[_norm(name)] = entry
+    _save_overrides(ov)
+    parts = []
+    if lateral_pos:
+        parts.append(lateral_pos)
+    if role_type:
+        parts.append(role_type)
+    return "✓ Guardado: {}".format(" / ".join(parts)) if parts else "✓ Limpiado"

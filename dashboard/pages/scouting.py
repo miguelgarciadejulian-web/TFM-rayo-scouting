@@ -339,6 +339,8 @@ def update_teams(leagues):
     if df.empty:
         return []
     if leagues:
+        if isinstance(leagues, str):
+            leagues = [leagues]
         df = df[df["league"].isin(leagues)]
     return _opts(df["team"].dropna().unique())
 
@@ -414,8 +416,12 @@ def filter_table(player, lat_pos, role_types, leagues, teams, foot, age_max, mv_
         if role_types and "role_type" in df.columns:
             rts = role_types if isinstance(role_types, list) else [role_types]
             df = df[df["role_type"].isin(rts)]
-        if leagues: df = df[df["league"].isin(leagues)]
-        if teams:   df = df[df["team"].isin(teams)]
+        if leagues:
+            _lg = leagues if isinstance(leagues, list) else [leagues]
+            df = df[df["league"].isin(_lg)]
+        if teams:
+            _tm = teams if isinstance(teams, list) else [teams]
+            df = df[df["team"].isin(_tm)]
         if foot and "foot" in df.columns:
             df = df[df["foot"].astype(str).str.lower() == str(foot).lower()]
 

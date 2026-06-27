@@ -88,6 +88,7 @@ MV_MAP = {
     "Sergio Camello":2e6,"Abdul Mumin":4e6,"Jozhua Vertrouwd":1.9e6,"Samu Becerra":1.5e6,
     "Dani Cárdenas":1.5e6,"Iván Balliu":0.8e6,"Alfonso Espino":0.8e6,"Óscar Trejo":0.3e6,
     "Carlos Martín":1.1e6,"Óscar Valentín":2.2e6,"Gerard Gumbau":1.5e6,
+    "Miguel Morro":0.5e6,"Pelayo Fernández":1.0e6,"Raúl de Tomás":4e6,
 }
 
 # ── Modelo de riesgo multifactorial ──────────────────────────────────────────
