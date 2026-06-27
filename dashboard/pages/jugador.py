@@ -529,7 +529,9 @@ def _fit_rayo_card(name: str) -> html.Div:
             row_data = scorer._best_row(r.name)
             if row_data is not None:
                 rend_bd = scorer.score_rendimiento_breakdown(row_data)
-                eco_bd  = scorer.score_economico_breakdown(r.market_value_eur or 0)
+                _mv_raw = r.market_value_eur
+                _mv_val = float(_mv_raw) if (_mv_raw is not None and _mv_raw == _mv_raw) else 0
+                eco_bd  = scorer.score_economico_breakdown(_mv_val)
                 adn_bd  = scorer.score_adn_tactico_breakdown(row_data, r.name)
                 # Edad: fallback a TM/overrides si OPTA no tiene el dato
                 _age_for_fit = r.age or 0
@@ -872,9 +874,22 @@ def render_player(search):
                 opta_id = str(match.iloc[0]["player_id_src"])
         except Exception:
             pass
+    # Obtener rendimiento del scorer ANTES de build_detail para usar
+    # una única fuente de verdad (evita discrepancia card vs fit bar).
+    _scorer_rend = None
+    try:
+        _sc = _get_fit_scorer()
+        if _sc:
+            _br = _sc._best_row(name, team=team or None)
+            if _br is not None:
+                _scorer_rend = _sc.score_rendimiento_breakdown(_br)
+    except Exception:
+        pass
     try:
         tm_elem = _tm_strip(key, opta_id)
-        detail = build_detail(name, team=team or None, extra_header_right=tm_elem)
+        detail = build_detail(name, team=team or None,
+                              extra_header_right=tm_elem,
+                              scorer_rend=_scorer_rend)
     except Exception as exc:
         return dbc.Alert(f"No se pudo construir el perfil: {exc}", color="warning")
     fit_card = _fit_rayo_card(name)

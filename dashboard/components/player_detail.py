@@ -445,7 +445,7 @@ def _radar(role_scores: dict):
 
 def build_detail(name, team=None, league=None, age=None,
                  coach_style="Bloque medio / Equilibrado", with_photo=True,
-                 extra_header_right=None):
+                 extra_header_right=None, scorer_rend=None):
     rows = _find_rows(name, team)
     if rows.empty:
         return dbc.Alert(f"No hay datos Opta de '{name}' en el scope actual.", color="warning")
@@ -602,26 +602,30 @@ def build_detail(name, team=None, league=None, age=None,
             return None
         return float(pser.get(match[0]))
 
-    # Rendimiento: módulo compartido
-    try:
-        from src.utils.rendimiento import compute_rendimiento, get_subposition
-        import json as _json
-        from pathlib import Path as _Path
-        from src.utils.config import settings as _settings
-        import pandas as _pd_rend
-        _proc = _Path(_settings()["paths"]["data_processed"])
-        _ov_path = _proc / "player_overrides.json"
-        _ov = _json.load(open(_ov_path, encoding="utf-8")) if _ov_path.exists() else {}
-        _cfg = _proc.parents[1] / "config" / "market_values.csv"
-        _mv = _pd_rend.read_csv(_cfg) if _cfg.exists() else None
-        _subpos = get_subposition(latest["name"], overrides=_ov, mv_df=_mv,
-                                   position_group=latest.get("position_group"),
-                                   lateral_pos=_lat_code, role_type=_role_type_key)
-        _rd = compute_rendimiento(latest, enriched(), subpos=_subpos,
-                                  role_type=_role_type_key)
-    except Exception as _exc:
-        _rd = {"score": None, "dims": [], "subpos_label": "—",
-               "pool_size": 0, "league_coef": 1.0, "error": str(_exc)}
+    # Rendimiento: usar scorer_rend si se proporcionó (fuente única de verdad),
+    # fallback a cálculo independiente solo si no hay scorer.
+    if scorer_rend and scorer_rend.get("score") is not None:
+        _rd = scorer_rend
+    else:
+        try:
+            from src.utils.rendimiento import compute_rendimiento, get_subposition
+            import json as _json
+            from pathlib import Path as _Path
+            from src.utils.config import settings as _settings
+            import pandas as _pd_rend
+            _proc = _Path(_settings()["paths"]["data_processed"])
+            _ov_path = _proc / "player_overrides.json"
+            _ov = _json.load(open(_ov_path, encoding="utf-8")) if _ov_path.exists() else {}
+            _cfg = _proc.parents[1] / "config" / "market_values.csv"
+            _mv = _pd_rend.read_csv(_cfg) if _cfg.exists() else None
+            _subpos = get_subposition(latest["name"], overrides=_ov, mv_df=_mv,
+                                       position_group=latest.get("position_group"),
+                                       lateral_pos=_lat_code, role_type=_role_type_key)
+            _rd = compute_rendimiento(latest, enriched(), subpos=_subpos,
+                                      role_type=_role_type_key)
+        except Exception as _exc:
+            _rd = {"score": None, "dims": [], "subpos_label": "—",
+                   "pool_size": 0, "league_coef": 1.0, "error": str(_exc)}
     rend_card = _rendimiento_card(_rd)
 
     metric_cols = []

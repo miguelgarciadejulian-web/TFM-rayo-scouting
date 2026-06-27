@@ -1,9 +1,16 @@
 """App Dash - Rayo Vallecano Scouting Tool 2026/27."""
 from __future__ import annotations
 import json as _json
+import sys as _sys
 import tempfile
 from datetime import date
 from pathlib import Path
+
+# Ensure project root is on sys.path BEFORE Dash scans pages/
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
+if _PROJECT_ROOT not in _sys.path:
+    _sys.path.insert(0, _PROJECT_ROOT)
+
 import dash
 from dash import Dash, html, dcc, Input, Output, clientside_callback
 import dash_bootstrap_components as dbc
@@ -160,8 +167,6 @@ def _render_topbar(pathname):
 
 if __name__ == "__main__":
     try:
-        import sys as _sys
-        _sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
         from dashboard.data_cache import warmup
         warmup()
     except Exception as _e:
