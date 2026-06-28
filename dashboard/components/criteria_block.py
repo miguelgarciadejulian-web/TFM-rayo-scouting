@@ -79,7 +79,9 @@ def _block_scouting():
             _p("La sub-posición se determina automáticamente: 1) Posición TM (market_values.csv), "
                "2) Posición lateral inferida + tipología de rol, 3) Grupo OPTA como fallback."),
             _p("Dimensiones ponderadas por posición — ejemplo Delantero Centro: "
-               "Gol/Remate 45% · Juego de área 20% · Creación 20% · Pressing 15%."),
+               "Gol/Remate 55% · Juego de área 20% · Creación 15% · Pressing 10%. "
+               "Además se aplica un bonus de especialista: si la mejor dimensión supera "
+               "la media ponderada, se suma un 35% de la diferencia."),
             _simple_table(
                 ["Umbral minutos", "Confianza del perfil"],
                 [(">=1800 min", "Alta"), (">=900 min", "Media"),
@@ -188,8 +190,8 @@ def _block_decisiones():
     return [
         _h("Pestaña Fichajes — Fit Rayo"),
         _card(
-            _p("El 'Fit Rayo' usa los mismos 4 componentes ponderados que en la ficha individual "
-               "(35% rendimiento · 25% económico · 20% ADN táctico · 20% disponibilidad)."),
+            _p("El 'Fit Rayo' usa los mismos 5 componentes ponderados que en la ficha individual "
+               "(40% rendimiento · 25% ADN táctico · 20% económico · 5% edad · 10% disponibilidad)."),
             _p("El rendimiento se calcula comparando al jugador con los de su misma posición "
                "y liga. Luego se aplica un coeficiente de dificultad de liga (0.85–1.0) "
                "para ajustar al contexto de LaLiga."),

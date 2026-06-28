@@ -411,7 +411,7 @@ def _tab_scouting():
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
             _note("Ejemplo: Sørloth como delantero_rematador sube de 69.7 a 79.2 porque su fortaleza (gol) "
-                  "recibe un 60% de peso en vez del 45% estándar."),
+                  "recibe un 60% de peso en vez del 55% estándar."),
         ], style=CARD),
 
         # Factor calidad de liga
@@ -777,31 +777,38 @@ def _tab_entrenadores():
 def _tab_decisiones():
     return html.Div([
         html.Div([
-            _section("5a", "Score de recomendación de fichaje (0-100)"),
-            _formula("Score_fichaje = 0.50 × Fit_Rayo\n"
-                     "              + 0.20 × Score_contractual\n"
-                     "              + 0.20 × Viabilidad_económica\n"
-                     "              + 0.10 × Afinidad_entrenador"),
+            _section("5a", "Ranking de fichajes — score utilizado"),
+            html.P("La pestaña de Fichajes ordena a los candidatos directamente por su Fit Rayo (0-100), "
+                   "que ya incorpora todos los factores relevantes:",
+                   style={"fontSize":"12px","color":"#374151"}),
+            _formula("Fit_Rayo = 0.40 × Rendimiento\n"
+                     "         + 0.25 × ADN_Táctico\n"
+                     "         + 0.20 × Encaje_económico\n"
+                     "         + 0.05 × Perfil_de_edad\n"
+                     "         + 0.10 × Disponibilidad"),
             html.Table([
-                html.Thead(html.Tr([html.Th("Factor",style=TH),html.Th("Peso",style=TH),
-                                    html.Th("Cómo se puntúa",style=TH)])),
+                html.Thead(html.Tr([html.Th("Componente",style=TH),html.Th("Peso",style=TH),
+                                    html.Th("Qué mide",style=TH)])),
                 html.Tbody([
-                    html.Tr([html.Td("Fit Rayo",style={**TD,"fontWeight":"700"}),
-                             html.Td("50%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Directamente el score 0-100 del scouting",style=TD)]),
-                    html.Tr([html.Td("Situación contractual",style={**TD,"fontWeight":"700"}),
+                    html.Tr([html.Td("Rendimiento",style={**TD,"fontWeight":"700"}),
+                             html.Td("40%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Percentil intra-liga × coef. dificultad + bonus especialista",style=TD)]),
+                    html.Tr([html.Td("ADN Táctico",style={**TD,"fontWeight":"700"}),
+                             html.Td("25%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Pressing, verticalidad, intensidad sin balón (estilo Rayo)",style=TD)]),
+                    html.Tr([html.Td("Encaje económico",style={**TD,"fontWeight":"700"}),
                              html.Td("20%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Libre=100, expira 1 año=75, expira 2 años=50, cláusula >2×MV=−20pts",style=TD)]),
-                    html.Tr([html.Td("Viabilidad económica",style={**TD,"fontWeight":"700"}),
-                             html.Td("20%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("MV < 50% presupuesto=100, 50-100%=50, > 100%=0",style=TD)]),
-                    html.Tr([html.Td("Afinidad entrenador",style={**TD,"fontWeight":"700"}),
+                             html.Td("Valor de mercado vs presupuesto del club (≤7M€ ideal)",style=TD)]),
+                    html.Tr([html.Td("Edad / potencial",style={**TD,"fontWeight":"700"}),
+                             html.Td("5%",style={**TD,"color":"#166534","fontWeight":"700"}),
+                             html.Td("Banda óptima por posición (sub-25 bonus)",style=TD)]),
+                    html.Tr([html.Td("Disponibilidad",style={**TD,"fontWeight":"700"}),
                              html.Td("10%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Distancia entre percentiles del jugador y el estilo demandado",style=TD)]),
+                             html.Td("Meses de contrato restantes (libre=95, >2 años=25)",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
             html.Table([
-                html.Thead(html.Tr([html.Th("Score",style=TH),html.Th("Recomendación",style=TH)])),
+                html.Thead(html.Tr([html.Th("Fit Rayo",style=TH),html.Th("Recomendación",style=TH)])),
                 html.Tbody([
                     html.Tr([html.Td("≥ 70",style={**TD,"color":"#166534","fontWeight":"700"}),
                              html.Td("🟢 FICHAR — candidato prioritario",style=TD)]),
@@ -819,7 +826,7 @@ def _tab_decisiones():
                    style={"fontSize":"12px","color":"#374151"}),
             _formula("1. Filtra por posición(es) necesitada(s) según estado de cobertura\n"
                      "2. Aplica filtros del usuario (liga, edad, minutos, Fit mín, MV máx)\n"
-                     "3. Ordena por Score_fichaje DESC\n"
+                     "3. Ordena por Fit Rayo DESC\n"
                      "4. Muestra top-N candidatos con panel de detalle expandible"),
             _note("La necesidad de posición viene del cálculo automático de la plantilla (sección 1d). "
                   "Si no hay necesidad, el explorador muestra todos los jugadores con Fit ≥ 50."),
@@ -829,10 +836,10 @@ def _tab_decisiones():
             _section("5c", "Motor de renovaciones"),
             html.P("Clasifica a cada jugador de la plantilla en tres niveles de acción:",
                    style={"fontSize":"12px","color":"#374151"}),
-            _formula("renewal_score(j) = 0.40 × Fit_rendimiento\n"
-                     "                 + 0.30 × Titularidad  (minutos/90 vs umbral)\n"
-                     "                 + 0.20 × Meses_contrato_restantes  (normalizado 0-36)\n"
-                     "                 + 0.10 × Relación_salario/MV"),
+            _formula("renewal_score(j) = 0.40 × Rendimiento  (score 0-100, incluye minutos jugados)\n"
+                     "                 + 0.20 × Perfil_edad  (curva de valor por posición)\n"
+                     "                 + 0.20 × Económico  (MV vs media plantilla + cláusula)\n"
+                     "                 + 0.20 × Contractual  (meses restantes + cláusula)"),
             html.Table([
                 html.Thead(html.Tr([html.Th("Nivel",style=TH),html.Th("Criterio principal",style=TH),
                                     html.Th("Acción",style=TH)])),
