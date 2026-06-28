@@ -48,5 +48,14 @@
   "photo_url": "https://img.a.transfermarkt.technology/portrait/big/292246-1708341416.jpg",
   "age": 30,
   "position": "Centre-Forward"
+ },
+ "e. utkus": {
+  "value_eur": 1600000,
+  "contract_until": "2029-06-30",
+  "foot": "right",
+  "height": 1.9,
+  "photo_url": "https://img.a.transfermarkt.technology/portrait/big/379315-1706087246.jpg",
+  "age": 26,
+  "position": "Centre-Back"
  }
 }

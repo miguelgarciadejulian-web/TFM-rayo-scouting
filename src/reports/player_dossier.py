@@ -853,15 +853,24 @@ def build_player_dossier(name, team=None):
 
     # Foto
     foto_b64_str = None
-    purl = mv.get("photo_url") or (
-        f"https://img.a.transfermarkt.technology/portrait/big/{mv['tm_id']}.jpg"
-        if mv.get("tm_id") else None
-    )
+    purl = mv.get("photo_url")
+    if not purl and mv.get("tm_id"):
+        # Intentar obtener URL real de la API TM (con timestamp)
+        try:
+            import requests
+            api_url = f"https://tmapi-alpha.transfermarkt.technology/v1/players/{mv['tm_id']}/profile"
+            r = requests.get(api_url, timeout=4, verify=False,
+                             headers={"User-Agent": "RayoScoutingTool/1.0"})
+            if r.status_code == 200:
+                purl = r.json().get("portraitUrl")
+        except Exception:
+            pass
     if purl:
         try:
             import requests
-            r = requests.get(purl, timeout=4, headers={"User-Agent": "RayoScoutingTool/1.0"})
-            if r.status_code == 200 and r.content:
+            r = requests.get(purl, timeout=4, verify=False,
+                             headers={"User-Agent": "RayoScoutingTool/1.0"})
+            if r.status_code == 200 and len(r.content) > 100:
                 foto_b64_str = photo_b64(r.content)
         except Exception:
             foto_b64_str = None

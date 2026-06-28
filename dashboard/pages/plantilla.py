@@ -208,24 +208,17 @@ def player_row(p, i, role_map=None, role_labels=None):
                 "display": "flex", "alignItems": "center", "justifyContent": "center",
                 "fontSize": "11px", "fontWeight": "600", "flexShrink": "0",
             }),
-            html.Div([
-                html.Div(name, style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL,
-                                      "whiteSpace": "nowrap", "overflow": "hidden",
-                                      "textOverflow": "ellipsis", "maxWidth": "160px"}),
-                html.Div(
-                    html.Span(f"↗ Cedido ({loan})", style={
-                        "fontSize": "10px", "color": "#1D4ED8",
-                        "background": "#EFF6FF", "borderRadius": "4px", "padding": "2px 6px",
-                    }) if loan else (
-                    html.Span(f"↩ Vuelve de {loan_to}", style={
-                        "fontSize": "10px", "color": "#15803D",
-                        "background": "#DCFCE7", "borderRadius": "4px", "padding": "2px 6px",
-                        "fontWeight": "600",
-                    }) if loan_to else None),
-                    style={"height": "18px", "display": "flex", "alignItems": "center"},
-                ),
-            ], style={"display": "flex", "flexDirection": "column", "gap": "1px"}),
-        ], style={"display": "flex", "alignItems": "center", "gap": "10px"})),
+            html.Span(name, style={"fontSize": "13px", "fontWeight": "600", "color": _AZUL,
+                                   "whiteSpace": "nowrap"}),
+            *([ html.Span(f"· {loan}", style={
+                    "fontSize": "9px", "color": "#1D4ED8", "whiteSpace": "nowrap",
+                }) ] if loan else
+              [ html.Span(f"· {loan_to}", style={
+                    "fontSize": "9px", "color": "#15803D", "fontWeight": "600",
+                    "whiteSpace": "nowrap",
+                }) ] if loan_to else []),
+        ], style={"display": "flex", "alignItems": "center", "gap": "6px",
+                  "whiteSpace": "nowrap"})),
         html.Td(pos_badge(pos)),
         html.Td(str(age), style={"fontSize": "13px", "color": "#374151", "textAlign": "center"}),
         html.Td(nat, style={"fontSize": "12px", "color": "#6B7280"}),

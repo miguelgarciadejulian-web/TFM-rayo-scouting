@@ -97,7 +97,8 @@ def _load_photo_bytes(name):
     elif url.startswith("http"):
         try:
             import requests
-            r = requests.get(url, timeout=10, headers={"User-Agent":"RayoScoutingTool/1.0"})
+            r = requests.get(url, timeout=10, verify=False,
+                             headers={"User-Agent":"RayoScoutingTool/1.0"})
             if r.status_code == 200 and r.content: return r.content
         except Exception: pass
     return None

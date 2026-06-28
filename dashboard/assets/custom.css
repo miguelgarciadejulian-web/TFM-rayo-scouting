@@ -133,9 +133,9 @@ p { margin:0; }
 .chart-wrap:hover { box-shadow:var(--shadow); transform:translateY(-2px); }
 
 /* ── 10. MODULE CARDS ──────────────────────────────────────────────────────── */
-.module-card { display:block; height:100%; background:var(--rayo-red-grad); border-radius:var(--r-lg); padding:16px; color:#fff!important; position:relative; overflow:hidden; box-shadow:var(--shadow-sm); transition:transform var(--t),box-shadow var(--t); }
-.module-card::after { content:''; position:absolute; bottom:-50px; right:-30px; width:140px; height:140px; border-radius:50%; background:rgba(255,255,255,.08); transition:var(--t-slow); }
-.module-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-red); color:#fff!important; }
+.module-card { display:block; height:100%; background:linear-gradient(135deg,#1a1a1a 0%,#2d2d2d 100%); border-radius:var(--r-lg); padding:16px; color:#fff!important; position:relative; overflow:hidden; box-shadow:var(--shadow-sm); transition:transform var(--t),box-shadow var(--t); }
+.module-card::after { content:''; position:absolute; bottom:-50px; right:-30px; width:140px; height:140px; border-radius:50%; background:rgba(255,255,255,.06); transition:var(--t-slow); }
+.module-card:hover { transform:translateY(-4px); box-shadow:0 8px 25px rgba(0,0,0,.4); color:#fff!important; }
 .module-card:hover::after { transform:scale(1.25); }
 .module-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; position:relative; z-index:1; }
 .module-card-head .ti { font-size:24px; color:#fff; }
