@@ -1,15 +1,34 @@
 """
-decisions.py
-============
-Decisiones deportivas AUTOMATICAS por reglas en Python a partir de la plantilla
-perfilada (squad_profile.json) y las necesidades detectadas:
+decisions.py — Motor de decisiones deportivas automáticas
+=========================================================
 
-  - renovar : jugadores clave con contrato proximo a expirar
-  - vender  : veteranos amortizables / perfiles sobre-representados con valor
-  - ceder   : jovenes con pocos minutos que necesitan rodaje
-  - fichar  : roles que faltan o hay que reforzar (necesidades)
+PROPÓSITO:
+    Genera recomendaciones automáticas de gestión deportiva para CADA jugador
+    de la plantilla: renovar, vender, ceder o fichar sustituto. Las decisiones
+    se derivan 100% por reglas cuantitativas sin intervención manual.
 
-Cada recomendacion incluye un motivo generado por reglas. Configurable.
+REGLAS DE DECISIÓN:
+    RENOVAR: jugador clave (rendimiento alto) + contrato ≤ 2 años restantes
+             + rol escaso en plantilla.
+    VENDER:  veterano > 30 años + rol sobre-representado + valor de mercado
+             todavía aceptable (ventana de oportunidad).
+    CEDER:   jugador joven (< 23) + < 500 minutos la temporada pasada +
+             suplente detrás de un titular consolidado.
+    FICHAR:  rol detectado como "necesidad" por squad/needs.py + no hay
+             alternativa interna viable.
+
+FUNCIÓN PRINCIPAL:
+    generate_decisions(squad_profile, needs, enriched_df)
+    → list[dict] con: jugador, decisión, motivo, prioridad, score
+
+CONSUMIDO POR:
+    - dashboard/pages/decisiones.py (visualización de recomendaciones)
+    - dashboard/pages/home.py (alertas en el panel principal)
+
+DATOS DE ENTRADA:
+    - data/processed/squad_profile.json (perfiles de plantilla)
+    - squad/needs.py (necesidades detectadas)
+    - player_seasons_enriched.parquet (rendimiento actual)
 """
 from __future__ import annotations
 import pandas as pd

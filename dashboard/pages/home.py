@@ -1,6 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-Página de inicio — Panel de control moderno de la dirección deportiva.
+home.py — Panel de control principal (Dashboard Home)
+=====================================================
+
+PROPÓSITO:
+    Página de inicio que muestra un resumen ejecutivo del estado de la
+    plantilla y del mercado. Diseñada para que un director deportivo vea
+    de un vistazo los KPIs más relevantes.
+
+CONTENIDO:
+    - KPIs principales: nº jugadores, edad media, valor total, presupuesto
+    - Alertas: contratos que expiran, jugadores sub-rendimiento
+    - Resumen de necesidades detectadas por posición
+    - Accesos rápidos a las secciones de scouting y decisiones
+    - Última actualización de datos
+
+NAVEGACIÓN:
+    Ruta: / (página principal)
+    Accesible desde el logo y el enlace "Inicio" del sidebar.
 """
 from __future__ import annotations
 import json

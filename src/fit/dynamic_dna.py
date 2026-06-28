@@ -1,21 +1,41 @@
 # -*- coding: utf-8 -*-
 """
-dynamic_dna.py
-==============
-Fuente UNICA de verdad para el ADN Rayo y los parametros de encaje.
-TODO se calcula desde datos reales — ningun valor esta hardcodeado.
+dynamic_dna.py — Generador dinámico del ADN táctico del Rayo Vallecano
+======================================================================
 
-Sustituye a config/rayo_dna.yaml como origen de:
-  - target_style: ejes ADN del Rayo (ideales + pesos) desde team_seasons.parquet
-  - context_weights: pesos de experiencia/presupuesto/plantilla
-  - economics: referencias salariales y de inversion desde club_profile.yaml
-  - coach_affinity: afinidad de roles por estilo del entrenador actual
+PROPÓSITO:
+    Calcula automáticamente el PERFIL TÁCTICO IDEAL del Rayo Vallecano
+    (denominado "ADN Rayo") a partir de los datos reales del equipo en
+    temporadas anteriores. Ningún valor está hardcodeado: todo se infiere
+    de las métricas de equipo en team_seasons.parquet.
 
-Uso:
-    from src.fit.dynamic_dna import build_dynamic_dna, get_coach_affinity
+    Sustituye al antiguo config/rayo_dna.yaml como fuente de verdad.
 
-    dna = build_dynamic_dna()   # dict compatible con rayo_dna.yaml
-    aff = get_coach_affinity()  # dict {rol: 0-1} para evaluate_player_fit
+EJES DEL ADN RAYO:
+    - Presión alta (PPDA, recoveries en campo rival)
+    - Verticalidad (pases forward, ataques directos)
+    - Intensidad (duelos, sprints, distancia)
+    - Juego aéreo (disputas aéreas, centros)
+    - Construcción (posesión, pases completados)
+
+SALIDAS:
+    build_dynamic_dna() → dict con:
+        - target_style: {eje: {ideal, weight}} — valores objetivo por eje
+        - economics: referencias salariales de club_profile.yaml
+        - coach_affinity: {rol: 0-1} afinidad del entrenador actual por rol
+
+    get_coach_affinity() → dict {rol: 0-1} que indica qué roles prefiere
+    el técnico según su estilo de juego inferido.
+
+CONSUMIDO POR:
+    - src/scouting/comparator.py → componente ADN del Fit Rayo (peso 25%)
+    - src/fit/player_fit.py      → encaje táctico individual
+    - dashboard/pages/criterios.py → explicación metodológica
+
+DATOS DE ENTRADA:
+    - data/processed/team_seasons.parquet (métricas de equipo Opta)
+    - config/club_profile.yaml (presupuesto, topes salariales)
+    - config/coach_history.yaml (técnico actual → estilo)
 """
 from __future__ import annotations
 import time

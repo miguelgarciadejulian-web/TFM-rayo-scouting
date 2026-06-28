@@ -1,10 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-player_detail.py
-================
-Construye la vista detallada de un jugador: foto (Transfermarkt), percentiles de
-todas las métricas por grupos, evolución por temporada, radar de roles y el
-perfil/encaje automáticos. Todo desde player_seasons_enriched.parquet.
+player_detail.py — Constructor de la vista detallada de jugador
+===============================================================
+
+PROPÓSITO:
+    Componente reutilizable que construye el bloque visual principal de la
+    ficha de un jugador: foto de TransferMarkt, KPIs, radar por dimensiones
+    de rendimiento y encaje automático (perfil + fit Rayo).
+
+FUNCIÓN PRINCIPAL:
+    build_detail(name, team, league, age, coach_style, with_photo,
+                 extra_header_right, scorer_rend)
+    → Devuelve un dbc.Container con toda la información maquetada.
+
+ELEMENTOS GENERADOS:
+    - Foto del jugador (cacheada de TM)
+    - Badge con posición lateral y rol primario
+    - Score de Rendimiento (gauge circular)
+    - Radar de dimensiones (matplotlib → base64 → img)
+    - Barras de percentiles por grupo de métricas
+    - Tarjeta de perfil automático (fortalezas, debilidades)
+    - Score de encaje con el club (player_fit.py)
+
+CONSUMIDO POR:
+    - dashboard/pages/jugador.py (ficha completa)
+    - dashboard/pages/comparador.py (vista reducida)
 """
 from __future__ import annotations
 import json

@@ -1,43 +1,37 @@
 # -*- coding: utf-8 -*-
 """
-renewal_decision.py
-===================
-Motor de decisión automática de renovaciones de contrato para Rayo Vallecano.
+renewal_engine.py — Motor de decisión automática de renovaciones
+================================================================
 
-Para cada jugador de la plantilla con contrato próximo a vencer, genera:
-  - Recomendación: una de 5 opciones (renovar / no_renovar / vender /
-                   renovar_y_ceder / renovar_proteger_valor)
-  - Score de renovación: 0-100
-  - Explicación automática: factores positivos, negativos, riesgos y oportunidades
-  - Nivel de confianza: bajo / medio / alto
+PROPÓSITO:
+    Para cada jugador de la plantilla con contrato próximo a vencer,
+    genera una RECOMENDACIÓN AUTOMÁTICA de renovación basada en factores
+    deportivos, económicos y estratégicos.
 
-Arquitectura:
-  - Servicio puro Python — sin dependencias de Dash ni de la UI.
-  - Lee datos de: club_profile.yaml, player_seasons_enriched.parquet,
-    player_economic.parquet (opcional).
-  - Se integra en dashboard/pages/decisiones.py como nueva sección visual.
-  - Extiende (no reemplaza) squad_decisions() de decisions.py.
+OPCIONES DE RECOMENDACIÓN (5 categorías):
+    1. RENOVAR: jugador clave, rendimiento alto, rol necesario
+    2. NO RENOVAR: rendimiento bajo o rol sobre-representado
+    3. VENDER: mejor vender ahora que dejar salir gratis
+    4. RENOVAR Y CEDER: joven con potencial pero sin minutos
+    5. RENOVAR PROTEGER VALOR: renovar para mantener cláusula alta
 
-Variables del modelo
---------------------
-Rendimiento (40%)
-  - minutos_pct:      % de minutos jugados sobre el total posible (90 * n_partidos)
-  - rating_interno:   score de rol (0-100) desde player_profile.py
-  - evolucion:        tendencia de rendimiento (últimas 2 temporadas si existen)
+FACTORES DEL MODELO:
+    - Rendimiento actual (score de rendimiento.py)
+    - Importancia táctica (¿es titular? ¿hay alternativa?)
+    - Edad y curva de desarrollo
+    - Valor de mercado y salario (ratio coste/beneficio)
+    - Años de contrato restantes
+    - Necesidades de plantilla (squad/needs.py)
 
-Edad y ciclo vital (20%)
-  - age_score:        puntuación por edad según curva de rendimiento por posición
-  - potential:        potencial declarado ('muy alto', 'alto', 'estable', 'en meseta', 'veterania')
+SALIDA POR JUGADOR:
+    - decision: str (una de las 5 opciones)
+    - score: 0-100 (prioridad de renovación)
+    - explanation: dict {positivos, negativos, riesgos, oportunidades}
+    - confidence: "bajo" | "medio" | "alto"
 
-Situación económica (20%)
-  - value_score:      valor de mercado relativo a la media de la plantilla
-  - salary_risk:      estimación del coste de renovación
-  - revalorizacion:   tendencia del valor de mercado
-
-Situación contractual (20%)
-  - meses_restantes:  meses hasta expiración
-  - riesgo_salida:    si puede salir libre en ≤ 6 meses → riesgo alto
-  - clausula:         existencia de cláusula de rescisión protege el valor
+CONSUMIDO POR:
+    - dashboard/pages/decisiones.py (pestaña de renovaciones)
+    - src/fit/decisions.py (como input para decisiones globales)
 """
 from __future__ import annotations
 

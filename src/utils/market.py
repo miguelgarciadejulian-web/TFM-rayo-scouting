@@ -1,19 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-market.py  v2
-=============
-Carga de datos economicos y contractuales de jugadores.
+market.py — Utilidades de datos económicos y valor de mercado
+=============================================================
 
-ARQUITECTURA v2:
-  get_value(name, opta_id=None) consulta primero player_economic.parquet
-  con fallback a market_values.csv para compatibilidad total.
+PROPÓSITO:
+    Proporciona funciones para consultar el VALOR DE MERCADO, salario,
+    fin de contrato y agente de cualquier jugador del dataset. Implementa
+    una cascada de fuentes para maximizar cobertura y precisión.
 
-  Jerarquia de prioridad:
-    1. player_overrides.json    (correcciones manuales)
-    2. player_economic.parquet  (dataset economico separado, si existe)
-    3. market_values.csv        (fuente legacy, siempre disponible)
+JERARQUÍA DE FUENTES (cascada):
+    1. player_overrides.json   → correcciones manuales del usuario
+    2. player_economic.parquet → dataset económico TM (17,406 registros)
+    3. market_values.csv       → fuente legacy (fallback siempre disponible)
 
-COMPATIBILIDAD: la firma get_value(name) es identica a v1.
+FUNCIONES PRINCIPALES:
+    get_value(name, opta_id=None) → dict {market_value, salary, contract_end, agent}
+    is_big_club(team_name)        → bool (¿es un club con presupuesto grande?)
+
+UTILIDAD is_big_club():
+    Clasifica un equipo como "grande" según facturación y presupuesto.
+    Se usa para estimar la dificultad de fichar a un jugador (un jugador
+    en un club grande pedirá más para salir).
+
+CONSUMIDO POR:
+    - src/scouting/comparator.py → score económico del Fit Rayo
+    - dashboard/pages/jugador.py → mostrar valor en ficha
+    - dashboard/pages/finanzas.py → análisis financiero
+    - src/fit/clause_risk.py     → ratio cláusula/valor
 """
 from __future__ import annotations
 import unicodedata

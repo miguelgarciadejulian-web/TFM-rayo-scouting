@@ -1,22 +1,52 @@
 # -*- coding: utf-8 -*-
 """
-comparator.py
-=============
-Motor del Comparador de Fichajes — Rayo Vallecano 2026/27.
+comparator.py — Motor del Comparador de Fichajes (FitRayoScorer)
+================================================================
 
-Calcula el índice "Fit Rayo" (0-100) para cada candidato y prepara
-los datos para el radar chart y la tabla comparativa.
+PROPÓSITO:
+    Clase central del sistema de scouting. Calcula el índice compuesto
+    "Fit Rayo" (0-100) que mide la idoneidad GLOBAL de un jugador como
+    fichaje para el Rayo Vallecano, combinando rendimiento deportivo,
+    afinidad táctica, viabilidad económica, perfil de edad y disponibilidad.
 
-Componentes del Fit Rayo:
-  - Rendimiento      (35%): percentil de minutos, goles, asistencias, recuperaciones
-  - Encaje económico (25%): valor de mercado vs. horquilla de inversión de Rayo
-  - Perfil de edad   (20%): puntuación por curva de edad/posición
-  - Disponibilidad   (20%): contrato expirante, agente libre, cedido con opción, etc.
+FÓRMULA FIT RAYO (ponderación final):
+    FitRayo = 0.40 × Rendimiento + 0.25 × ADN Táctico + 0.20 × Económico
+            + 0.05 × Edad + 0.10 × Disponibilidad
 
-Integración:
-  - Lee master_players.parquet (stats por temporada)
-  - Lee player_seasons_enriched.parquet (role_score si disponible)
-  - Se usa desde dashboard/pages/comparador.py
+COMPONENTES:
+    1. RENDIMIENTO (40%): Score 5-99 calculado en src/utils/rendimiento.py
+       mediante z-scores posicionales contra pool europeo. Incluye bonus
+       especialista y coeficiente de liga.
+
+    2. ADN TÁCTICO (25%): Mide cuánto se parece el perfil del jugador al
+       estilo de juego del Rayo (presión alta, juego directo, verticalidad).
+       Se calcula comparando métricas del candidato con los valores ideales
+       por posición definidos en src/fit/dynamic_dna.py.
+
+    3. ECONÓMICO (20%): Evalúa si el valor de mercado del jugador es
+       compatible con la capacidad de inversión del Rayo (7-12M€ máx).
+       Score alto = jugador asequible; bajo = fuera de presupuesto.
+
+    4. EDAD (5%): Premia jugadores entre 23-28 años (pico rendimiento)
+       con penalización suave para >30 y <21.
+
+    5. DISPONIBILIDAD (10%): Bonus por contrato corto (fin <2 años),
+       jugador cedido con opción de compra o agente libre.
+
+CLASE PRINCIPAL:
+    FitRayoScorer(master_df, economic_df, squad_info, enriched_df)
+        .compare(candidates)     → lista de dicts con scores y desglose
+        .search_players(filters) → búsqueda avanzada con filtros múltiples
+
+DATOS DE ENTRADA:
+    - master_players.parquet (11,846 jugadores)
+    - player_economic.parquet (17,406 registros económicos)
+    - player_seasons_enriched.parquet (57,238 temporadas con métricas p90)
+
+CONSUMIDO POR:
+    - dashboard/pages/comparador.py  → comparación lado a lado
+    - dashboard/pages/scouting.py    → tabla de exploración
+    - dashboard/pages/decisiones.py  → rankings automáticos de fichaje
 """
 from __future__ import annotations
 
@@ -812,6 +842,9 @@ class FitRayoScorer:
     # de cada demarcación. Un delantero encaja con el ADN si presiona más que
     # otros delanteros, se mete en el área y regatea; un medio si recupera,
     # entra y juega vertical; un defensa si gana duelos y juega en largo.
+    #
+    # MID_ATK: sub-grupo para centrocampistas ofensivos (extremos, mediapuntas,
+    # interiores) que no deben penalizarse por no recuperar como un pivote.
     _ADN_WEIGHTS = {
         "FWD": [
             ("recoveries_p90",                       0.10, "Recuperaciones (pressing frontal)"),
@@ -827,6 +860,14 @@ class FitRayoScorer:
             ("forward_passes_p90",                    0.22, "Pases verticales (verticalidad)"),
             ("successful_dribbles_p90",               0.15, "Regates completados (juego directo)"),
             ("total_touches_in_opposition_box_p90",   0.13, "Toques en área rival (vocación ofensiva)"),
+        ],
+        "MID_ATK": [
+            ("recoveries_p90",                       0.12, "Recuperaciones (pressing frontal)"),
+            ("tackles_won_p90",                       0.08, "Entradas ganadas (intensidad)"),
+            ("forward_passes_p90",                    0.18, "Pases verticales (verticalidad)"),
+            ("successful_dribbles_p90",               0.25, "Regates completados (juego directo)"),
+            ("total_touches_in_opposition_box_p90",   0.22, "Toques en área rival (vocación ofensiva)"),
+            ("shots_on_target_inc_goals_p90",         0.15, "Remates a puerta (decisión ofensiva)"),
         ],
         "DEF": [
             ("recoveries_p90",                       0.22, "Recuperaciones (pressing alto)"),
@@ -844,19 +885,41 @@ class FitRayoScorer:
         ],
     }
 
+    # Umbral de toques en área rival (p90) para clasificar un MID como atacante
+    _MID_ATK_TOUCHES_THRESHOLD = None  # se calcula lazy
+
+    def _is_mid_attacker(self, enr_row: pd.Series) -> bool:
+        """Detecta si un centrocampista es realmente un jugador ofensivo
+        (extremo, mediapunta, interior) que no debe penalizarse por baja
+        recuperación. Criterio: toques en área rival > mediana del pool MID
+        O regates > percentil 60 del pool MID."""
+        if self._MID_ATK_TOUCHES_THRESHOLD is None:
+            mid_pool = self.enriched[
+                (self.enriched["position_group"].str.upper() == "MID")
+                & (pd.to_numeric(self.enriched["minutes"], errors="coerce").fillna(0) >= 450)
+            ]
+            touches = pd.to_numeric(mid_pool["total_touches_in_opposition_box_p90"], errors="coerce").dropna()
+            FitRayoScorer._MID_ATK_TOUCHES_THRESHOLD = float(touches.median())
+        touches_val = float(enr_row.get("total_touches_in_opposition_box_p90") or 0)
+        dribbles_val = float(enr_row.get("successful_dribbles_p90") or 0)
+        return touches_val > self._MID_ATK_TOUCHES_THRESHOLD or dribbles_val > 1.2
+
     def _get_adn_pool_stats(self, pool_grp: str) -> dict:
-        """ADN stats per position group (cached)."""
+        """ADN stats per position group (cached).
+        MID_ATK uses the MID pool (same players) but different metrics."""
         if not hasattr(self, "_adn_pool_cache"):
             self._adn_pool_cache = {}
         if pool_grp in self._adn_pool_cache:
             return self._adn_pool_cache[pool_grp]
 
+        # MID_ATK players are compared against the full MID pool
+        data_grp = "MID" if pool_grp == "MID_ATK" else pool_grp
         pool = self.enriched[
-            (self.enriched["position_group"].str.upper() == pool_grp)
+            (self.enriched["position_group"].str.upper() == data_grp)
             & (pd.to_numeric(self.enriched["minutes"], errors="coerce").fillna(0) >= 450)
         ]
         stats = {}
-        # Collect ALL metrics used by this position group
+        # Collect ALL metrics used by this weight set
         metrics_needed = set()
         for m, _, _ in self._ADN_WEIGHTS.get(pool_grp, self._ADN_WEIGHTS["MID"]):
             metrics_needed.add(m)
@@ -878,8 +941,14 @@ class FitRayoScorer:
         más que otros delanteros obtiene un ADN alto, en lugar de compararse
         contra mediocentros (que siempre recuperan más).
 
-        Los pesos se adaptan por posición: para un FWD pesan más los regates
-        y toques en área; para un MID las recuperaciones y entradas.
+        Los pesos se adaptan por posición y sub-tipo:
+          - FWD: regates + toques en área + remates
+          - MID_ATK (extremos/mediapuntas): pesos ofensivos, poco peso defensivo
+          - MID: equilibrio pressing + verticalidad + creación
+          - DEF: entradas + pases largos + atrevimiento
+
+        Calibración: centro=62, mult=18, damping asimétrico para z<0 (0.55).
+        Un jugador promedio obtiene ~62; uno claramente alineado con Rayo ≥75.
         """
         try:
             _team = str(row.get("team", "") or "")
@@ -887,8 +956,12 @@ class FitRayoScorer:
             enr_row = _enr if _enr is not None else row
 
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "MID"))).upper()
-            if pos_grp not in self._ADN_WEIGHTS:
+            if pos_grp not in ("FWD", "MID", "DEF", "GK"):
                 pos_grp = "MID"
+
+            # Sub-clasificar MID atacantes (extremos, mediapuntas, interiores)
+            if pos_grp == "MID" and self._is_mid_attacker(enr_row):
+                pos_grp = "MID_ATK"
 
             _stats = self._get_adn_pool_stats(pos_grp)
             adn_metrics = [(m, w) for m, w, _ in self._ADN_WEIGHTS[pos_grp]]
@@ -901,15 +974,19 @@ class FitRayoScorer:
                     mean, std, n = _stats[metric]
                     if n >= 10 and std > 1e-9:
                         z = (val - mean) / std
-                        score = max(5.0, min(99.0, 55.0 + z * 22.0))
+                        # Damping asimétrico: z negativo se suaviza al 55%
+                        # para no castigar excesivamente a jugadores promedio
+                        if z < 0:
+                            z = z * 0.55
+                        score = max(5.0, min(99.0, 62.0 + z * 18.0))
                         total_ws += weight * score
                         total_w += weight
 
             if total_w > 0:
                 return round(total_ws / total_w, 1)
-            return 50.0
+            return 55.0
         except Exception:
-            return 50.0
+            return 55.0
 
     def _score_disponibilidad(self, contract_until: str | None, name: str,
                                   squad_entry: dict | None = None) -> float:
@@ -969,12 +1046,18 @@ class FitRayoScorer:
             enr_row = _enr if _enr is not None else row
 
             pos_grp = str(enr_row.get("position_group", row.get("position_primary", "MID"))).upper()
-            if pos_grp not in self._ADN_WEIGHTS:
+            if pos_grp not in ("FWD", "MID", "DEF", "GK"):
                 pos_grp = "MID"
 
+            # Sub-clasificar MID atacantes
+            if pos_grp == "MID" and self._is_mid_attacker(enr_row):
+                pos_grp = "MID_ATK"
+
             _stats = self._get_adn_pool_stats(pos_grp)
+            # Pool de datos (MID_ATK usa el pool MID)
+            data_grp = "MID" if pos_grp == "MID_ATK" else pos_grp
             pool = self.enriched[
-                (self.enriched["position_group"].str.upper() == pos_grp)
+                (self.enriched["position_group"].str.upper() == data_grp)
                 & (pd.to_numeric(self.enriched["minutes"], errors="coerce").fillna(0) >= 450)
             ]
 
@@ -991,7 +1074,10 @@ class FitRayoScorer:
                 if n < 10 or std < 1e-9:
                     continue
                 z = (val - mean) / std
-                score = max(5.0, min(99.0, 55.0 + z * 22.0))
+                # Damping asimétrico: z negativo se suaviza al 55%
+                if z < 0:
+                    z = z * 0.55
+                score = max(5.0, min(99.0, 62.0 + z * 18.0))
                 # Percentil real contra pool posicional
                 series = pd.to_numeric(pool[metric], errors="coerce").dropna()
                 pct = float((series < val).sum() / len(series) * 100) if len(series) > 0 else 50.0
@@ -1006,21 +1092,22 @@ class FitRayoScorer:
                 total_ws += weight * score
                 total_w += weight
 
-            final_score = round(total_ws / total_w, 1) if total_w > 0 else 50.0
+            final_score = round(total_ws / total_w, 1) if total_w > 0 else 55.0
+            display_grp = "MID (ofensivo)" if pos_grp == "MID_ATK" else pos_grp
             return {
                 "score": final_score,
                 "pool_size": len(pool),
-                "position_group": pos_grp,
+                "position_group": display_grp,
                 "dims": dims,
                 "explanation": (
                     f"Mide cuánto encaja el jugador con el estilo táctico del Rayo: "
                     f"pressing alto, verticalidad, intensidad sin balón y juego directo. "
-                    f"Cada métrica se compara contra {pos_grp}s (≥450 min) con pesos "
+                    f"Cada métrica se compara contra {data_grp}s (≥450 min) con pesos "
                     f"adaptados a la posición para una evaluación justa."
                 ),
             }
         except Exception as exc:
-            return {"score": 50.0, "dims": [], "pool_size": 0,
+            return {"score": 55.0, "dims": [], "pool_size": 0,
                     "position_group": "?", "explanation": "", "error": str(exc)}
 
     # ------------------------------------------------------------------ #

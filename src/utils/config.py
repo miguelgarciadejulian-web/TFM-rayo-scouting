@@ -1,5 +1,27 @@
 # -*- coding: utf-8 -*-
-"""Carga de configuración YAML y rutas resueltas."""
+"""
+config.py — Carga de configuración YAML y resolución de rutas
+=============================================================
+
+PROPÓSITO:
+    Módulo centralizado que carga los archivos de configuración YAML del
+    proyecto (config/) y resuelve rutas relativas a absolutas. Garantiza
+    que todos los módulos usen las mismas rutas y configuraciones.
+
+FUNCIONES PRINCIPALES:
+    load_yaml(name)  → dict con contenido del YAML
+    settings()       → dict con toda la configuración (paths, club, squad)
+
+ARCHIVOS DE CONFIGURACIÓN:
+    - config/settings.yaml       → rutas a datos, parámetros globales
+    - config/club_profile.yaml   → presupuesto, formación, topes salariales
+    - config/squad_2526.yaml     → lista de 30 jugadores de la plantilla
+    - config/coach_history.yaml  → historial de entrenadores candidatos
+
+CONSTANTES EXPUESTAS:
+    ROOT       → Path al directorio raíz del proyecto
+    CONFIG_DIR → Path al directorio config/
+"""
 from __future__ import annotations
 import os
 from pathlib import Path

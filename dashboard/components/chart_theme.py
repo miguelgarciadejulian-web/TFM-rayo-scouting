@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-chart_theme.py
-==============
-Tema visual unificado para todos los gráficos Plotly de la aplicación.
-Registra una plantilla "rayo_scouting" y expone helpers de color y layout.
+chart_theme.py — Tema visual corporativo para gráficos Plotly
+=============================================================
 
-Uso::
+PROPÓSITO:
+    Define un tema visual unificado ("rayo_scouting") para TODOS los gráficos
+    Plotly de la aplicación. Garantiza consistencia visual corporativa
+    (paleta rojo/negro/blanco) en barras, radares, líneas y gauges.
 
-    from dashboard.components.chart_theme import apply_theme, RAYO_RED, C_POSITIVE
+COMPONENTES:
+    - Plantilla Plotly registrada ("rayo_scouting") con fondo oscuro,
+      tipografías y grid consistentes.
+    - Paleta de colores corporativa: RAYO_RED, C_POSITIVE, C_NEGATIVE, etc.
+    - Función apply_theme(fig) que aplica el tema a cualquier figura Plotly.
+    - Helpers de layout para ajustes específicos por tipo de gráfico.
 
+USO:
+    from dashboard.components.chart_theme import apply_theme, RAYO_RED
     fig = go.Figure(...)
-    apply_theme(fig)          # aplica defaults + ajustes opcionales
+    apply_theme(fig)  # → aplica tema corporativo automáticamente
 """
 from __future__ import annotations
 import plotly.graph_objects as go

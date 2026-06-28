@@ -1,9 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-pdf_base.py
-===========
-Modulo compartido para generacion de PDFs modernos con WeasyPrint.
-Proporciona: paleta, CSS base, SVG gauge, barras CSS, radar matplotlib b64.
+pdf_base.py — Módulo base compartido para generación de PDFs
+============================================================
+
+PROPÓSITO:
+    Proporciona componentes reutilizables para todos los generadores de PDF
+    del sistema (player_dossier, coach_dossier, comparador_dossier):
+    - Paleta de colores corporativa (rojo Rayo #E30613)
+    - CSS base responsive para los informes
+    - SVG gauge circular (indicador visual de score 0-100)
+    - Barras CSS de progreso (para percentiles)
+    - Radar chart matplotlib → base64 (para insertar en HTML)
+
+FUNCIONES PRINCIPALES:
+    render_gauge_svg(score, label) → str SVG del gauge circular
+    render_bar_css(value, max_val) → str HTML de barra de progreso
+    radar_to_b64(dims, scores)     → str base64 de imagen radar
+    get_base_css()                 → str CSS completo para el PDF
+
+CONSUMIDO POR:
+    - src/reports/player_dossier.py
+    - src/reports/coach_dossier.py
+    - src/reports/comparador_dossier.py
 """
 from __future__ import annotations
 import base64

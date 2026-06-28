@@ -1,20 +1,44 @@
 # -*- coding: utf-8 -*-
 """
-coach_fit.py
-============
-Evaluacion AUTOMATICA de un entrenador como candidato al banquillo del Rayo.
+coach_fit.py — Evaluación automática de entrenadores candidatos
+===============================================================
 
-Todo se deriva por reglas en Python a partir de:
-  - los ejes de estilo calculados (src.profiling.coach_style)
-  - el historial (config/coach_history.yaml) -> experiencia LaLiga / cobertura
-  - el ADN objetivo del club (config/rayo_dna.yaml)
-  - el contexto economico/contractual (config/coaches.yaml)
-  - el resumen de la plantilla actual (src.squad.needs)
+PROPÓSITO:
+    Calcula un SCORE DE COMPATIBILIDAD (0-100) para cada entrenador
+    candidato al banquillo del Rayo Vallecano. Todo se infiere por
+    reglas cuantitativas, sin opiniones subjetivas.
 
-Devuelve: score global 0-100, pros[], contras[], y riesgos desglosados:
-  deportivo, economico, clausula, adaptacion_laliga, incompatibilidad_plantilla.
-El usuario puede anadir pros/contras manuales en la interfaz; estos se guardan
-aparte y NO sustituyen a los automaticos.
+FACTORES EVALUADOS:
+    1. ESTILO DE JUEGO (peso 40%): Compara los ejes de estilo del técnico
+       (calculados en coach_style.py desde métricas Opta de sus equipos)
+       con el ADN objetivo del Rayo (presión, verticalidad, intensidad).
+
+    2. EXPERIENCIA LaLiga (peso 20%): Bonus por temporadas previas en
+       Primera o Segunda División española (adaptación cultural).
+
+    3. COMPATIBILIDAD CON PLANTILLA (peso 20%): Evalúa si los roles
+       que favorece el técnico coinciden con los perfiles disponibles.
+
+    4. CONTEXTO ECONÓMICO (peso 10%): Salario del técnico vs presupuesto
+       del club, duración de contrato, cláusula de salida.
+
+    5. RIESGOS (peso 10%): Factores negativos (despidos recientes,
+       conflictos públicos, incompatibilidad con estrellas).
+
+SALIDA:
+    dict con: score, pros[], contras[], riesgos{deportivo, economico,
+    clausula, adaptacion_laliga, incompatibilidad_plantilla}
+
+DATOS DE ENTRADA:
+    - src/profiling/coach_style.py (ejes de estilo calculados)
+    - config/coach_history.yaml (historial de equipos)
+    - config/rayo_dna.yaml / dynamic_dna.py (ADN objetivo)
+    - config/coaches.yaml (datos contractuales)
+    - src/squad/needs.py (necesidades de plantilla)
+
+CONSUMIDO POR:
+    - scripts/build_profiles.py → genera coach_profiles.json
+    - dashboard/pages/entrenadores.py → visualización de scores
 """
 from __future__ import annotations
 import numpy as np

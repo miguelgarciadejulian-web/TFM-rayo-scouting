@@ -1,5 +1,36 @@
 # -*- coding: utf-8 -*-
-"""Página de scouting — filtros modernos, tabla y navegación a perfil."""
+"""
+scouting.py — Explorador de mercado con filtros avanzados
+========================================================
+
+PROPÓSITO:
+    Tabla interactiva de scouting que permite filtrar y ordenar candidatos
+    del dataset completo (57,238 registros) por múltiples criterios.
+    Punto de entrada principal para descubrir jugadores nuevos.
+
+FILTROS DISPONIBLES:
+    - Liga (19 ligas europeas y americanas)
+    - Equipo (dinámico según liga seleccionada)
+    - Posición / Rol específico (12 roles canónicos)
+    - Rango de edad (slider)
+    - Valor de mercado máximo (slider hasta 200M€)
+    - Minutos mínimos jugados (filtro de confianza)
+
+FUNCIONALIDAD:
+    - Tabla paginada con columnas ordenables
+    - Click en jugador → navega a página /jugador con ficha completa
+    - Scores de Fit Rayo pre-calculados para ordenación rápida
+    - Guardas defensivas contra inputs inválidos (isinstance checks)
+
+CALLBACKS:
+    - update_teams()        → filtra equipos según liga seleccionada
+    - update_role_options() → muestra roles según posición
+    - filter_table()        → aplica todos los filtros y renderiza tabla
+
+DATOS:
+    - player_seasons_enriched.parquet (fuente principal)
+    - Scores calculados en tiempo real por FitRayoScorer
+"""
 from __future__ import annotations
 import sys, time, urllib.parse, unicodedata
 from pathlib import Path

@@ -1,12 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Casting de Entrenadores - Rayo 2026/27.
+entrenadores.py — Casting y evaluación de entrenadores candidatos
+=================================================================
 
-El ESTILO DE JUEGO de cada tecnico y su EVALUACION (score, pros, contras y
-riesgos) se calculan por codigo en src/profiling y src/fit y se leen desde
-data/processed/coach_profiles.json (generado por scripts/build_profiles.py).
-El usuario puede anadir pros/contras manuales que se guardan aparte sin borrar
-los automaticos (coach_manual_notes.json).
+PROPÓSITO:
+    Herramienta de análisis de entrenadores candidatos al banquillo del Rayo.
+    Muestra perfiles completos con estilo de juego inferido automáticamente,
+    score de compatibilidad con el ADN del club, pros/contras y riesgos.
+
+ALGORITMO DE EVALUACIÓN (src/fit/coach_fit.py):
+    1. Se infiere el ESTILO DE JUEGO del técnico a partir de las métricas
+       de equipo Opta de sus temporadas previas (src/profiling/coach_style.py).
+    2. Se calcula la COMPATIBILIDAD con el ADN Rayo (presión alta, juego
+       directo, intensidad) comparando ejes de estilo vs valores objetivo.
+    3. Se evalúa EXPERIENCIA en LaLiga y cobertura de competiciones.
+    4. Se generan PROS, CONTRAS y RIESGOS automáticos por reglas.
+
+FUNCIONALIDAD:
+    - 50 perfiles de entrenadores pre-calculados (coach_profiles.json)
+    - Tarjetas visuales con foto, score, estilo, pros/contras
+    - Sistema de notas manuales (coach_manual_notes.json)
+    - Upload de foto personalizada
+    - Sugerencia de ADN táctico ideal según plantilla actual
+
+DATOS:
+    - data/processed/coach_profiles.json (perfiles pre-calculados)
+    - config/coach_history.yaml (historial de equipos por técnico)
+    - coach_manual_notes.json (notas manuales del usuario)
 """
 from __future__ import annotations
 import json

@@ -1,9 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Decisiones deportivas - Rayo 2026/27.
-Rankings AUTOMATICOS (fichar / vender / ceder / renovar) y recomendacion de
-entrenador, derivados por reglas en src/fit/decisions.py y los perfiles
-precalculados. Nada escrito a mano.
+decisiones.py — Motor de decisiones deportivas automáticas
+==========================================================
+
+PROPÓSITO:
+    Genera recomendaciones automáticas de mercado (fichar, vender, ceder,
+    renovar) y de entrenador, 100% calculadas por reglas cuantitativas.
+    No hay opiniones manuales: todo se deriva de datos estadísticos.
+
+FUNCIONALIDAD:
+    1. EXPLORADOR DE FICHAJES: búsqueda avanzada por rol, liga, edad,
+       valor de mercado y filtros adicionales. Ordena candidatos por
+       Fit Rayo Score descendente.
+    2. RENOVACIONES: detecta jugadores clave con contrato próximo a expirar
+       y recomienda renovar basándose en rendimiento + importancia táctica.
+    3. VENTAS/CESIONES: identifica perfiles sobre-representados o veteranos
+       amortizables con valor de mercado todavía alto.
+    4. RANKING DE ENTRENADORES: score de compatibilidad de candidatos al
+       banquillo según afinidad con el ADN táctico del club.
+
+CALLBACK PRINCIPAL:
+    _explore(role, leagues, min_min, maxval, flags, max_age, max_contract,
+             pos_filter, sort_by) → tabla de candidatos filtrada y ordenada
+
+DATOS:
+    - src/fit/decisions.py (motor de reglas)
+    - player_seasons_enriched.parquet + FitRayoScorer
+    - config/squad_2526.yaml (plantilla actual para detección de huecos)
 """
 from __future__ import annotations
 import json

@@ -1,15 +1,35 @@
 # -*- coding: utf-8 -*-
 """
-clause_risk.py
-==============
-Modelo explícito de riesgo de cláusula de rescisión para la herramienta de
-scouting del Rayo Vallecano.
+clause_risk.py — Modelo de riesgo de cláusulas de rescisión
+===========================================================
 
-Niveles de salida:
-  Bajo     — la cláusula es manejable y no representa un riesgo operativo real.
-  Medio    — coste notable; requiere planificación pero es asumible.
-  Alto     — coste significativo; probabilidad real de pérdida del jugador.
-  Crítico  — coste extremo; ejercer la cláusula desestabilizaría el club.
+PROPÓSITO:
+    Evalúa el riesgo de que un club rival active la cláusula de rescisión
+    de un jugador del Rayo. Produce un nivel de riesgo (Bajo/Medio/Alto/
+    Crítico) y un score numérico basado en factores cuantitativos.
+
+FACTORES DEL MODELO:
+    1. Ratio cláusula / valor de mercado (si cláusula ≈ valor → riesgo alto)
+    2. Ratio cláusula / presupuesto del Rayo (si no puede re-fichar → crítico)
+    3. Años de contrato restantes (menos años = más presión para vender)
+    4. Edad del jugador (joven con cláusula baja = muy vulnerable)
+    5. Ratio salario / cláusula (salario alto relativo a cláusula = riesgo)
+
+NIVELES DE SALIDA:
+    - Bajo    (score < 30): cláusula manejable, sin riesgo operativo real
+    - Medio   (30-55):      coste notable, requiere planificación
+    - Alto    (55-75):      probabilidad real de pérdida del jugador
+    - Crítico (> 75):       coste extremo, desestabilizaría al club
+
+FUNCIÓN PRINCIPAL:
+    evaluate_clause_risk(clause_eur, market_value_eur, age,
+                         contract_years_remaining, salary_eur_year,
+                         rayo_budget_eur)
+    → ClauseRiskResult(level, score, factors, recommendation)
+
+CONSUMIDO POR:
+    - dashboard/pages/finanzas.py (visualización de riesgos)
+    - src/fit/decisions.py (factor en decisiones de renovación)
 
 Uso::
 

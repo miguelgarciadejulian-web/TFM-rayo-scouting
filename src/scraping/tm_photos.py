@@ -1,8 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Obtiene la URL de la foto de un jugador en Transfermarkt a partir de su nombre.
-Los resultados se cachean en data/external/cache/tm_photos.json para no
-repetir peticiones.
+tm_photos.py — Obtención de fotos de jugadores desde TransferMarkt
+==================================================================
+
+PROPÓSITO:
+    Consulta la API de TransferMarkt (tmapi-alpha.transfermarkt.technology)
+    para obtener la URL de la foto oficial de un jugador. Implementa caché
+    persistente en disco para evitar peticiones repetidas al servicio externo.
+
+FLUJO:
+    1. Busca en caché local (data/external/cache/tm_photos.json)
+    2. Si no está, consulta API de TM con verify=False (proxy corporativo)
+    3. Guarda resultado en caché para futuras consultas
+    4. Devuelve URL de la imagen o None si no se encuentra
+
+FUNCIÓN PRINCIPAL:
+    get_photo_url(player_name, team=None) → str | None (URL de la foto)
+
+CACHÉ:
+    Archivo JSON en data/external/cache/tm_photos.json
+    Formato: {nombre_normalizado: url_foto}
+
+CONSUMIDO POR:
+    - dashboard/components/player_detail.py (foto en ficha)
+    - dashboard/pages/plantilla.py (fotos en tarjetas)
+    - dashboard/pages/jugador.py (callback fetch_from_tm)
 
 Uso:
     from src.scraping.tm_photos import get_photo_url

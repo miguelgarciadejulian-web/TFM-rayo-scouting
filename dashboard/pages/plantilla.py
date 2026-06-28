@@ -1,5 +1,27 @@
 # -*- coding: utf-8 -*-
-"""Página de plantilla actual del Rayo — diseño moderno con visualizaciones."""
+"""
+plantilla.py — Visualización de la plantilla actual del Rayo Vallecano
+======================================================================
+
+PROPÓSITO:
+    Muestra la plantilla completa del Rayo con tarjetas visuales por jugador,
+    organizadas por posición (porteros, defensas, centrocampistas, delanteros).
+    Cada tarjeta incluye foto, edad, posición lateral, score de rendimiento
+    y valor de mercado.
+
+FUNCIONALIDAD:
+    - Vista de tarjetas (card grid) responsive con foto TM
+    - Agrupación por línea (porteros / defensas / medios / delanteros)
+    - Click en jugador → navega a la ficha completa (/jugador)
+    - KPIs agregados: edad media, valor total plantilla, minutos promedio
+    - Gráficos: distribución de edad, mapa de posiciones, balance salarial
+
+DATOS:
+    - config/squad_2526.yaml (lista de 30 jugadores de la plantilla)
+    - master_players.parquet (datos estadísticos)
+    - player_economic.parquet (valores de mercado y salarios)
+    - player_overrides.json (fotos de TransferMarkt)
+"""
 import urllib.parse
 import yaml
 from datetime import date

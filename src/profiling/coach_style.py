@@ -1,29 +1,42 @@
 """
-coach_style.py
-==============
-Inferencia AUTOMATICA del estilo de juego de un entrenador por reglas en Python,
-usando EXCLUSIVAMENTE los datos de la plataforma (`team_seasons.parquet`).
+coach_style.py — Inferencia automática del estilo de juego de entrenadores
+=========================================================================
 
-No hay descripciones escritas a mano: dado el historial de un tecnico
-(equipo + temporadas, hecho factual de `config/coach_history.yaml`), se agregan
-las metricas de equipo de Opta de esos equipos-temporada y se derivan:
+PROPÓSITO:
+    Calcula el PERFIL TÁCTICO de un entrenador a partir de las métricas
+    de equipo (Opta) de los clubes donde ha trabajado. No hay opiniones
+    subjetivas: todo se infiere de datos de rendimiento colectivo.
 
-  Ejes cuantitativos (0-100, percentil vs su misma liga):
-    - tendencia_ofensiva     : produccion ofensiva (tiros, ocasiones, juego en campo rival)
-    - solidez_defensiva      : goles encajados (inverso) y porterias a cero
-    - presion_alta           : recuperaciones + entradas + faltas (proxy de presion)
-    - posesion               : % de posesion
-    - verticalidad           : peso del pase largo / juego directo
-    - intensidad_defensiva   : entradas + intercepciones + duelos + faltas por partido
-    - uso_transiciones       : juego directo y vertical sin dominar el balon
-    - flexibilidad_tactica   : variabilidad de su estilo entre temporadas/equipos
+METODOLOGÍA:
+    1. Se lee el historial del técnico de config/coach_history.yaml
+       (equipo + temporadas, hechos factuales verificados).
+    2. Se cruza con team_seasons.parquet para obtener las métricas Opta
+       de esos equipos en esas temporadas específicas.
+    3. Se calculan EJES DE ESTILO normalizados (percentil 0-100 vs liga):
 
-  Ejes contextuales (proxy, claramente marcados):
-    - desarrollo_jovenes     : se calcula con datos de plantilla si existen; si no, n/d
-    - adaptacion_presupuesto : rendimiento relativo al gasto (si hay dato), si no proxy
+EJES CUANTITATIVOS (8):
+    - tendencia_ofensiva    : tiros, ocasiones, juego en campo rival
+    - solidez_defensiva     : goles encajados (inverso), porterías a cero
+    - presion_alta          : recuperaciones + entradas + faltas (proxy)
+    - posesion              : % de posesión de balón
+    - verticalidad          : pase largo / juego directo
+    - intensidad_defensiva  : entradas + intercepciones + duelos
+    - uso_transiciones      : juego directo sin dominar balón
+    - flexibilidad_tactica  : variabilidad entre temporadas/equipos
 
-Tambien genera una DESCRIPCION TEXTUAL automatica basada en umbrales sobre estos
-ejes (reglas en `describe_style`).
+EJES CONTEXTUALES:
+    - desarrollo_jovenes    : calculado si hay datos de plantilla
+
+FUNCIÓN PRINCIPAL:
+    compute_coach_style(coach_name) → dict {eje: score 0-100, ...}
+
+CONSUMIDO POR:
+    - src/fit/coach_fit.py → compatibilidad entrenador-club
+    - scripts/build_profiles.py → genera coach_profiles.json
+
+DATOS DE ENTRADA:
+    - data/processed/team_seasons.parquet (métricas Opta de equipo)
+    - config/coach_history.yaml (historial verificado)
 """
 from __future__ import annotations
 import numpy as np

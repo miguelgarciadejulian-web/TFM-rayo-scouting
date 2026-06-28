@@ -1,25 +1,43 @@
 # -*- coding: utf-8 -*-
 """
-rendimiento.py
-==============
-Fuente única de verdad para el score de Rendimiento.
+rendimiento.py — Motor de cálculo del Score de Rendimiento
+==========================================================
 
-Usado por:
-  - src/scouting/comparator.py   (FitRayoScorer)
-  - dashboard/components/player_detail.py  (tarjeta de perfil)
-  - dashboard/pages/jugador.py   (desglose)
-  - dashboard/pages/criterios.py (metodología)
-  - src/reports/player_dossier.py (PDF)
+PROPÓSITO:
+    Este módulo es la FUENTE ÚNICA DE VERDAD para calcular cuánto rinde un
+    jugador en términos futbolísticos puros (datos Opta p90), independiente
+    de su encaje táctico, valor de mercado o edad.
 
-Sub-posiciones disponibles:
-  GK  → Portero
-  CB  → Central
-  FB  → Lateral (RB / LB)
-  DM  → Pivote / MD Defensivo
-  CM  → Medio Centro
-  AM  → Mediapunta / Interior
-  WG  → Extremo (RW / LW)
-  ST  → Delantero Centro / Segundo delantero
+ALGORITMO PRINCIPAL — compute_rendimiento():
+    1. Se selecciona un POOL GLOBAL de jugadores del mismo grupo posicional
+       (GK/DEF/MID/FWD) con ≥ 450 minutos en todas las ligas del dataset.
+    2. Para cada métrica relevante del jugador, se calcula un Z-SCORE contra
+       la media y desviación del pool global.
+    3. El z-score se transforma a escala 0-100: score = 62 + z × 18
+       (centro en 62 para que un jugador "promedio" no parezca malo).
+    4. Las métricas se agrupan en DIMENSIONES con pesos adaptativos según el
+       role_type (ej: un delantero_rematador pondera 60% Gol vs 30% un móvil).
+    5. Se aplica un BONUS ESPECIALISTA del 35% de la diferencia entre la
+       mejor dimensión y la media, premiando perfiles con un talento destacado.
+    6. Finalmente, un COEFICIENTE DE LIGA ajusta según la dificultad competitiva
+       (Premier 1.07, Segunda 0.83 con damping asimétrico al 55%).
+
+    Resultado final: score numérico 5-99 que representa el nivel de rendimiento
+    del jugador comparado con sus pares posicionales a nivel europeo.
+
+SUB-POSICIONES (8 perfiles):
+    GK → Portero | CB → Central | FB → Lateral | DM → Pivote
+    CM → Medio Centro | AM → Mediapunta | WG → Extremo | ST → Delantero
+
+CONSUMIDO POR:
+    - src/scouting/comparator.py    → componente del Fit Rayo Score (peso 40%)
+    - dashboard/pages/jugador.py    → desglose por dimensiones en ficha
+    - dashboard/pages/criterios.py  → explicación metodológica
+    - src/reports/player_dossier.py → informe PDF profesional
+
+DATOS DE ENTRADA:
+    - player_seasons_enriched.parquet (57,238 filas, métricas Opta p90)
+    - Posición del jugador (vía TM, lateral_pos, o position_group OPTA)
 """
 from __future__ import annotations
 import unicodedata

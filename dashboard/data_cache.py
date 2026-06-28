@@ -1,17 +1,27 @@
 """
-dashboard/data_cache.py
-=======================
-Caché global de datos compartida entre todas las páginas.
+data_cache.py — Caché centralizada de datos en memoria
+======================================================
 
-Carga master_players.parquet y player_economic.parquet UNA SOLA VEZ
-al primer acceso y los mantiene en memoria. Reduce el tiempo de inicio
-de la app eliminando lecturas redundantes por página.
+PROPÓSITO:
+    Gestiona la carga y almacenamiento en memoria de los datasets principales
+    de la aplicación, evitando que cada página lea los parquet desde disco
+    repetidamente. Implementa el patrón Singleton con carga lazy.
 
-Uso (en cualquier página):
+DATASETS CACHEADOS:
+    1. master_players.parquet (11,846 jugadores) → get_master()
+       Contiene: nombre, equipo, liga, posición, edad, métricas agregadas.
+    2. player_economic.parquet (17,406 registros) → get_economic()
+       Contiene: valor de mercado, salario, fin de contrato, agente.
+
+FUNCIÓN warmup():
+    Se llama al arrancar la app (en app.py __main__) para precargar ambos
+    datasets en memoria antes de que llegue la primera petición HTTP.
+    Reporta tiempos de carga por consola.
+
+PATRÓN DE USO:
     from dashboard.data_cache import get_master, get_economic
-
-    df  = get_master()          # DataFrame con jugadores temporada actual
-    eco = get_economic()        # DataFrame con datos económicos TM
+    df  = get_master()    # DataFrame pandas — siempre la misma instancia
+    eco = get_economic()  # Mismo objeto para todas las páginas
 """
 from __future__ import annotations
 

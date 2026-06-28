@@ -1,7 +1,31 @@
 # -*- coding: utf-8 -*-
-"""Parser de archivos OPTA JSON → DataFrame de eventos.
+"""
+parser.py — Parser de archivos OPTA JSON a DataFrames de eventos
+================================================================
 
-Basado en `first class/A_opta event mapping_eng.ipynb`, modernizado.
+PROPÓSITO:
+    Transforma los archivos JSON crudos de OPTA (proveedor de datos
+    estadísticos de fútbol) en DataFrames de pandas estructurados y
+    listos para análisis. Es el primer paso del pipeline de datos.
+
+PIPELINE DE DATOS:
+    OPTA JSON → parser.py → DataFrames → enrichment → parquet final
+
+FUNCIONALIDAD:
+    - Lee archivos JSON de eventos de partidos (pases, tiros, duelos, etc.)
+    - Normaliza la estructura jerárquica a formato tabular (un evento por fila)
+    - Extrae qualifiers (atributos adicionales de cada evento)
+    - Calcula métricas derivadas (p90, porcentajes, ratios)
+    - Genera player_seasons_enriched.parquet como salida final
+
+DATOS DE ENTRADA:
+    - data/raw/opta/*.json (eventos de partidos por jornada)
+
+DATOS DE SALIDA:
+    - data/processed/player_seasons_enriched.parquet (57,238 filas)
+    - data/processed/team_seasons.parquet (métricas de equipo)
+
+Basado en 'first class/A_opta event mapping_eng.ipynb', modernizado.
 """
 from __future__ import annotations
 import json

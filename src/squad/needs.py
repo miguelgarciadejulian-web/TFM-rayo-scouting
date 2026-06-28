@@ -1,22 +1,42 @@
 # -*- coding: utf-8 -*-
 """
-needs.py
-========
-Analisis AUTOMATICO de la plantilla del Rayo: que perfiles existen, cuales estan
-sobre-representados, cuales faltan y cuales hay que reforzar.
+needs.py — Análisis automático de necesidades de la plantilla
+=============================================================
 
-Los roles de cada jugador se INFIEREN por codigo (src.profiling.player_profile)
-a partir de sus datos Opta mas recientes en LaLiga; no se escriben a mano.
-La edad y el contrato se leen de config/club_profile.yaml (datos del club).
-La plantilla tipo objetivo (TARGET_TEMPLATE) se deriva DINAMICAMENTE de la
-formacion registrada en club_profile.yaml; no se escribe a mano.
+PROPÓSITO:
+    Determina qué PERFILES FALTAN en la plantilla del Rayo y cuáles están
+    sobre-representados, comparando la plantilla actual con una plantilla
+    tipo objetivo generada dinámicamente desde la formación del club.
 
-METODOLOGIA de TARGET_TEMPLATE:
-  - Formacion base leida de club_profile.yaml → base_formation (ej. "4-2-3-1")
-  - Cada formacion mapea a unos roles minimos deseados (portero + 10 de campo)
-  - El numero de jugadores por rol refleja: 1 titular + 1 suplente para roles
-    criticos, 1 para roles con versatilidad alta (extremos, medios)
-  - Fallback: si la formacion no esta mapeada, se usa 4-2-3-1 con aviso
+ALGORITMO:
+    1. Se lee la formación base del club de config/club_profile.yaml
+       (ej: "4-2-3-1").
+    2. Se genera un TARGET_TEMPLATE: roles mínimos necesarios
+       (1 titular + 1 suplente para roles críticos).
+    3. Se infiere el rol de CADA jugador actual usando player_profile.py.
+    4. Se compara actual vs objetivo:
+       - HUECO: rol necesitado con 0 jugadores → prioridad ALTA
+       - ESCASO: rol con 1 jugador sin suplente → prioridad MEDIA
+       - CUBIERTO: rol con titular + suplente → OK
+       - EXCESO: rol con más jugadores de los necesarios → candidatos a venta
+
+SALIDA:
+    analyze_needs() → dict con:
+        - gaps: list[dict] roles que faltan (prioridad alta)
+        - thin: list[dict] roles escasos (prioridad media)
+        - excess: list[dict] roles sobre-representados
+        - summary: resumen ejecutivo
+
+CONSUMIDO POR:
+    - src/fit/player_fit.py  → compatibilidad_plantilla
+    - src/fit/decisions.py   → recomendaciones de fichar/vender
+    - dashboard/pages/home.py → alertas de necesidades
+    - dashboard/pages/decisiones.py → explorador de fichajes
+
+DATOS DE ENTRADA:
+    - config/squad_2526.yaml (plantilla con 30 jugadores)
+    - config/club_profile.yaml (formación base, presupuesto)
+    - player_seasons_enriched.parquet (perfiles inferidos)
 """
 from __future__ import annotations
 import unicodedata

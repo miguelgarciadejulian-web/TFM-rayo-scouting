@@ -1,10 +1,34 @@
 # -*- coding: utf-8 -*-
 """
-player_dossier.py  v7  (WeasyPrint + xhtml2pdf)
-================================================
-Informe PDF jugador — diseno editorial profesional.
-Layout: HTML tables (compatible con WeasyPrint y xhtml2pdf).
-Paleta corporativa: #E30613 rojo · #0D0D0D negro · blanco.
+player_dossier.py — Generador de informe PDF profesional de jugador
+===================================================================
+
+PROPÓSITO:
+    Genera un INFORME PDF de alta calidad editorial para un jugador concreto,
+    con diseño corporativo del Rayo Vallecano. Se puede descargar desde la
+    ficha del jugador en la interfaz web.
+
+CONTENIDO DEL PDF:
+    - Cabecera con logo, nombre, equipo y liga
+    - Foto del jugador (de TransferMarkt)
+    - Score de Rendimiento (gauge circular)
+    - Radar de dimensiones por sub-posición
+    - Tabla de métricas clave con percentiles
+    - Perfil automático (rol, fortalezas, debilidades)
+    - Score de Fit Rayo con desglose de componentes
+    - Datos económicos (valor mercado, salario, contrato)
+
+TECNOLOGÍA:
+    HTML → PDF vía WeasyPrint (principal) o xhtml2pdf (fallback).
+    Layout con tablas HTML para máxima compatibilidad entre motores.
+    Paleta corporativa: #E30613 rojo · #0D0D0D negro · blanco.
+
+FUNCIÓN PRINCIPAL:
+    build_player_dossier(player_name, enriched_df, master_df, economic_df)
+    → bytes (contenido del PDF) o path al archivo temporal
+
+CONSUMIDO POR:
+    - dashboard/pages/jugador.py (botón "Descargar PDF")
 """
 from __future__ import annotations
 import unicodedata

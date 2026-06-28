@@ -1,4 +1,32 @@
-"""App Dash - Rayo Vallecano Scouting Tool 2026/27."""
+"""
+app.py — Punto de entrada principal de la aplicación Dash
+=========================================================
+
+PROPÓSITO:
+    Inicializa y configura la aplicación web interactiva de scouting del Rayo
+    Vallecano construida con el framework Dash (Plotly). Este archivo define:
+    - La instancia de la app Dash con tema Bootstrap (LUX oscuro)
+    - El layout maestro: barra superior (topbar) + sidebar + contenido dinámico
+    - La navegación multi-página (pages/) con carga automática
+    - El sistema de caché en disco para callbacks de fondo (diskcache)
+
+ARQUITECTURA DE NAVEGACIÓN:
+    Usa dash.page_registry para escanear dashboard/pages/ automáticamente.
+    9 páginas: Home, Plantilla, Jugador, Scouting, Comparador, Decisiones,
+    Entrenadores, Finanzas, Criterios.
+
+LAYOUT:
+    ┌─────────────────────────────────────────────┐
+    │  TOPBAR (logo + título + toggle sidebar)    │
+    ├────────┬────────────────────────────────────┤
+    │SIDEBAR │   dash.page_container              │
+    │(menú)  │   (contenido de la página activa)  │
+    └────────┴────────────────────────────────────┘
+
+EJECUCIÓN:
+    python dashboard/app.py → arranca en http://localhost:8050
+    Al iniciar, ejecuta warmup() para precargar datos en memoria.
+"""
 from __future__ import annotations
 import json as _json
 import sys as _sys

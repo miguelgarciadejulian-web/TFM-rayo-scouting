@@ -1,31 +1,46 @@
 # -*- coding: utf-8 -*-
 """
-player_profile.py
-=================
-Perfilado AUTOMATICO de jugadores por reglas en Python (sin texto manual).
+player_profile.py — Perfilado Automático de Jugadores por Rol
+=============================================================
 
-A partir de las metricas Opta por-90 de `player_seasons_enriched.parquet`, calcula
-para cada jugador:
+PROPÓSITO:
+    Clasifica automáticamente a cada jugador en uno de los 12 ROLES CANÓNICOS
+    del modelo táctico, usando exclusivamente datos estadísticos Opta p90.
+    No hay texto escrito a mano: todo se infiere por reglas cuantitativas.
 
-  - primary_role  : rol principal entre los 11 perfiles canonicos
-  - secondary_roles: roles secundarios compatibles
-  - style_label   : etiqueta de estilo legible
-  - role_scores   : score 0-100 de encaje en cada rol
-  - strengths     : metricas en las que destaca (percentil alto vs su grupo)
-  - weaknesses    : metricas flojas (percentil bajo)
-  - risk_level    : riesgo (muestra de minutos + edad si se conoce)
-  - potential     : potencial de desarrollo (edad si se conoce; si no, proxy)
-  - confidence    : fiabilidad del perfil segun minutos jugados
+12 ROLES CANÓNICOS:
+    Delantero: delantero_rematador, delantero_movil
+    Extremo:   extremo_vertical, extremo_asociativo
+    Centro:    mediocentro_organizador, mediocentro_recuperador, interior_llegador
+    Defensa:   central_dominador, central_corrector, lateral_ofensivo, lateral_defensivo
+    Portero:   portero
 
-Logica:
-  1. Se normaliza cada metrica a percentil 0-100 dentro del grupo posicional
-     (GK/DEF/MID/FWD) y la liga, comparando peras con peras.
-  2. Cada rol es una combinacion ponderada de percentiles (ROLE_DEFINITIONS).
-  3. El rol con mayor score es el principal; los siguientes por encima de un
-     umbral son secundarios.
-  4. Fortalezas/debilidades = metricas con percentil mas alto/bajo.
+ALGORITMO — rank_players_for_role() / profile_single_player():
+    1. Se normalizan las métricas Opta a PERCENTILES dentro del grupo posicional
+       (GK/DEF/MID/FWD) y liga, comparando "peras con peras".
+    2. Cada rol se define como una combinación ponderada de percentiles
+       (diccionario ROLE_DEFINITIONS: métricas × pesos).
+    3. El rol con mayor score ponderado = primary_role del jugador.
+    4. Los roles con score > umbral 70% del primario = secondary_roles.
+    5. Fortalezas = métricas con percentil > 80; Debilidades = percentil < 30.
 
-Las reglas estan documentadas y son configurables (solo editar los pesos).
+SALIDAS POR JUGADOR:
+    - primary_role    : rol principal (str)
+    - secondary_roles : roles secundarios compatibles (list)
+    - style_label     : etiqueta legible ("Delantero rematador")
+    - role_scores     : dict {rol: score 0-100}
+    - strengths       : métricas donde destaca (percentil alto)
+    - weaknesses      : métricas flojas
+    - confidence      : fiabilidad según minutos jugados
+
+CONSUMIDO POR:
+    - src/scouting/comparator.py → para calcular ADN táctico del candidato
+    - src/squad/needs.py         → para detectar huecos en la plantilla
+    - dashboard/pages/jugador.py → visualización del perfil de rol
+    - dashboard/pages/decisiones.py → rankings por rol
+
+DATOS DE ENTRADA:
+    - player_seasons_enriched.parquet (métricas p90 normalizadas)
 """
 from __future__ import annotations
 from typing import Iterable

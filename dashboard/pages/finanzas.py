@@ -1,5 +1,33 @@
 # -*- coding: utf-8 -*-
-"""Pestaña de Finanzas — salarios, presupuesto, riesgo de cláusulas y simulador."""
+"""
+finanzas.py — Módulo financiero: salarios, cláusulas y simulador de traspasos
+=============================================================================
+
+PROPÓSITO:
+    Herramienta de análisis financiero de la plantilla del Rayo Vallecano.
+    Permite visualizar la estructura salarial, evaluar riesgos de cláusulas
+    de rescisión y simular operaciones de mercado (compra/venta/cesión).
+
+SECCIONES:
+    1. ESTRUCTURA SALARIAL: gráfico de barras con salario de cada jugador,
+       comparado con la media y el tope salarial del club.
+    2. VALORES DE MERCADO: tabla con valor TM actual de los 30 jugadores
+       (MV_MAP con datos reales consultados en TransferMarkt).
+    3. RIESGO DE CLÁUSULAS: score de riesgo por jugador calculado por
+       src/fit/clause_risk.py (Bajo/Medio/Alto/Crítico).
+    4. SIMULADOR DE TRASPASOS: permite añadir fichajes hipotéticos y ver
+       impacto en presupuesto, masa salarial y balance de plantilla.
+
+FUNCIONES CLAVE:
+    - _clause_risk_score()  → evalúa riesgo individual por cláusula
+    - Callbacks de simulación → actualizan KPIs en tiempo real
+    - MV_MAP: diccionario con valores de mercado reales de los 30 jugadores
+
+DATOS:
+    - config/squad_2526.yaml (plantilla + salarios + cláusulas)
+    - player_economic.parquet (datos TM complementarios)
+    - src/fit/clause_risk.py (modelo de riesgo)
+"""
 from __future__ import annotations
 import sys, traceback
 from pathlib import Path

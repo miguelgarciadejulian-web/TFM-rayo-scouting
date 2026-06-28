@@ -1,17 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-criteria_block.py
-=================
-Bloque colapsable "¿Cómo se calcula esto?" para insertar inline en cualquier
-página. Usa dbc.Accordion (un solo item, cerrado por defecto).
+criteria_block.py — Bloque colapsable de transparencia metodológica
+===================================================================
 
-Uso::
+PROPÓSITO:
+    Componente reutilizable que inserta un acordeón colapsable ("¿Cómo se
+    calcula esto?") en cualquier página del dashboard. Al expandirlo, muestra
+    la explicación de los criterios y fórmulas usadas en esa sección.
+    Promueve la TRANSPARENCIA del sistema: el usuario siempre puede ver
+    qué hay detrás de cada score.
 
+IMPLEMENTACIÓN:
+    Usa dbc.Accordion con un solo item (cerrado por defecto).
+    El contenido se genera dinámicamente según la sección solicitada.
+
+USO:
     from dashboard.components.criteria_block import criteria_accordion
-    # En el layout:
-    criteria_accordion("scouting")
-    criteria_accordion("plantilla")
-    criteria_accordion("entrenadores")
+    # En el layout de cualquier página:
+    criteria_accordion("scouting")      → explica filtros y Fit Rayo
+    criteria_accordion("plantilla")     → explica scores de plantilla
+    criteria_accordion("entrenadores")  → explica evaluación de técnicos
     criteria_accordion("decisiones")
     criteria_accordion("finanzas")
     criteria_accordion("comparador")

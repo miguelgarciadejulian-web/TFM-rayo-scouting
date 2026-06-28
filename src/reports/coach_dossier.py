@@ -1,10 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-coach_dossier.py  v7  (WeasyPrint + xhtml2pdf)
-================================================
-Informe PDF entrenador — diseno editorial profesional.
-Layout: HTML tables (compatible con WeasyPrint y xhtml2pdf).
+coach_dossier.py — Generador de informe PDF de entrenador candidato
+===================================================================
+
+PROPÓSITO:
+    Genera un INFORME PDF profesional para un entrenador candidato al
+    banquillo, con diseño corporativo Rayo Vallecano. Incluye perfil de
+    estilo, score de compatibilidad, pros/contras y análisis de riesgos.
+
+CONTENIDO DEL PDF:
+    - Cabecera con foto y datos del técnico
+    - Score de compatibilidad con el Rayo (gauge 0-100)
+    - Ejes de estilo en radar (8 dimensiones)
+    - Tabla de pros y contras (automáticos + manuales)
+    - Mapa de riesgos (deportivo, económico, adaptación)
+    - Historial de equipos y resultados
+    - Recomendación final automática
+
+TECNOLOGÍA: HTML → PDF vía WeasyPrint/xhtml2pdf.
 Paleta corporativa: #E30613 rojo · #0D0D0D negro · blanco.
+
+CONSUMIDO POR:
+    - dashboard/pages/entrenadores.py (botón "Descargar PDF")
 """
 from __future__ import annotations
 import csv

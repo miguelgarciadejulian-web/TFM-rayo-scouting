@@ -1,5 +1,37 @@
 # -*- coding: utf-8 -*-
-"""Perfil completo de un jugador: foto, percentiles, evolución, radar, encaje y notas."""
+"""
+jugador.py — Ficha completa de jugador (página de detalle)
+==========================================================
+
+PROPÓSITO:
+    Página más completa del dashboard. Muestra TODA la información disponible
+    de un jugador seleccionado: datos biográficos, foto (Transfermarkt),
+    métricas de rendimiento, radar por dimensiones, evolución temporal,
+    score de Fit Rayo con desglose y funcionalidades interactivas.
+
+SECCIONES DE LA FICHA:
+    1. CABECERA: foto TM + nombre + equipo + liga + edad + posición lateral
+    2. SCORES: Fit Rayo (0-100) con desglose de los 5 componentes
+    3. RADAR: gráfico polar con las dimensiones de rendimiento
+    4. PERCENTILES: barras de cada métrica vs su pool posicional
+    5. EVOLUCIÓN: gráfico de línea de métricas por temporada
+    6. NOTAS: sistema de notas editables guardadas en JSON local
+    7. POSICIÓN LATERAL: selector para override manual de posición
+
+CALLBACKS PRINCIPALES:
+    - render_player()      → construye toda la ficha al seleccionar jugador
+    - save_note()          → guarda nota de texto en player_notes.json
+    - fetch_from_tm()      → consulta API TransferMarkt para foto/datos
+    - save_lateral()       → guarda override de posición lateral
+    - _download_pdf()      → genera informe PDF profesional
+    - _sync_url_from_dropdown() → sincroniza URL con jugador seleccionado
+
+DATOS:
+    - player_seasons_enriched.parquet (métricas p90)
+    - player_economic.parquet (valor mercado, contrato)
+    - player_notes.json (notas manuales del scout)
+    - player_overrides.json (overrides TM: foto, posición)
+"""
 from __future__ import annotations
 import json
 import sys
@@ -473,14 +505,14 @@ def _fit_rayo_card(name: str) -> html.Div:
 
     # Añadir explicación de ADN Táctico automáticamente
     _adn_val = r.score_adn_tactico
-    if _adn_val >= 70:
-        _adn_text = "Perfil táctico muy alineado con el estilo Rayo: pressing alto, verticalidad e intensidad sin balón por encima de la media."
-    elif _adn_val >= 50:
-        _adn_text = "Encaje táctico moderado. Aporta en algunos ejes del estilo Rayo (pressing, verticalidad o intensidad) pero no destaca en todos."
-    elif _adn_val >= 30:
-        _adn_text = "Perfil táctico con margen de mejora para el estilo Rayo. Baja intensidad en pressing o poca verticalidad comparado con su posición."
+    if _adn_val >= 72:
+        _adn_text = "Perfil táctico muy alineado con el estilo Rayo: pressing alto, verticalidad e intensidad sin balón por encima de la media posicional."
+    elif _adn_val >= 63:
+        _adn_text = "Encaje táctico bueno. Aporta en los ejes principales del estilo Rayo (pressing, verticalidad o intensidad) de forma competente."
+    elif _adn_val >= 55:
+        _adn_text = "Encaje táctico moderado. Algunas métricas de estilo Rayo están en la media, pero no destaca especialmente en pressing ni verticalidad."
     else:
-        _adn_text = "Perfil táctico poco compatible con el estilo Rayo. Métricas de pressing, verticalidad e intensidad por debajo de la media posicional."
+        _adn_text = "Perfil táctico con margen de mejora. Baja intensidad en pressing o poca verticalidad comparado con su posición — necesitaría adaptación."
     narrative_items.append(html.Div([
         html.Div([
             html.I(className="ti ti-flame",

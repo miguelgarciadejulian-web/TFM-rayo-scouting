@@ -1,9 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-comparador.py
-=============
-Página Dash — Comparador de Fichajes.
-Ruta: /comparador
+comparador.py — Comparador visual lado a lado de jugadores
+==========================================================
+
+PROPÓSITO:
+    Permite seleccionar 2-4 jugadores y compararlos visualmente con:
+    - Radar chart superpuesto (métricas p90 normalizadas)
+    - Tabla de scores por componente (Rendimiento, ADN, Económico, Edad)
+    - Barras comparativas de Fit Rayo Score
+    - Generación de PDF comparativo (comparador_dossier.py)
+
+FLUJO DE USO:
+    1. El usuario selecciona jugadores desde dropdowns o llega por enlace
+    2. Se calculan los scores individuales con FitRayoScorer
+    3. Se renderiza el radar con Plotly (go.Scatterpolar) superpuesto
+    4. Se muestra tabla con veredicto final (recomendación automática)
+
+DATOS:
+    - player_seasons_enriched.parquet (métricas para radar)
+    - FitRayoScorer (scores de encaje)
+    - src/reports/comparador_dossier.py (PDF de salida)
+
+RUTA: /comparador
 """
 from __future__ import annotations
 

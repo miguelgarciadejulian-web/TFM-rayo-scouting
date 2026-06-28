@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-leagues.py
-==========
-Tabla de normalización de nombres de liga.
-Uso: from src.utils.leagues import league_name
+leagues.py — Normalización de nombres de liga
+==============================================
+
+PROPÓSITO:
+    Tabla de correspondencia entre los nombres internos de liga en el dataset
+    Opta (formato "Country_League_Name") y sus nombres legibles en español
+    para mostrar en la interfaz. También provee el mapeo inverso.
+
+LIGAS INCLUIDAS (19):
+    España (Primera, Segunda), Inglaterra (Premier, Championship),
+    Alemania (Bundesliga), Italia (Serie A), Francia (Ligue 1, Ligue 2),
+    Países Bajos (Eredivisie), Portugal (Primeira Liga), Bélgica,
+    Turquía (Süper Lig), Dinamarca (Superliga), México (Liga MX),
+    Argentina (Liga Profesional).
+
+USO:
+    from src.utils.leagues import league_name, LEAGUE_OPTIONS
+    label = league_name("Spain_Primera_Division")  # → "LaLiga"
 """
 
 _LEAGUE_MAP: dict[str, str] = {

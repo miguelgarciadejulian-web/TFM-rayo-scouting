@@ -1,16 +1,43 @@
 # -*- coding: utf-8 -*-
 """
-player_fit.py
-=============
-Encaje AUTOMATICO de un fichaje potencial con el Rayo, por reglas en Python:
+player_fit.py — Evaluación de encaje individual de un fichaje con el Rayo
+=========================================================================
 
-  - compatibilidad_plantilla   : cubre un hueco (rol que falta/escaso) vs sobra
-  - compatibilidad_entrenador  : afinidad del rol con el estilo del tecnico
-  - valor_estrategico          : hueco + potencial/edad + nivel del rol
-  - impacto_deportivo          : nivel del rol (percentil) + necesidad cubierta
+PROPÓSITO:
+    Calcula automáticamente cuánto ENCAJA un jugador concreto con la
+    situación actual del Rayo Vallecano, considerando:
+    - Si cubre un hueco real en la plantilla (posición necesitada)
+    - Si su estilo es compatible con el entrenador
+    - Su valor estratégico a medio plazo (edad + potencial)
+    - Su impacto deportivo inmediato (nivel de su rol)
 
-Todo deriva de los roles inferidos (player_profile) y del analisis de plantilla
-(squad.needs); nada se escribe a mano.
+COMPONENTES DEL ENCAJE:
+    1. compatibilidad_plantilla (0-100):
+       ¿Cubre un rol que falta o está escaso en la plantilla?
+       Se calcula cruzando el rol primario del jugador con squad/needs.py.
+
+    2. compatibilidad_entrenador (0-100):
+       ¿El entrenador actual favorece este tipo de jugador?
+       Usa get_coach_affinity() de dynamic_dna.py.
+
+    3. valor_estrategico (0-100):
+       Combina edad (curva de desarrollo), potencial y necesidad cubierta.
+
+    4. impacto_deportivo (0-100):
+       Nivel absoluto del jugador en su rol (percentil vs pool europeo).
+
+FUNCIÓN PRINCIPAL:
+    evaluate_player_fit(player_profile, squad_needs_dict, coach_style_main)
+    → dict con scores individuales + score global + recomendación
+
+CONSUMIDO POR:
+    - dashboard/components/profile_card.py (tarjeta de encaje)
+    - dashboard/pages/jugador.py (sección de fit)
+
+DATOS DE ENTRADA:
+    - Perfil del jugador (de player_profile.py)
+    - Necesidades de plantilla (de squad/needs.py)
+    - Estilo del entrenador (de dynamic_dna.py)
 """
 from __future__ import annotations
 import numpy as np

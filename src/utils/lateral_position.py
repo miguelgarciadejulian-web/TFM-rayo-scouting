@@ -1,13 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-lateral_position.py
-===================
-Infiere la posicion lateral especifica de cada jugador (LI, LD, DC, MC, MI, MD,
-EI, ED, DC-fwd, PO) a partir de leftside_passes / rightside_passes del dataset
-enriquecido, y una tipologia simplificada de rol (Lateral ofensivo, Central
-dominador, Mediocentro recuperador, etc.) usando los datos de master_players.
+lateral_position.py — Inferencia de posición lateral específica
+===============================================================
 
-Ambas funciones se cachean en memoria para no leer disco en cada callback.
+PROPÓSITO:
+    Determina la POSICIÓN LATERAL EXACTA de cada jugador (LI, LD, DC, MC,
+    MI, MD, EI, ED, DL, PO) a partir de datos estadísticos de pases por lado
+    (leftside_passes / rightside_passes) combinados con el rol táctico.
+
+ALGORITMO:
+    1. Se calculan los ratios de pases por lado izquierdo vs derecho.
+    2. Si ratio_izquierdo > 0.6 → banda izquierda (LI, MI, EI según posición).
+    3. Si ratio_derecho > 0.6 → banda derecha (LD, MD, ED).
+    4. Si equilibrado → posición central (DC, MC, DL según grupo).
+    5. El rol táctico (de player_profile.py) refina la clasificación:
+       - Un lateral_ofensivo en banda izquierda = "LI"
+       - Un mediocentro_organizador centrado = "MC"
+
+POSICIONES DE SALIDA (10):
+    PO → Portero | DC → Central | LI → Lateral izquierdo | LD → Lateral derecho
+    MC → Mediocentro | MI → Interior izquierdo | MD → Interior derecho
+    EI → Extremo izquierdo | ED → Extremo derecho | DL → Delantero
+
+FUNCIONES PRINCIPALES:
+    build_lateral_map(enriched_df) → dict {nombre: lateral_pos}
+    LATERAL_LABELS → dict con etiquetas legibles en español
+    ROLE_TYPE_LABELS → dict con etiquetas de tipo de rol
+
+CONSUMIDO POR:
+    - dashboard/pages/jugador.py (selector de posición lateral)
+    - dashboard/pages/plantilla.py (campo visual con posiciones)
+    - src/utils/rendimiento.py (refinamiento de sub-posición)
 """
 from __future__ import annotations
 from pathlib import Path

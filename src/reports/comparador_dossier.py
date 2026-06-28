@@ -1,9 +1,24 @@
 # -*- coding: utf-8 -*-
 """
-comparador_dossier.py
-=====================
-PDF comparativo de jugadores — diseño corporativo Rayo Vallecano.
-Genera un informe moderno con radar, métricas y veredicto.
+comparador_dossier.py — PDF comparativo lado a lado de jugadores
+================================================================
+
+PROPÓSITO:
+    Genera un informe PDF con la comparación visual de 2-4 jugadores,
+    incluyendo radar superpuesto, tabla de scores y veredicto final.
+    Se descarga desde la página /comparador de la interfaz.
+
+CONTENIDO DEL PDF:
+    - Radar chart superpuesto (métricas p90 de todos los candidatos)
+    - Tabla comparativa: Fit Rayo, Rendimiento, ADN, Económico, Edad
+    - Barras visuales por componente para comparación rápida
+    - Veredicto final automático (recomendación del sistema)
+
+TECNOLOGÍA: HTML → PDF vía WeasyPrint/xhtml2pdf.
+Diseño corporativo Rayo Vallecano.
+
+CONSUMIDO POR:
+    - dashboard/pages/comparador.py (botón "Generar PDF comparativo")
 """
 from __future__ import annotations
 import io

@@ -1,7 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-Criterios de puntuación — explica TODOS los cálculos de la herramienta,
-organizados por pestañas. Generado automáticamente desde los pesos reales.
+criterios.py — Página de transparencia metodológica
+====================================================
+
+PROPÓSITO:
+    Explica AL USUARIO todos los criterios, fórmulas y pesos utilizados
+    por la herramienta para calcular scores. Organizada en pestañas para
+    facilitar la consulta durante la presentación del TFM o auditoría.
+
+PESTAÑAS:
+    1. RENDIMIENTO: fórmula completa por sub-posición (dimensiones, pesos,
+       z-score, coef. liga, bonus especialista). Generada automáticamente
+       desde los pesos reales de src/utils/rendimiento.py.
+    2. ADN TÁCTICO: métricas del ADN Rayo por posición, valores objetivo
+       y cómo se compara cada candidato.
+    3. ECONÓMICO: horquillas de valor por posición, fórmula de viabilidad.
+    4. FIT RAYO: ponderación final (40/25/20/5/10) con explicación.
+    5. ROLES: definición de los 12 roles canónicos y sus métricas clave.
+
+GENERACIÓN AUTOMÁTICA:
+    Los textos se construyen EN TIEMPO REAL leyendo los diccionarios de
+    pesos reales (REND_DIMS, ROLE_DEFINITIONS, etc.), garantizando que
+    si se cambia un peso en el código, la documentación se actualiza sola.
 """
 from __future__ import annotations
 import sys
@@ -319,10 +339,23 @@ def _tab_scouting():
                    "comparado con todos los jugadores del mundo en su posición.",
                    style={"fontSize":"12px","color":"#374151"}),
             _formula("Para cada métrica p90:\n"
-                     "  z = (valor_jugador − media_global) / std_global\n"
-                     "  score_métrica = 50 + z × 15   (clip [3, 97])\n\n"
-                     "Score dimensión = media(scores métricas)\n"
-                     "Rendimiento bruto = Σ(peso_dim × score_dim)"),
+                     "  z = (valor_jugador − media_pool_global) / std_pool_global\n"
+                     "  score_métrica = 62 + z × 18   (clip [5, 99])\n\n"
+                     "Score dimensión = media(scores métricas de esa dimensión)\n"
+                     "Rendimiento bruto = Σ(peso_dim × score_dim)\n\n"
+                     "Bonus especialista:\n"
+                     "  best_dim = max(score de cada dimensión)\n"
+                     "  bonus = max(0, (best_dim − rendimiento_bruto) × 0.35)\n"
+                     "  rendimiento_raw = rendimiento_bruto + bonus\n\n"
+                     "Coeficiente de liga (asimétrico):\n"
+                     "  Si coef ≥ 1.0 → rendimiento_final = raw × coef\n"
+                     "  Si coef < 1.0 → effective = 1.0 + (coef − 1.0) × 0.55\n"
+                     "                   rendimiento_final = raw × effective\n\n"
+                     "Centro en 62: un jugador promedio obtiene ~62 (no parece malo).\n"
+                     "Bonus especialista: premia al que destaca en su dimensión principal\n"
+                     "(ej: goleador puro no penalizado por pressing bajo)."),
+            _note("Ejemplo: un goleador con 82 en Gol/Remate pero 50 en Pressing obtiene "
+                  "bonus = (82-64)*0.35 = +6.3 puntos al score final."),
             html.P("Pesos por sub-posición (adaptativos según role_type del jugador):",
                    style={"fontSize":"12px","color":"#374151","marginTop":"8px"}),
             html.Table([
@@ -344,7 +377,7 @@ def _tab_scouting():
                     html.Tr([html.Td("Extremo",style={**TD,"fontWeight":"700"}),
                              html.Td("Regates/Desborde (30%) · Gol/Remate (30%) · Creación (25%) · Pressing (15%)",style=TD)]),
                     html.Tr([html.Td("Delantero Centro",style={**TD,"fontWeight":"700"}),
-                             html.Td("Gol/Remate (45%) · Duelos área: aéreos+1v1 (20%) · Creación (20%) · Pressing (15%)",style=TD)]),
+                             html.Td("Gol/Remate (55%) · Duelos área: aéreos+1v1 (20%) · Creación (15%) · Pressing (10%)",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"10px"}),
             html.P("Pesos adaptativos por estilo de juego (role_type):",
@@ -386,9 +419,16 @@ def _tab_scouting():
             _section("2d", "Coeficiente de calidad de liga"),
             html.P("El rendimiento bruto (z-score global) se multiplica por un coeficiente de calidad. "
                    "Rendir al mismo nivel en una liga top vale más que en una liga inferior. "
-                   "El coeficiente se aplica de forma intrínseca al score final de rendimiento.",
+                   "Se aplica con damping asimétrico: las ligas fuertes suman al 100%, "
+                   "pero las ligas débiles se suavizan al 55% para no aplastar a buenos jugadores de Segunda.",
                    style={"fontSize":"12px","color":"#374151"}),
-            _formula("Rendimiento_final = Rendimiento_bruto × Coef_liga"),
+            _formula("Si coef_liga ≥ 1.0:\n"
+                     "  Rendimiento_final = Rendimiento_raw × coef_liga\n\n"
+                     "Si coef_liga < 1.0 (liga más débil):\n"
+                     "  effective = 1.0 + (coef_liga − 1.0) × 0.55\n"
+                     "  Rendimiento_final = Rendimiento_raw × effective\n\n"
+                     "Ejemplo: Segunda (0.83) → effective = 1.0 + (0.83−1.0)×0.55 = 0.907\n"
+                     "         Un jugador con 70 bruto en Segunda → 70×0.907 = 63.5 (no 58.1)"),
             html.Table([
                 html.Thead(html.Tr([html.Th("Liga",style=TH),html.Th("Coef.",style=TH),
                                     html.Th("Liga",style=TH),html.Th("Coef.",style=TH)])),
@@ -411,8 +451,8 @@ def _tab_scouting():
                              html.Td("Argentina Liga Prof.",style=TD),html.Td("0.80",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
-            _note("Resultado: un jugador medio de Primera (~54) siempre supera al mejor de Segunda (~57 bruto × 0.83 = 47). "
-                  "Solo los más destacados de ligas inferiores compiten con jugadores medios de ligas top."),
+            _note("Resultado: un jugador medio de Primera (~62) supera siempre a uno medio de Segunda (~62×0.907=56). "
+                  "Pero un crack de Segunda (bruto 78) → 78×0.907=70.7, puede competir con jugadores medio-altos de Primera."),
         ], style=CARD),
 
         # Fit Rayo global de scouting
@@ -465,42 +505,54 @@ def _tab_scouting():
             _section("2f", "ADN Táctico (25% del Fit Rayo)"),
             html.P("Mide cuánto encaja un jugador con el estilo de juego del Rayo Vallecano: "
                    "pressing alto, verticalidad, intensidad sin balón y vocación ofensiva. "
-                   "Se calcula mediante z-score global (mismo método que el rendimiento) sobre 5 métricas clave p90.",
+                   "Se calcula mediante z-score global contra el pool posicional (≥450 min) "
+                   "con pesos adaptados por posición y un damping asimétrico.",
                    style={"fontSize":"12px","color":"#374151"}),
+            _formula("Para cada métrica ADN:\n"
+                     "  z = (valor_jugador − media_pool_posición) / std_pool\n"
+                     "  Si z < 0: z = z × 0.55  (damping asimétrico: no castiga en exceso)\n"
+                     "  score_métrica = 62 + z × 18   (clip [5, 99])\n\n"
+                     "ADN_Táctico = Σ(peso_i × score_i) / Σ(peso_i)\n\n"
+                     "Centro 62: un jugador promedio ≈ 62. Rayo-style ≥ 70.\n"
+                     "Damping: un jugador por debajo de la media no se hunde a 30."),
+            _subsection("Pesos por grupo posicional"),
+            html.P("Los pesos se adaptan a lo que se espera de cada posición en el estilo Rayo:",
+                   style={"fontSize":"11px","color":"#6B7280","marginBottom":"6px"}),
             html.Table([
-                html.Thead(html.Tr([html.Th("Métrica p90",style=TH),html.Th("Peso",style=TH),
-                                    html.Th("Qué refleja del estilo Rayo",style=TH)])),
+                html.Thead(html.Tr([html.Th("Grupo",style=TH),html.Th("Métricas y pesos",style={**TH,"width":"70%"})])),
                 html.Tbody([
-                    html.Tr([html.Td("Recoveries",style={**TD,"fontWeight":"700"}),
-                             html.Td("30%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Pressing alto: recuperar el balón tras pérdida propia o rival",style=TD)]),
-                    html.Tr([html.Td("Tackles won",style={**TD,"fontWeight":"700"}),
-                             html.Td("25%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Intensidad defensiva: duelos ganados, agresividad sin balón",style=TD)]),
-                    html.Tr([html.Td("Forward passes",style={**TD,"fontWeight":"700"}),
-                             html.Td("20%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Verticalidad: pases hacia delante, juego directo",style=TD)]),
-                    html.Tr([html.Td("Successful dribbles",style={**TD,"fontWeight":"700"}),
-                             html.Td("15%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Desborde: capacidad de superar rival 1v1, juego dinámico",style=TD)]),
-                    html.Tr([html.Td("Touches in opp. box",style={**TD,"fontWeight":"700"}),
-                             html.Td("10%",style={**TD,"color":"#166534","fontWeight":"700"}),
-                             html.Td("Vocación ofensiva: presencia en zona de finalización",style=TD)]),
+                    html.Tr([html.Td("FWD (delanteros)",style={**TD,"fontWeight":"700"}),
+                             html.Td("Toques en área 30% · Remates a puerta 25% · Regates 20% · "
+                                     "Recuperaciones 10% · Pases verticales 10% · Entradas 5%",style=TD)]),
+                    html.Tr([html.Td("MID_ATK (extremos, mediapuntas)",style={**TD,"fontWeight":"700","color":"#E30613"}),
+                             html.Td("Regates 25% · Toques en área 22% · Pases verticales 18% · "
+                                     "Remates a puerta 15% · Recuperaciones 12% · Entradas 8%",style=TD)]),
+                    html.Tr([html.Td("MID (centrocampistas)",style={**TD,"fontWeight":"700"}),
+                             html.Td("Recuperaciones 28% · Entradas 22% · Pases verticales 22% · "
+                                     "Regates 15% · Toques en área 13%",style=TD)]),
+                    html.Tr([html.Td("DEF (defensas)",style={**TD,"fontWeight":"700"}),
+                             html.Td("Entradas 28% · Pases verticales 25% · Recuperaciones 22% · "
+                                     "Toques en área 15% · Regates 10%",style=TD)]),
+                    html.Tr([html.Td("GK (porteros)",style={**TD,"fontWeight":"700"}),
+                             html.Td("Recuperaciones 50% · Pases verticales 20% · "
+                                     "Toques en área 15% · Entradas 10% · Regates 5%",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse","marginBottom":"8px"}),
-            _formula("ADN_Táctico = Σ(peso_i × z_score_métrica_i)\n"
-                     "  z calculado vs pool global (misma posición, ≥450 min)\n"
-                     "  Escala 0-100: media global = 50, desv. típica = 15 puntos"),
+            _note("MID_ATK: se activa automáticamente para centrocampistas con toques en área > mediana "
+                  "del pool MID ó regates/90 > 1.2. Evita penalizar a extremos por no recuperar como un pivote."),
+            _subsection("Interpretación del score"),
             html.Table([
                 html.Thead(html.Tr([html.Th("ADN Score",style=TH),html.Th("Interpretación",style=TH)])),
                 html.Tbody([
-                    html.Tr([html.Td("≥ 70",style={**TD,"fontWeight":"700","color":"#166534"}),
-                             html.Td("Muy alineado con el estilo Rayo — encaje táctico excelente",style=TD)]),
-                    html.Tr([html.Td("50-69",style=TD),
+                    html.Tr([html.Td("≥ 75",style={**TD,"fontWeight":"700","color":"#166534"}),
+                             html.Td("Perfil Rayo puro — pressing, verticalidad e intensidad destacados",style=TD)]),
+                    html.Tr([html.Td("65-74",style={**TD,"fontWeight":"700","color":"#166534"}),
+                             html.Td("Muy alineado — encaje táctico excelente",style=TD)]),
+                    html.Tr([html.Td("55-64",style=TD),
                              html.Td("Moderadamente compatible — puede adaptarse al sistema",style=TD)]),
-                    html.Tr([html.Td("30-49",style=TD),
+                    html.Tr([html.Td("45-54",style=TD),
                              html.Td("Margen de mejora — estilo diferente, necesita adaptación",style=TD)]),
-                    html.Tr([html.Td("< 30",style={**TD,"fontWeight":"700","color":"#991B1B"}),
+                    html.Tr([html.Td("< 45",style={**TD,"fontWeight":"700","color":"#991B1B"}),
                              html.Td("Poco compatible — perfil pasivo o posicional, lejos del pressing Rayo",style=TD)]),
                 ]),
             ], style={"width":"100%","borderCollapse":"collapse"}),

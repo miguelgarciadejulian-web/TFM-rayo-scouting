@@ -1,5 +1,23 @@
 # -*- coding: utf-8 -*-
-"""Componente reutilizable: tarjeta de perfil automatico + encaje de un jugador."""
+"""
+profile_card.py — Tarjeta compacta de perfil y encaje automático
+================================================================
+
+PROPÓSITO:
+    Componente reutilizable que genera una tarjeta resumen con:
+    - Rol primario del jugador (inferido automáticamente)
+    - Score de encaje con la plantilla (player_fit.py)
+    - Fortalezas y debilidades principales
+    - Compatibilidad con el entrenador y la plantilla
+    Se usa en múltiples páginas para dar un vistazo rápido al jugador.
+
+FUNCIÓN PRINCIPAL:
+    build_profile_card(name) → dbc.Card con información de perfil
+
+DEPENDENCIAS:
+    - src/profiling/player_profile.py (perfil automático)
+    - src/fit/player_fit.py (encaje con plantilla + entrenador)
+"""
 from __future__ import annotations
 import json
 from functools import lru_cache

@@ -1,5 +1,19 @@
 # -*- coding: utf-8 -*-
-"""Mapeo de nombres de columna técnicos → etiquetas legibles en español."""
+"""
+display_names.py — Mapeo de nombres técnicos a etiquetas legibles
+=================================================================
+
+PROPÓSITO:
+    Diccionario centralizado que traduce los nombres de columna internos
+    del DataFrame (snake_case en inglés, como "goals_p90") a etiquetas
+    legibles en español para mostrar en la interfaz ("Goles / 90 min").
+    Garantiza consistencia visual en todas las tablas y gráficos.
+
+USO:
+    from dashboard.components.display_names import COL_LABELS
+    label = COL_LABELS.get("tackles_won_p90", "tackles_won_p90")
+    # → "Entradas ganadas / 90"
+"""
 
 COL_LABELS = {
     # Identidad
